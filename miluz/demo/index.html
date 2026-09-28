@@ -8,7 +8,7 @@
 <meta property="og:description" content="Demo de la app">
 <script>
 /* Link corto de MiLuz: lleva a la página de siempre con ?marca=miluz, conservando t=, ref= y lo que venga. */
-(function(){var q=new URLSearchParams(location.search);q.set("demo","1");q.set("marca","miluz");location.replace("https://cima-creators.github.io/cleargy.ugc/miluz-canje.html?"+q.toString()+location.hash);})();
+(function(){var q=new URLSearchParams(location.search);q.set("demo","1");q.set("marca","miluz");q.set("v",Date.now().toString(36));location.replace("https://cima-creators.github.io/cleargy.ugc/miluz-canje.html?"+q.toString()+location.hash);})();
 </script>
 <noscript><meta http-equiv="refresh" content="0;url=https://cima-creators.github.io/cleargy.ugc/miluz-canje.html?marca=miluz&demo=1"></noscript>
 </head><body style="font-family:system-ui,sans-serif;background:#fff;color:#222;padding:24px">Abriendo MiLuz · Demo de la app… <a href="https://cima-creators.github.io/cleargy.ugc/miluz-canje.html?marca=miluz&demo=1">Tocá acá si no abre</a>.</body></html>
