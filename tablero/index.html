@@ -1,0 +1,396 @@
+<!doctype html>
+<html lang="es"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#1F3A2E">
+<title>Hoy en CIMA</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>
+:root{
+  --bg:#F2F4F1; --surface:#FFFFFF; --surface-2:#E9EDE9; --line:#DDE3DE;
+  --ink:#1B2621; --ink-2:#55655D; --ink-3:#8A978F;
+  --acc:#2E6B4E; --acc-ink:#FFFFFF; --acc-soft:#DDEBE2;
+  --now-bg:#1F3A2E; --now-ink:#F1F6F2; --now-muted:#A9C3B4;
+  --wait:#9A6A1E; --wait-soft:#F6EBD3; --run:#2F5C8F; --run-soft:#DEE8F4;
+  --done:#8A978F; --danger:#A8433A;
+  --r:14px; --shadow:0 1px 2px rgba(20,35,28,.06),0 6px 20px rgba(20,35,28,.06);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#131917; --surface:#1B2320; --surface-2:#232D29; --line:#2C3833;
+    --ink:#E7ECE8; --ink-2:#A6B3AB; --ink-3:#6F7D75;
+    --acc:#7CC39C; --acc-ink:#0F1A14; --acc-soft:#22382D;
+    --now-bg:#245A42; --now-ink:#F1F6F2; --now-muted:#B7D3C3;
+    --wait:#E0B466; --wait-soft:#3A2F17; --run:#8DB6E6; --run-soft:#1D2E42;
+    --done:#6F7D75; --danger:#E08A80;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 20px rgba(0,0,0,.25);
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#131917; --surface:#1B2320; --surface-2:#232D29; --line:#2C3833;
+  --ink:#E7ECE8; --ink-2:#A6B3AB; --ink-3:#6F7D75;
+  --acc:#7CC39C; --acc-ink:#0F1A14; --acc-soft:#22382D;
+  --now-bg:#245A42; --now-ink:#F1F6F2; --now-muted:#B7D3C3;
+  --wait:#E0B466; --wait-soft:#3A2F17; --run:#8DB6E6; --run-soft:#1D2E42;
+  --done:#6F7D75; --danger:#E08A80;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 20px rgba(0,0,0,.25);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Instrument Sans",system-ui,-apple-system,sans-serif;font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased}
+.wrap{max-width:640px;margin:0 auto;padding-inline:16px;padding-block:18px 96px}
+h1,h2,.now-title{font-family:"Bricolage Grotesque","Instrument Sans",system-ui,sans-serif;text-wrap:balance;margin:0}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+button:focus-visible,input:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+
+/* header */
+.wrap{max-width:1240px}
+.top{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:14px}
+.top h1{font-size:28px;font-weight:700;letter-spacing:-.01em;line-height:1.1}
+.date{color:var(--ink-2);font-size:13px;margin-top:4px}
+.prog{text-align:right;font-variant-numeric:tabular-nums}
+.prog b{font-family:"Bricolage Grotesque",sans-serif;font-size:26px;font-weight:700;line-height:1}
+.prog span{display:block;color:var(--ink-2);font-size:12px}
+.bar{height:6px;border-radius:99px;background:var(--surface-2);overflow:hidden;margin-bottom:18px}
+.bar i{display:block;height:100%;width:0;background:var(--acc);border-radius:99px;transition:width .4s ease}
+
+/* people tabs (phone) + columns */
+.tabs{display:none;gap:6px;background:var(--surface-2);padding:4px;border-radius:12px;margin-bottom:16px}
+.tabs button{flex:1;padding:9px 6px;border-radius:9px;font-weight:600;font-size:14px;color:var(--ink-2);display:flex;align-items:center;justify-content:center;gap:6px}
+.tabs button[aria-selected="true"]{background:var(--surface);color:var(--ink);box-shadow:var(--shadow)}
+.tabs .cnt{font-weight:500;color:var(--ink-3);font-size:12px;font-variant-numeric:tabular-nums}
+.cols{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;align-items:start}
+.col{min-width:0}
+.ch{display:flex;align-items:center;gap:10px;margin-bottom:12px;padding-inline:2px}
+.av{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:700;font-size:13px;background:var(--pc);flex:none}
+.ch h2{font-size:19px;font-weight:700}
+.ch .sub{color:var(--ink-3);font-size:12px;font-variant-numeric:tabular-nums}
+.ch .mini{margin-left:auto;width:64px;height:5px;border-radius:99px;background:var(--surface-2);overflow:hidden}
+.ch .mini i{display:block;height:100%;background:var(--pc);border-radius:99px}
+@media (max-width:900px){
+  .tabs{display:flex}
+  .cols{grid-template-columns:1fr}
+  .col:not(.on){display:none}
+  .ch{display:none}
+}
+
+/* now card */
+.now{background:var(--now-bg);color:var(--now-ink);border-radius:16px;padding:16px;box-shadow:var(--shadow);margin-bottom:18px}
+.now .eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--now-muted);font-weight:600;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.now .eyebrow::before{content:"";width:8px;height:8px;border-radius:50%;background:#8BE0B0;box-shadow:0 0 0 4px rgba(139,224,176,.25)}
+.now-title{font-size:19px;font-weight:700;line-height:1.25}
+.now .nota{color:var(--now-muted);font-size:13.5px;margin-top:6px}
+.now .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;align-items:center}
+.now .chip{background:rgba(255,255,255,.12);color:var(--now-ink)}
+.now .listo{margin-left:auto;background:#FFFFFF;color:#1F3A2E;font-weight:600;padding:8px 13px;border-radius:10px;font-size:14px}
+.now.empty{background:var(--surface);color:var(--ink-2);border:1px dashed var(--line);box-shadow:none}
+.now.empty .eyebrow{color:var(--ink-3)}
+.now.empty .now-title{color:var(--ink-2);font-size:15px;font-weight:500;font-family:"Instrument Sans",sans-serif}
+
+/* sections */
+.sec{margin-bottom:18px}
+.sh{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:7px;padding-inline:2px}
+.sh h3{font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);margin:0;display:flex;gap:8px;align-items:baseline}
+.sh h3 .n{font-weight:500;color:var(--ink-3);font-variant-numeric:tabular-nums;letter-spacing:0}
+.sh .tog{font-size:12px;color:var(--ink-2);padding:3px 6px;border-radius:6px}
+.sh .tog:hover{background:var(--surface-2)}
+.list{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.list:empty{display:none}
+.vacio{color:var(--ink-3);font-size:13px;padding:10px 12px;border:1px dashed var(--line);border-radius:var(--r)}
+
+/* task row */
+.t{display:grid;grid-template-columns:24px 1fr auto;gap:10px;align-items:start;padding:11px 12px;border-top:1px solid var(--line)}
+.t:first-child{border-top:0}
+.chk{width:22px;height:22px;border-radius:7px;border:1.5px solid var(--ink-3);display:grid;place-items:center;margin-top:1px;transition:background .15s,border-color .15s}
+.chk svg{width:13px;height:13px;stroke:var(--acc-ink);stroke-width:3;fill:none;opacity:0}
+.t.done .chk{background:var(--acc);border-color:var(--acc)}
+.t.done .chk svg{opacity:1}
+.t.done .tit{color:var(--done);text-decoration:line-through}
+.tit{font-weight:600;font-size:14.5px;line-height:1.3;overflow-wrap:anywhere}
+.nota{color:var(--ink-2);font-size:13px;margin-top:2px;overflow-wrap:anywhere}
+.meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;align-items:center}
+.chip{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:600;letter-spacing:.02em;padding:3px 8px;border-radius:99px;background:var(--surface-2);color:var(--ink-2);white-space:nowrap}
+.chip.m::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--mc,var(--ink-3))}
+.chip.min{font-variant-numeric:tabular-nums;font-weight:500}
+.chip.run{background:var(--run-soft);color:var(--run)}
+.chip.wait{background:var(--wait-soft);color:var(--wait)}
+.more{color:var(--ink-3);padding:2px 4px;border-radius:6px;line-height:1;font-size:18px;letter-spacing:-1px;align-self:start;margin-top:-2px}
+.more:hover{background:var(--surface-2);color:var(--ink)}
+.t.open .more{color:var(--ink)}
+.acts{grid-column:2/4;display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.acts button{font-size:12.5px;font-weight:500;padding:7px 10px;border-radius:9px;background:var(--surface-2);color:var(--ink)}
+.acts button:hover{background:var(--acc-soft)}
+.acts button.now-b{background:var(--now-bg);color:var(--now-ink)}
+.acts button.del{color:var(--danger);margin-left:auto}
+.acts .lbl{flex:1 1 100%;font-size:11px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.08em;margin-top:4px}
+.acts input{flex:1 1 100%;font:inherit;font-size:13px;padding:8px 10px;border:1px solid var(--line);border-radius:9px;background:var(--bg);color:var(--ink)}
+
+/* add */
+.add{display:flex;gap:6px;margin-top:8px}
+.add input{flex:1;min-width:0;font:inherit;font-size:14px;padding:10px 11px;border:1px solid var(--line);border-radius:11px;background:var(--surface);color:var(--ink)}
+.add input::placeholder{color:var(--ink-3)}
+.add select{font:inherit;font-size:12.5px;padding:0 6px;border:1px solid var(--line);border-radius:11px;background:var(--surface);color:var(--ink-2);max-width:96px}
+.add button{background:var(--acc);color:var(--acc-ink);font-weight:600;padding:0 12px;border-radius:11px}
+
+/* footer */
+.foot{margin-top:24px;color:var(--ink-3);font-size:12px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.status{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);font-size:13px;padding:8px 14px;border-radius:99px;opacity:0;transition:opacity .2s;pointer-events:none;white-space:nowrap}
+.status.on{opacity:1}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* login */
+.login{max-width:360px;margin:12vh auto 0;padding-inline:16px;text-align:center}
+.login h1{font-size:30px;margin-bottom:6px}
+.login p{color:var(--ink-2);margin:0 0 20px}
+.login form{display:flex;flex-direction:column;gap:10px}
+.login input{font:inherit;font-size:16px;padding:13px 14px;border:1px solid var(--line);border-radius:12px;background:var(--surface);color:var(--ink);text-align:center}
+.login button{background:var(--acc);color:var(--acc-ink);font-weight:600;font-size:15px;padding:13px;border-radius:12px}
+.login .err{color:var(--danger);font-size:13px;min-height:18px}
+.salir{font-size:12px;color:var(--ink-3);text-decoration:underline;padding:0}
+</style>
+</head><body>
+<div class="login" id="login" hidden>
+  <h1>Hoy en CIMA</h1><p>Entrá con tu clave de siempre.</p>
+  <form id="login-f" autocomplete="off"><input id="login-p" type="password" placeholder="Clave" aria-label="Clave"><button type="submit">Entrar</button><div class="err" id="login-e"></div></form>
+</div>
+<div class="wrap" id="app" hidden>
+  <div class="top">
+    <div><h1>Hoy en CIMA</h1><div class="date" id="fecha"></div></div>
+    <div class="prog"><b id="pn">0/0</b><span>hechas hoy · equipo</span></div>
+  </div>
+  <div class="bar"><i id="pb"></i></div>
+  <div class="tabs" role="tablist" id="tabs"></div>
+  <div class="cols" id="cols"></div>
+  <div class="foot"><span>Entraste como <b id="yo"></b> · <button class="salir" id="salir">salir</button></span><span id="sync"></span></div>
+</div>
+<div class="status" id="status"></div>
+
+<script type="module">
+const PERSONAS = [
+  {id:"nacho", nombre:"Nacho", color:"#2E6B4E"},
+  {id:"jhose", nombre:"Jhose", color:"#3E6FB0"},
+  {id:"abril", nombre:"Abril", color:"#C2588C"}
+];
+const MARCAS = {
+  "Mi Luz":"#B8604F","MenLab":"#2B2B2B","Paperblanks":"#7A5AA6","Lagos":"#2F7FA6","Valca":"#C77E2A",
+  "Uniderma":"#4D8F7A","Cleanpack":"#0F9AA8","BabyMoon":"#D68FA8","Venta":"#B58A1E","CIMA":"#2E6B4E"
+};
+const BLOQUES = ["hoy","corriendo","esperando","semana"];
+const NOMBRE = {hoy:"Hoy",corriendo:"Corriendo solo",esperando:"Esperando",semana:"Esta semana"};
+const $ = s => document.querySelector(s);
+const esc = s => String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const hoyISO = () => { const d=new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); };
+const quien = t => PERSONAS.some(p=>p.id===t.quien) ? t.quien : "nacho";
+
+$("#fecha").textContent = new Date().toLocaleDateString("es-AR",{weekday:"long",day:"numeric",month:"long"});
+
+let db=null, docs=[], abierto=null;
+let tab="nacho";
+const CLAVES={"cima-2026":"nacho","jhose-2026":"jhose","abril-2026":"abril"};
+const colapsado = {};
+try{ const c=JSON.parse(localStorage.getItem("hoy-colapsado2")||"null"); if(c) Object.assign(colapsado,c);}catch(e){}
+try{ const t=localStorage.getItem("hoy-tab"); if(t && PERSONAS.some(p=>p.id===t)) tab=t; }catch(e){}
+const isCol = (p,k) => colapsado[p+"-"+k] ?? true;
+
+function toast(t){ const s=$("#status"); s.textContent=t; s.classList.add("on"); clearTimeout(toast.h); toast.h=setTimeout(()=>s.classList.remove("on"),1600); }
+
+// build static skeleton: tabs + 3 columns
+const tabsEl=$("#tabs"), colsEl=$("#cols");
+PERSONAS.forEach(p=>{
+  const b=document.createElement("button"); b.setAttribute("role","tab"); b.dataset.tab=p.id; b.id="tab-"+p.id;
+  b.innerHTML=`${esc(p.nombre)} <span class="cnt" id="tc-${p.id}"></span>`; tabsEl.appendChild(b);
+  const c=document.createElement("div"); c.className="col"; c.id="col-"+p.id; c.style.setProperty("--pc",p.color);
+  const opts=Object.keys(MARCAS).map(m=>`<option value="${esc(m)}">${esc(m)}</option>`).join("");
+  c.innerHTML=`
+    <div class="ch"><span class="av">${esc(p.nombre[0])}</span><div><h2>${esc(p.nombre)}</h2><div class="sub" id="sub-${p.id}"></div></div><span class="mini"><i id="mini-${p.id}"></i></span></div>
+    <div class="now empty" id="now-${p.id}"><div class="eyebrow">Ahora</div><div class="now-title">Cargando…</div></div>
+    <div class="sec"><div class="sh"><h3>Hoy <span class="n" id="n-${p.id}-hoy"></span></h3></div>
+      <div class="list" id="l-${p.id}-hoy"></div><div class="vacio" id="v-${p.id}-hoy" hidden>Nada más para hoy.</div>
+      <form class="add" data-p="${p.id}" autocomplete="off">
+        <input id="add-t-${p.id}" placeholder="Sumar para ${esc(p.nombre)}…" maxlength="140">
+        <select id="add-m-${p.id}" aria-label="Marca">${opts}</select>
+        <button type="submit">Sumar</button>
+      </form></div>
+    <div class="sec" id="s-${p.id}-corriendo"><div class="sh"><h3>Corriendo solo <span class="n" id="n-${p.id}-corriendo"></span></h3></div><div class="list" id="l-${p.id}-corriendo"></div></div>
+    <div class="sec" id="s-${p.id}-esperando"><div class="sh"><h3>Esperando <span class="n" id="n-${p.id}-esperando"></span></h3></div><div class="list" id="l-${p.id}-esperando"></div></div>
+    <div class="sec" id="s-${p.id}-semana"><div class="sh"><h3>Esta semana <span class="n" id="n-${p.id}-semana"></span></h3><button class="tog" data-tog="${p.id}-semana">mostrar</button></div><div class="list" id="l-${p.id}-semana"></div></div>
+    <div class="sec" id="s-${p.id}-done"><div class="sh"><h3>Hecho <span class="n" id="n-${p.id}-done"></span></h3><button class="tog" data-tog="${p.id}-done">mostrar</button></div><div class="list" id="l-${p.id}-done"></div></div>`;
+  colsEl.appendChild(c);
+});
+function pintarTabs(){
+  PERSONAS.forEach(p=>{ $("#tab-"+p.id).setAttribute("aria-selected", String(p.id===tab)); $("#col-"+p.id).classList.toggle("on", p.id===tab); });
+}
+pintarTabs();
+
+function chips(t){
+  let h="";
+  if(t.marca) h+=`<span class="chip m" style="--mc:${esc(MARCAS[t.marca]||"#888")}">${esc(t.marca)}</span>`;
+  if(t.min) h+=`<span class="chip min">${esc(t.min)} min</span>`;
+  if(t.bloque==="corriendo") h+=`<span class="chip run">${esc(t.chat||"otro chat")}</span>`;
+  if(t.bloque==="esperando"&&t.de) h+=`<span class="chip wait">de ${esc(t.de)}</span>`;
+  return h;
+}
+
+function fila(t){
+  const open = abierto===t.id, q=quien(t);
+  const d=document.createElement("div");
+  d.className="t"+(t.hecho?" done":"")+(open?" open":"");
+  d.dataset.id=t.id;
+  d.innerHTML=`
+    <button class="chk" aria-label="${t.hecho?"Desmarcar":"Marcar hecha"}"><svg viewBox="0 0 16 16"><path d="M3 8.5l3.2 3L13 4.5"/></svg></button>
+    <div><div class="tit">${esc(t.titulo)}</div>${t.nota?`<div class="nota">${esc(t.nota)}</div>`:""}<div class="meta">${chips(t)}</div></div>
+    <button class="more" aria-label="Opciones">⋯</button>
+    ${open?`<div class="acts">
+      ${!t.hecho&&!t.ahora?`<button class="now-b" data-a="ahora">Hacer ahora</button>`:""}
+      ${!t.hecho?`<button data-a="up">↑</button><button data-a="down">↓</button>`:""}
+      ${BLOQUES.filter(b=>b!==t.bloque).map(b=>`<button data-a="mover" data-b="${b}">→ ${NOMBRE[b]}</button>`).join("")}
+      <span class="lbl">Pasársela a</span>
+      ${PERSONAS.filter(p=>p.id!==q).map(p=>`<button data-a="pasar" data-q="${p.id}">${esc(p.nombre)}</button>`).join("")}
+      <button class="del" data-a="borrar">Borrar</button>
+      <input data-a="nota" placeholder="Nota corta…" value="${esc(t.nota||"")}" maxlength="200">
+    </div>`:""}`;
+  return d;
+}
+
+function render(){
+  const hoy=hoyISO();
+  let totH=0, totD=0;
+  PERSONAS.forEach(p=>{
+    const mias=docs.filter(t=>quien(t)===p.id);
+    const vivas=mias.filter(t=>!t.hecho).sort((a,b)=>(a.orden??999)-(b.orden??999));
+    const hechas=mias.filter(t=>t.hecho&&(t.hechoEn||"").slice(0,10)===hoy).sort((a,b)=>(b.hechoEn||"").localeCompare(a.hechoEn||""));
+    const ahora=vivas.find(t=>t.ahora)||null;
+
+    const nowEl=$("#now-"+p.id);
+    if(ahora){
+      nowEl.className="now";
+      nowEl.innerHTML=`<div class="eyebrow">Ahora</div><div class="now-title">${esc(ahora.titulo)}</div>${ahora.nota?`<div class="nota">${esc(ahora.nota)}</div>`:""}
+        <div class="row">${chips(ahora)}<button class="listo" data-id="${ahora.id}">Listo ✓</button></div>`;
+    } else {
+      nowEl.className="now empty";
+      nowEl.innerHTML=`<div class="eyebrow">Ahora</div><div class="now-title">${vivas.length?"Elegí una con ⋯ → Hacer ahora":"Nada pendiente."}</div>`;
+    }
+
+    const g={hoy:[],corriendo:[],esperando:[],semana:[]};
+    vivas.forEach(t=>{ if(t===ahora) return; (g[t.bloque]||g.hoy).push(t); });
+    const pinta=(k,arr)=>{ const l=$(`#l-${p.id}-${k}`); l.innerHTML=""; arr.forEach(t=>l.appendChild(fila(t))); $(`#n-${p.id}-${k}`).textContent=arr.length||""; };
+    pinta("hoy",g.hoy); pinta("corriendo",g.corriendo); pinta("esperando",g.esperando); pinta("semana",g.semana); pinta("done",hechas);
+    $(`#v-${p.id}-hoy`).hidden = g.hoy.length>0;
+    $(`#s-${p.id}-corriendo`).hidden = !g.corriendo.length;
+    $(`#s-${p.id}-esperando`).hidden = !g.esperando.length;
+    $(`#s-${p.id}-semana`).hidden = !g.semana.length;
+    $(`#s-${p.id}-done`).hidden = !hechas.length;
+    ["semana","done"].forEach(k=>{ const col=isCol(p.id,k); $(`#l-${p.id}-${k}`).hidden=col; $(`[data-tog="${p.id}-${k}"]`).textContent=col?"mostrar":"ocultar"; });
+
+    const tot=g.hoy.length+(ahora?1:0)+hechas.length;
+    totH+=tot; totD+=hechas.length;
+    $("#sub-"+p.id).textContent = hechas.length+"/"+tot+" hoy";
+    $("#mini-"+p.id).style.width=(tot?Math.round(hechas.length/tot*100):0)+"%";
+    const pend=g.hoy.length+(ahora?1:0);
+    $("#tc-"+p.id).textContent = pend?pend:"";
+  });
+  $("#pn").textContent=totD+"/"+totH;
+  $("#pb").style.width=(totH?Math.round(totD/totH*100):0)+"%";
+}
+
+async function escribir(id,data){
+  if(!db){ toast("Sin conexión con la base"); return; }
+  try{ await db.doc("tareas/"+id).update(data); }catch(e){ toast("No se pudo guardar"); }
+}
+function idNuevo(){ return "t"+Date.now().toString(36)+Math.random().toString(36).slice(2,5); }
+
+async function marcar(t){
+  const hecho=!t.hecho;
+  await escribir(t.id,{hecho,hechoEn:hecho?new Date().toISOString():null,ahora:false});
+  toast(hecho?"Hecha ✓":"Vuelve a pendientes");
+}
+async function hacerAhora(t){
+  const prev=docs.find(x=>x.ahora&&!x.hecho&&x.id!==t.id&&quien(x)===quien(t));
+  if(prev) await escribir(prev.id,{ahora:false});
+  await escribir(t.id,{ahora:true,bloque:"hoy"});
+  abierto=null;
+}
+async function mover(t,dir){
+  const lista=docs.filter(x=>!x.hecho&&quien(x)===quien(t)&&x.bloque===t.bloque&&!x.ahora).sort((a,b)=>(a.orden??999)-(b.orden??999));
+  const i=lista.findIndex(x=>x.id===t.id), j=i+dir;
+  if(i<0||j<0||j>=lista.length) return;
+  const a=lista[i], b=lista[j];
+  const oa=a.orden??i, ob=b.orden??j;
+  await escribir(a.id,{orden:ob===oa?oa+dir:ob}); await escribir(b.id,{orden:oa});
+}
+
+document.addEventListener("click",async e=>{
+  const tb=e.target.closest("[data-tab]"); if(tb){ tab=tb.dataset.tab; try{localStorage.setItem("hoy-tab",tab);}catch(x){} pintarTabs(); return; }
+  const listo=e.target.closest(".listo"); if(listo){ const t=docs.find(x=>x.id===listo.dataset.id); if(t) marcar(t); return; }
+  const tog=e.target.closest("[data-tog]"); if(tog){ const k=tog.dataset.tog; colapsado[k]=!(colapsado[k]??true); try{localStorage.setItem("hoy-colapsado2",JSON.stringify(colapsado));}catch(x){} render(); return; }
+  const row=e.target.closest(".t"); if(!row) return;
+  const t=docs.find(x=>x.id===row.dataset.id); if(!t) return;
+  if(e.target.closest(".chk")){ marcar(t); return; }
+  if(e.target.closest(".more")){ abierto=abierto===t.id?null:t.id; render(); return; }
+  const b=e.target.closest("[data-a]"); if(!b||b.tagName==="INPUT") return;
+  const a=b.dataset.a;
+  if(a==="ahora") hacerAhora(t);
+  else if(a==="up") mover(t,-1);
+  else if(a==="down") mover(t,1);
+  else if(a==="mover"){ const maxO=Math.max(0,...docs.filter(x=>quien(x)===quien(t)&&x.bloque===b.dataset.b).map(x=>x.orden??0)); await escribir(t.id,{bloque:b.dataset.b,ahora:false,orden:maxO+1}); abierto=null; toast("Movida a "+NOMBRE[b.dataset.b]); }
+  else if(a==="pasar"){ const q=b.dataset.q; const maxO=Math.max(0,...docs.filter(x=>quien(x)===q&&x.bloque===t.bloque).map(x=>x.orden??0)); await escribir(t.id,{quien:q,ahora:false,orden:maxO+1}); abierto=null; toast("Se la pasaste a "+PERSONAS.find(p=>p.id===q).nombre); }
+  else if(a==="borrar"){ if(!db) return; if(b.dataset.ok!=="1"){ b.dataset.ok="1"; b.textContent="¿Seguro? Borrar"; return; } try{ await db.doc("tareas/"+t.id).delete(); abierto=null; toast("Borrada"); }catch(x){ toast("No se pudo borrar"); } }
+});
+document.addEventListener("change",e=>{
+  const inp=e.target.closest('input[data-a="nota"]'); if(!inp) return;
+  const row=inp.closest(".t"); const t=docs.find(x=>x.id===row.dataset.id); if(!t) return;
+  const v=inp.value.trim(); if(v!==(t.nota||"")) escribir(t.id,{nota:v});
+});
+document.addEventListener("submit",async e=>{
+  const f=e.target.closest("form.add"); if(!f) return;
+  e.preventDefault();
+  const p=f.dataset.p, inp=$("#add-t-"+p);
+  const titulo=inp.value.trim(); if(!titulo||!db) return;
+  const maxO=Math.max(0,...docs.filter(x=>quien(x)===p&&x.bloque==="hoy").map(x=>x.orden??0));
+  try{ await db.doc("tareas/"+idNuevo()).set({titulo,quien:p,marca:$("#add-m-"+p).value,bloque:"hoy",orden:maxO+1,hecho:false,ahora:false,creado:new Date().toISOString()}); inp.value=""; toast("Sumada"); }
+  catch(x){ toast("No se pudo guardar"); }
+});
+
+
+render();
+
+// ── login ──
+function entrar(q){
+  $("#login").hidden=true; $("#app").hidden=false;
+  $("#yo").textContent=PERSONAS.find(p=>p.id===q).nombre;
+  let t=null; try{ t=localStorage.getItem("hoy-tab"); }catch(e){}
+  tab = t && PERSONAS.some(p=>p.id===t) ? t : q; pintarTabs();
+  conectar();
+}
+let yo=null; try{ yo=localStorage.getItem("tablero_quien"); }catch(e){}
+if(yo && PERSONAS.some(p=>p.id===yo)) entrar(yo); else $("#login").hidden=false;
+$("#login-f").addEventListener("submit",e=>{
+  e.preventDefault();
+  const q=CLAVES[$("#login-p").value.trim().toLowerCase()];
+  if(!q){ $("#login-e").textContent="Esa clave no es. Probá de nuevo."; return; }
+  try{ localStorage.setItem("tablero_quien",q); localStorage.removeItem("hoy-tab"); }catch(x){}
+  entrar(q);
+});
+$("#salir").addEventListener("click",()=>{ try{ localStorage.removeItem("tablero_quien"); localStorage.removeItem("hoy-tab"); }catch(x){} location.reload(); });
+
+// ── Firestore (mismo proyecto que las apps) ──
+async function conectar(){
+  const [{initializeApp},{getFirestore,collection,doc,onSnapshot,updateDoc,setDoc,deleteDoc},{getAuth,signInAnonymously}] = await Promise.all([
+    import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js"),
+    import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js"),
+    import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js")]);
+  const app=initializeApp({apiKey:"AIzaSyCTv4DiRCpbCpGYP6E86TPHlkPvaAZTN3g",authDomain:"cleargy-creators.firebaseapp.com",projectId:"cleargy-creators",storageBucket:"cleargy-creators.firebasestorage.app",messagingSenderId:"313543582398",appId:"1:313543582398:web:99fe78991adeea2e7cb4ef"});
+  await signInAnonymously(getAuth(app));
+  const fs=getFirestore(app), COL="tablero_tareas";
+  const ref=p=>doc(fs,COL,p.replace(/^tareas\//,""));
+  db={ doc:p=>({ update:d=>updateDoc(ref(p),d), set:d=>setDoc(ref(p),d), delete:()=>deleteDoc(ref(p)) }) };
+  onSnapshot(collection(fs,COL),snap=>{
+    docs=snap.docs.map(d=>({id:d.id,...d.data()}));
+    render();
+    $("#sync").textContent=snap.metadata.fromCache?"sincronizando…":"al día · "+new Date().toLocaleTimeString("es-AR",{hour:"2-digit",minute:"2-digit"});
+  },()=>{ $("#sync").textContent="se cortó la conexión, recargá"; });
+}
+</script>
+</body></html>
