@@ -163,7 +163,17 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--acc);outline-of
 .semaforo{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:24px}
 .semaforo button{display:inline-flex;align-items:center;gap:6px;padding:6px 11px 6px 9px;border-radius:99px;font-size:13px;font-weight:600;background:var(--sc-soft);color:var(--ink)}
 .semaforo button::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--sc)}
-.mg{margin-bottom:26px}
+.mcols{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;align-items:start}
+.mg{min-width:0;background:var(--surface-2);border-radius:16px;padding:12px 10px 10px}
+.mg .mgrid{grid-template-columns:1fr;gap:10px}
+.mg-h{flex-wrap:wrap;row-gap:2px}
+.mg-h b{font-family:"Bricolage Grotesque",sans-serif;font-size:15px;color:var(--ink-3);margin-left:auto}
+.mg-d{font-size:12.5px;color:var(--ink-3);margin:-4px 2px 10px}
+.mg-vacio{font-size:13px;color:var(--ink-3);padding:14px 10px;border:1px dashed var(--line);border-radius:12px;text-align:center}
+@media (max-width:900px){
+  .mcols{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:10px;margin-inline:-16px;padding-inline:16px;padding-bottom:6px}
+  .mg{flex:0 0 84%;scroll-snap-align:start}
+}
 .mg-h{display:flex;align-items:baseline;gap:10px;margin-bottom:10px;padding-inline:2px}
 .mg-h h3{font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);margin:0}
 .mg-h span{font-size:13px;color:var(--ink-3)}
@@ -451,11 +461,11 @@ function renderMarcas(){
         <button class="save" type="submit">Guardar</button></form>`:""}
     </article>`;
   };
-  const grupos=PELOTA.map(p=>{
-    const g=ms.filter(m=>(m.pelota||"nadie")===p.id); if(!g.length) return "";
-    const paz=p.id==="nadie"?`<div class="paz">Estas no te necesitan hoy. Están andando.</div>`:"";
-    return `<section class="mg"><div class="mg-h"><h3>${p.t}</h3><span>${g.length} · ${p.d}</span></div>${paz}<div class="mgrid">${g.map(card).join("")}</div></section>`;
-  }).join("");
+  const grupos='<div class="mcols">'+PELOTA.map(p=>{
+    const g=ms.filter(m=>(m.pelota||"nadie")===p.id);
+    const paz=p.id==="nadie"&&g.length?`<div class="paz">Estas no te necesitan hoy. Están andando.</div>`:"";
+    return `<section class="mg"><div class="mg-h"><h3>${p.t}</h3><b>${g.length}</b></div><p class="mg-d">${p.d}</p>${paz}${g.length?`<div class="mgrid">${g.map(card).join("")}</div>`:`<div class="mg-vacio">Nada acá.</div>`}</section>`;
+  }).join("")+'</div>';
   vm.innerHTML=hero+semaforo+grupos;
 }
 function setVista(v){
