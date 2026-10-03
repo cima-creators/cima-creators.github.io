@@ -154,8 +154,11 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--acc);outline-of
 :root{--ok:#3F8F6B;--ok-soft:#E1F0E7;--warn:#B07B2E;--warn-soft:#F6ECD6;--bad:#B5483A;--bad-soft:#F6E0DC;--nod:#8C978F;--nod-soft:#E9ECEA}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--ok:#7CC39C;--ok-soft:#1F3328;--warn:#E0B466;--warn-soft:#3A2F17;--bad:#E58A7C;--bad-soft:#3D221D;--nod:#8C978F;--nod-soft:#262E2A}}
 :root[data-theme="dark"]{--ok:#7CC39C;--ok-soft:#1F3328;--warn:#E0B466;--warn-soft:#3A2F17;--bad:#E58A7C;--bad-soft:#3D221D;--nod:#8C978F;--nod-soft:#262E2A}
-.vista{display:flex;gap:4px;background:var(--surface-2);padding:4px;border-radius:12px;margin-bottom:18px;max-width:320px}
-.vista button{flex:1;padding:8px 10px;border-radius:9px;font-weight:600;font-size:14px;color:var(--ink-2)}
+.vista{display:flex;gap:4px;background:var(--surface-2);padding:4px;border-radius:12px;margin-bottom:18px;width:max-content;max-width:100%;overflow-x:auto}
+.vista a.ext{padding:8px 12px;border-radius:9px;font-weight:600;font-size:14px;color:var(--ink-2);text-decoration:none;white-space:nowrap}
+.vista a.ext:hover{background:var(--surface)}
+.vista:not(.n) .solo-n{display:none}
+.vista button{flex:none;white-space:nowrap;padding:8px 12px;border-radius:9px;font-weight:600;font-size:14px;color:var(--ink-2)}
 .vista button[aria-selected="true"]{background:var(--surface);color:var(--ink);box-shadow:var(--shadow)}
 .m-hero{margin:4px 0 18px}
 .m-hero h2{font-size:26px;font-weight:700;line-height:1.15;letter-spacing:-.01em}
@@ -215,7 +218,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--acc);outline-of
     <div class="prog"><b id="pn">0/0</b><span>hechas hoy · equipo</span></div>
   </div>
   <div class="bar"><i id="pb"></i></div>
-  <div class="vista" role="tablist" id="vista" hidden><button data-v="tareas" aria-selected="true">Tareas</button><button data-v="marcas" aria-selected="false">Marcas</button></div>
+  <nav class="vista" id="vista" hidden><a class="ext ugc" href="/vista/#ugc">Campañas UGC</a><a class="ext solo-n" href="/vista/#collabs">Collabs</a><button data-v="tareas" aria-selected="true">Tareas</button><button class="solo-n" data-v="marcas" aria-selected="false">Marcas</button></nav>
   <div id="vt">
   <div class="tabs" role="tablist" id="tabs"></div>
   <div class="cols" id="cols"></div>
@@ -497,21 +500,34 @@ document.addEventListener("submit",async e=>{
 function entrar(q){
   $("#login").hidden=true; $("#app").hidden=false;
   $("#yo").textContent=PERSONAS.find(p=>p.id===q).nombre;
-  if(q==="nacho"){ $("#vista").hidden=false; let v="tareas"; try{ v=localStorage.getItem("tablero_vista")||"tareas"; }catch(e){} setVista(v==="marcas"?"marcas":"tareas"); }
+  if(q==="nacho"||q==="abril"){
+    $("#vista").hidden=false; $("#vista").classList.toggle("n", q==="nacho");
+    let v="tareas"; try{ v=localStorage.getItem("tablero_vista")||"tareas"; }catch(e){}
+    if(location.hash==="#marcas"||location.hash==="#tareas") v=location.hash.slice(1);
+    setVista(v==="marcas"&&q==="nacho"?"marcas":"tareas");
+  }
   let t=null; try{ t=localStorage.getItem("hoy-tab"); }catch(e){}
   tab = t && PERSONAS.some(p=>p.id===t) ? t : q; pintarTabs();
   conectar();
 }
-let yo=null; try{ yo=localStorage.getItem("tablero_quien"); }catch(e){}
+let yo=null; try{ yo=localStorage.getItem("tablero_quien");
+  if(!yo && localStorage.getItem("cima_gen")==="1"){ const g=localStorage.getItem("cima_gen_quien"); yo=g==="Nacho"?"nacho":g==="Abril"?"abril":null; if(yo) localStorage.setItem("tablero_quien",yo); }
+}catch(e){}
+function loginGeneral(q){   // mismo login que la Vista General (/vista): entra a las dos
+  if(q!=="nacho"&&q!=="abril") return;
+  localStorage.setItem("cima_gen","1"); localStorage.setItem("cima_gen_rol",q==="nacho"?"owner":"team");
+  localStorage.setItem("cima_gen_quien",q==="nacho"?"Nacho":"Abril");
+  if(q==="nacho") localStorage.setItem("cima_gen_clave","cima-2026");
+}
 if(yo && PERSONAS.some(p=>p.id===yo)) entrar(yo); else $("#login").hidden=false;
 $("#login-f").addEventListener("submit",e=>{
   e.preventDefault();
   const q=CLAVES[$("#login-p").value.trim().toLowerCase()];
   if(!q){ $("#login-e").textContent="Esa clave no es. Probá de nuevo."; return; }
-  try{ localStorage.setItem("tablero_quien",q); localStorage.removeItem("hoy-tab"); }catch(x){}
+  try{ localStorage.setItem("tablero_quien",q); localStorage.removeItem("hoy-tab"); loginGeneral(q); }catch(x){}
   entrar(q);
 });
-$("#salir").addEventListener("click",()=>{ try{ localStorage.removeItem("tablero_quien"); localStorage.removeItem("hoy-tab"); }catch(x){} location.reload(); });
+$("#salir").addEventListener("click",()=>{ try{ ["tablero_quien","hoy-tab","tablero_vista","cima_gen","cima_gen_rol","cima_gen_quien","cima_gen_clave"].forEach(k=>localStorage.removeItem(k)); }catch(x){} location.reload(); });
 
 // ── Firestore (mismo proyecto que las apps) ──
 async function conectar(){
