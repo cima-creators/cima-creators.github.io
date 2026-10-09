@@ -119,7 +119,7 @@ summary{cursor:pointer;font-weight:600;font-size:13px}
   <header>
     <div>
       <h1>Animados que escalan</h1>
-      <p class="sub">Anuncios 100% animados de cualquier nicho que siguen prendidos; todos los días se suman 20 nuevos. Tocá <b>La quiero</b> en los que te sirvan (quedan desarmados escena por escena, listos para producir) y <b>No</b> en los que no; los que no toques quedan para otro día.</p>
+      <p class="sub">Anuncios 100% animados de cualquier nicho que siguen prendidos; todos los días se suman 20 nuevos. Tocá <b>La quiero</b> en los que te sirvan: el video de Mi Luz se produce solo (hasta 15 por día) y aparece en <b>Producidos</b>. Tocá <b>No</b> en los que no; los que no toques quedan para otro día.</p>
     </div>
   </header>
 
@@ -138,7 +138,7 @@ summary{cursor:pointer;font-weight:600;font-size:13px}
     </div>
     <div class="kpis">
       <button class="kpi on" data-v="hoy"><span class="l">Para elegir</span><span class="v" id="kHoy">–</span><span class="h" id="kHoyH"></span></button>
-      <button class="kpi alerta" data-v="elegidas"><span class="l">Elegidas</span><span class="v" id="kEleg">–</span><span class="h">desarmadas para producir</span></button>
+      <button class="kpi alerta" data-v="elegidas"><span class="l">En producción</span><span class="v" id="kEleg">–</span><span class="h">hasta 15 videos por día</span></button>
       <button class="kpi ok" data-v="hechos"><span class="l">Producidos</span><span class="v" id="kHechos">–</span><span class="h">listos para subir a Meta</span></button>
       <button class="kpi mal" data-v="todas"><span class="l">Descartadas</span><span class="v" id="kDesc">–</span><span class="h">se pueden recuperar</span></button>
     </div>
@@ -231,7 +231,7 @@ function pintar(){
   if (hoy) {
     $("#ey").textContent = new Date(hoy + "T12:00").toLocaleDateString("es-AR", {weekday:"long", day:"numeric", month:"long"});
     $("#heroT").textContent = nuevas.length ? `${nuevas.length} animados para elegir` : "Todo revisado";
-    $("#heroP").textContent = curso.length ? `${curso.length} elegidas y ${hechos.length} videos producidos.`
+    $("#heroP").textContent = curso.length ? `${curso.length} en producción y ${hechos.length} listos. Cada video tarda alrededor de una hora.`
       : elegidasTot >= META ? "Ya elegiste 10. Podés seguir eligiendo o descartar lo que no sirve."
       : `Elegí ${META - elegidasTot} más. Cada uno trae cuántos días lleva prendido, cuántas veces lo duplicó la marca y cómo se haría para uñas.`;
   } else { $("#heroT").textContent = "Todavía no hay propuestas"; $("#heroP").textContent = "La primera tanda se está armando."; }
@@ -240,7 +240,7 @@ function pintar(){
   const k = {senal: d => (d.senal||0)*10 + (d.calidad||0), dias: d => d.dias||0, dup: d => d.dup||0, marca: d => d.marcaAds||0}[orden];
   lista.sort((a, b) => vista === "hechos" ? (b.producidoEn||"").localeCompare(a.producidoEn||"") : ((b.fecha||"").localeCompare(a.fecha||"") || k(b) - k(a)));
   if (!lista.length) {
-    $("#grid").innerHTML = `<div class="vacio">${{elegidas:"Todavía no elegiste ninguna. Tocá <b>La quiero</b> en Para elegir.", hechos:"Todavía no hay videos producidos.", todas:"No descartaste ninguno.", hoy:"No hay anuncios con este filtro."}[vista]}</div>`;
+    $("#grid").innerHTML = `<div class="vacio">${{elegidas:"No hay nada en producción. Tocá <b>La quiero</b> en Para elegir.", hechos:"Todavía no hay videos producidos.", todas:"No descartaste ninguno.", hoy:"No hay anuncios con este filtro."}[vista]}</div>`;
     return;
   }
   $("#grid").innerHTML = lista.map(tarjeta).join("");
@@ -262,7 +262,7 @@ function desarmado(d){
 
 function estadoProd(d){
   if (d.estado === "elegida") return `<div class="aviso w">Desarmando la referencia…</div>`;
-  if (d.estado === "lista") return `<div class="aviso ok">Desarmada, lista para producir</div>`;
+  if (d.estado === "lista") return `<div class="aviso w">${d.turno === "mañana" ? "En fila: se produce mañana (tope de 15 por día)" : "En fila para producir"}</div>`;
   if (d.estado === "produciendo") return `<div class="aviso w">Produciendo el video de Mi Luz… (alrededor de una hora)</div>`;
   if (d.estado === "fallo") return `<div class="aviso mal">No salió: ${esc(d.falloMotivo || "se reintenta")}</div>`;
   return "";
@@ -305,7 +305,7 @@ function tarjeta(d){
 async function accion(id, acc){
   const estado = {elegir:"elegida", soltar:"nueva", descartar:"descartada", volver:"nueva"}[acc];
   const extra = acc === "elegir" ? {eligio: quien, eligioEn: new Date().toISOString()} : {};
-  try { await fs.updateDoc(fs.doc(fs.db, "animados_luz", id), {estado, ...extra}); toast({elegir:"Elegida ✓", descartar:"Descartada", volver:"Recuperada", soltar:"Cancelada"}[acc]); }
+  try { await fs.updateDoc(fs.doc(fs.db, "animados_luz", id), {estado, ...extra}); toast({elegir:"Elegida: se produce sola ✓", descartar:"Descartada", volver:"Recuperada", soltar:"Cancelada"}[acc]); }
   catch (e) { toast("No se pudo guardar: " + e.code); }
 }
 </script>
