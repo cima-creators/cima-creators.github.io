@@ -123,6 +123,11 @@ a{color:var(--acc)}
 #ficha .fx>img{width:100%;border-radius:14px;background:var(--soft);align-self:start}
 @media (max-width:700px){#ficha .fx{grid-template-columns:minmax(0,1fr)}}
 #ficha .cerrar{position:absolute;right:10px;top:10px}
+.origen{display:flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--soft);border-radius:12px;padding:4px 10px 4px 4px;cursor:pointer;font-size:12px;color:var(--mut);width:max-content;max-width:100%;text-align:left}
+.origen:hover{border-color:var(--line2)}
+.origen img{width:28px;height:35px;object-fit:cover;border-radius:6px;flex-shrink:0;background:var(--card)}
+.origen span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.origen b{color:var(--txt);font-weight:600}
 </style>
 </head>
 <body>
@@ -161,6 +166,7 @@ try { quien = CLAVES[localStorage.getItem("estaticos_clave")] || null; tab = loc
 function toast(t){ const el=$("#toast"); el.textContent=t; el.classList.add("on"); clearTimeout(toast.t); toast.t=setTimeout(()=>el.classList.remove("on"),2400); }
 function zoom(src){ $("#lb img").src = src; $("#lb").classList.add("on"); }
 $("#lb").onclick = () => $("#lb").classList.remove("on");
+$("#vista").addEventListener("click", e => { const o = e.target.closest(".origen"); if (o) { e.stopPropagation(); ficha(o.dataset.ref); } });
 $("#ficha").onclick = e => { if (e.target.id === "ficha") $("#ficha").classList.remove("on"); };
 document.addEventListener("keydown", e => { if (e.key === "Escape") { $("#ficha").classList.remove("on"); $("#lb").classList.remove("on"); } });
 
@@ -284,6 +290,7 @@ function ficha(id){
   if (no) no.onclick = () => { marcar(id, {estado:"descartada", descartadaEn:"elegir"}, "Descartada"); f.classList.remove("on"); };
 }
 
+const origen = d => d.ref?.img ? `<button class="origen" data-ref="${esc(d.id)}" title="Ver la referencia original"><img src="${esc(d.ref.img)}" alt=""><span>Basado en <b>${esc(String(d.ref.m || "").replace(/\s*\(.*\)\s*$/, ""))}</b></span></button>` : "";
 function vProceso(lista, hechasHoy){
   const orden = {generando:0, modificar:1, elegida:2, error:3};
   lista.sort((a,b) => orden[a.estado]-orden[b.estado] || String(a.elegidaEn).localeCompare(String(b.elegidaEn)));
@@ -296,7 +303,7 @@ function vProceso(lista, hechasHoy){
     else est = cupo-- > 0 ? `<span class="pill">En cola · sale hoy</span>` : `<span class="pill">En cola · sale mañana</span>`;
     const img = d.variantes?.[0]?.url || d.ref?.img;
     return `<div class="card"><div class="img" onclick="void 0"><img loading="lazy" src="${esc(img)}" alt=""><span class="tag">${esc(d.codigo || d.ref?.m)}</span></div>
-      <div class="body"><div class="pills">${est}</div><h3>${esc(d.formato)}</h3>
+      <div class="body"><div class="pills">${est}</div><h3>${esc(d.formato)}</h3>${origen(d)}
       ${d.notaElegir ? `<p class="m">Tu pedido: ${esc(d.notaElegir)}</p>` : ""}${d.notaModificar ? `<p class="m">Cambio: ${esc(d.notaModificar)}</p>` : ""}
       ${d.estado === "error" && quien === "Nacho" ? `<p class="m" style="color:var(--bad)">${esc(d.error)}</p><div class="acciones"><button class="btn sm" data-re="${esc(d.id)}">Reintentar</button></div>` : ""}
       </div></div>`; }).join("")}</div>`
@@ -346,7 +353,7 @@ function vListas(lista){
       <div class="card"><div class="img"><img loading="lazy" src="${esc(v.url)}" alt="" data-z="${esc(v.url)}"><span class="tag">${esc(d.codigo)}</span></div>
       <div class="body"><div class="pills">${d.estado === "lista" ? `<span class="pill ok">En tu Drive · ${fFecha((d.entregado||"").split("/").pop())}</span>` : `<span class="pill warn">Copiándose a Drive</span>`}
         ${d.maqueta ? `<span class="pill warn">Maqueta</span>` : ""}</div>
-        <h3>${esc(d.formato)}</h3>${d.archivos?.[k] ? `<p class="m">${esc(d.archivos[k])}</p>` : ""}
+        <h3>${esc(d.formato)}</h3>${d.archivos?.[k] ? `<p class="m">${esc(d.archivos[k])}</p>` : ""}${origen(d)}
         <a href="${esc(v.url)}" target="_blank" rel="noopener" style="font-size:12.5px">Abrir la imagen</a></div></div>`)).join("")}</div>`
     : `<div class="vacio">Todavía no aprobaste ninguna.</div>`;
   $("#vista").querySelectorAll("[data-z]").forEach(i => i.parentElement.onclick = () => zoom(i.dataset.z));
