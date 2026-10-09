@@ -275,8 +275,8 @@ function pintar(){
                     : v==="semana" ? 0 : vivos.filter(it=>ESTADOS_VISTA[v].includes(it.estado)).length;
   if(!VISTAS.some(x=>x[0]===F.vista)) F.vista = "semana";
   $("#vistas").hidden = false;
-  $("#vistas").innerHTML = VISTAS.map(([v,t]) => { const n = cuenta(v); return `<button class="mt ${F.vista===v?"on":""}" data-v="${v}">${t}${n?`<b>${n}</b>`:""}</button>`; }).join("");
-  document.querySelectorAll("[data-v]").forEach(b=>b.onclick=()=>{ F.vista=b.dataset.v; if(F.vista==="semana") soloAd=null; guardarF(); pintar(); window.scrollTo(0,0); });
+  $("#vistas").innerHTML = VISTAS.map(([v,t]) => { const n = cuenta(v); return `<button class="mt ${F.vista===v?"on":""}" data-vista="${v}">${t}${n?`<b>${n}</b>`:""}</button>`; }).join("");
+  document.querySelectorAll("[data-vista]").forEach(b=>b.onclick=()=>{ F.vista=b.dataset.vista; if(F.vista==="semana") soloAd=null; guardarF(); pintar(); window.scrollTo(0,0); });
   $("#vsem").hidden = F.vista!=="semana"; $("#vest").hidden = F.vista==="semana";
   if(F.vista==="semana") pintarSemana(); else pintarEstado(F.vista);
 }
