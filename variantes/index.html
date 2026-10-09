@@ -121,11 +121,25 @@ h3{margin:4px 0 8px;font-size:10.5px;font-weight:600;color:var(--mut);text-trans
 .barras{display:flex;align-items:flex-end;gap:3px;height:34px;padding:0 2px}
 .barras i{flex:1;background:var(--line2);border-radius:3px 3px 0 0;min-height:2px}
 .barras i.en{background:var(--ok)}
-.filtros{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:12px 14px;display:flex;flex-wrap:wrap;gap:10px 22px;margin-bottom:14px}
-.fgr{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
-.fgr>span{font-size:10.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--mut);margin-right:2px}
-.chip{border:1px solid var(--line);background:var(--card);color:var(--txt);font-weight:600;font-size:12.5px;padding:6px 12px;border-radius:99px;cursor:pointer}
-.chip.on{background:var(--txt);color:#fff;border-color:var(--txt)}
+[hidden]{display:none!important}
+.filtros{background:var(--soft);border:1px solid var(--line);border-radius:20px;padding:12px 14px;margin-bottom:14px;display:flex;flex-direction:column;gap:10px}
+.aplicados{display:flex;align-items:center;gap:7px;flex-wrap:wrap;font-size:13px;font-weight:600}
+.aplicados .ap{display:inline-flex;align-items:center;gap:6px;background:var(--txt);color:#fff;border-radius:99px;padding:5px 7px 5px 13px;font-weight:500;font-size:12.5px}
+.aplicados .ap b{font-weight:700}
+.aplicados .ap button{border:0;background:rgba(255,255,255,.22);color:#fff;width:18px;height:18px;border-radius:50%;font-size:11px;line-height:18px;cursor:pointer;padding:0}
+.drops{display:flex;gap:8px;flex-wrap:wrap}
+.drop{position:relative}
+.drop>button{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--card);color:var(--txt);font-weight:500;font-size:13px;padding:9px 13px;border-radius:12px;cursor:pointer;min-height:40px}
+.drop>button svg{width:15px;height:15px;stroke:var(--mut);fill:none;stroke-width:1.8}
+.drop>button .car{color:var(--mut);font-size:10px}
+.drop>button .dot{width:7px;height:7px;border-radius:50%;background:var(--ok)}
+.drop.on>button{border-color:var(--txt)}
+.menu{position:absolute;top:calc(100% + 6px);left:0;background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:0 10px 30px rgba(38,33,30,.12);padding:6px;min-width:170px;z-index:5;display:none}
+.drop.on .menu{display:block}
+.menu button{display:flex;justify-content:space-between;width:100%;border:0;background:transparent;text-align:left;padding:8px 10px;border-radius:9px;font-size:13px;color:var(--txt);cursor:pointer}
+.menu button:hover{background:var(--soft)}
+.menu button.sel{font-weight:700}
+.menu button.sel:after{content:"✓";color:var(--ok)}
 .resumen-sem{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:11px;margin-bottom:14px}
 @media (max-width:700px){.resumen-sem{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .resumen-sem .kpi{cursor:default}
@@ -160,7 +174,8 @@ const $ = s => document.querySelector(s);
 const ESTADOS = [["revisar","Para revisar"],["procesando","Generándose"],["corregir","Corrigiéndose"],["subido","Aprobadas"],["rechazado","Descartadas"],["error","Con error"]];
 const TIPO = {estatico:"Estático", video:"Video", animado:"Animado"};
 let quien = null, items = {}, filtro = "revisar", fb = null, pendiente = false, semana = {};
-const F = {vista:"semana", per:7, roas:1.8, ventas:10, orden:"ventas"};
+const F = {vista:"semana", per:7, roas:1.8, ventas:10, orden:"ventas", tipo:"todos"};
+const TIPOS_SEM = {ugc:"UGC", founder:"Founder", broll:"B-roll", animado:"Animado", estatico:"Estático"};
 try { Object.assign(F, JSON.parse(localStorage.getItem("variantes_filtros")||"{}")); } catch(e) {}
 let marcaF = new URLSearchParams(location.search).get("marca") || (()=>{ try { return localStorage.getItem("variantes_marca") } catch(e){ return null } })() || "todas";
 try { quien = CLAVES[localStorage.getItem("revision_clave")] || null; } catch(e) {}
@@ -224,18 +239,33 @@ function pintarSemana(){
   $("#marcas").innerHTML = marcas.length>1 ? ["todas",...marcas].map(m=>`<button class="mt ${m===marcaF?"on":""}" data-m="${m}">${m==="todas"?"Todas las marcas":esc(m)}</button>`).join("") : "";
   document.querySelectorAll("[data-m]").forEach(b=>b.onclick=()=>{marcaF=b.dataset.m; try{localStorage.setItem("variantes_marca",marcaF)}catch(e){} pintar();});
   $("#marcas").hidden = marcas.length<2;
-  const chips = (k, ops) => ops.map(([v,t])=>`<button class="chip ${F[k]===v?"on":""}" data-f="${k}" data-val="${v}">${t}</button>`).join("");
+  const IC = {per:'<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>',
+    roas:'<svg viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-8M15 7h6v6"/></svg>',
+    ventas:'<svg viewBox="0 0 24 24"><path d="M6 6h15l-2 9H8L6 3H3"/><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/></svg>',
+    tipo:'<svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>',
+    orden:'<svg viewBox="0 0 24 24"><path d="M7 4v16M3 16l4 4 4-4M17 20V4M13 8l4-4 4 4"/></svg>'};
+  const OPS = {per:[[1,"Ayer"],[3,"3 días"],[7,"7 días"]], roas:[[1.8,"1,8+"],[2.5,"2,5+"],[3.5,"3,5+"],[4,"4+"]],
+    ventas:[[10,"10+"],[20,"20+"],[50,"50+"]], tipo:[["todos","Todos"],["ugc","UGC"],["founder","Founder"],["broll","B-roll"],["animado","Animado"],["estatico","Estático"]],
+    orden:[["ventas","Ventas"],["roas","ROAS"],["facturacion","Facturación"],["ganancia","Ganancia"]]};
+  const NOM = {per:"Período", roas:"ROAS", ventas:"Ventas", tipo:"Tipo", orden:"Ordenar"};
+  const DEF = {per:7, roas:1.8, ventas:10, tipo:"todos", orden:"ventas"};
+  const lab = k => (OPS[k].find(o=>o[0]===F[k])||[,""])[1];
+  const ap = Object.keys(DEF).filter(k=>F[k]!==DEF[k]);
   $("#filtros").innerHTML = `
-    <div class="fgr"><span>Período</span>${chips("per",[[1,"Ayer"],[3,"3 días"],[7,"7 días"]])}</div>
-    <div class="fgr"><span>ROAS</span>${chips("roas",[[1.8,"1,8+"],[2.5,"2,5+"],[3.5,"3,5+"],[4,"4+"]])}</div>
-    <div class="fgr"><span>Ventas</span>${chips("ventas",[[10,"10+"],[20,"20+"],[50,"50+"]])}</div>
-    <div class="fgr"><span>Ordenar</span>${chips("orden",[["ventas","Ventas"],["roas","ROAS"],["facturacion","Facturación"],["ganancia","Ganancia"]])}</div>`;
+    <div class="aplicados">Filtros aplicados (${ap.length}):${ap.length?ap.map(k=>`<span class="ap">${NOM[k]} <b>${lab(k)}</b><button data-quitar="${k}" title="Quitar">✕</button></span>`).join(""):` <span style="font-weight:400;color:var(--mut)">ninguno · 7 días, ROAS 1,8+, 10+ ventas</span>`}</div>
+    <div class="drops">${Object.keys(OPS).map(k=>`<div class="drop" data-drop="${k}"><button>${IC[k]}${NOM[k]}: <b>${lab(k)}</b>${F[k]!==DEF[k]?'<span class="dot"></span>':''}<span class="car">▾</span></button>
+      <div class="menu">${OPS[k].map(([v,t])=>`<button class="${F[k]===v?"sel":""}" data-f="${k}" data-val="${v}">${t}</button>`).join("")}</div></div>`).join("")}</div>`;
+  document.querySelectorAll("[data-drop]>button").forEach(b=>b.onclick=e=>{ e.stopPropagation(); const d=b.parentElement, on=d.classList.contains("on");
+    document.querySelectorAll(".drop.on").forEach(x=>x.classList.remove("on")); if(!on) d.classList.add("on"); });
   document.querySelectorAll("[data-f]").forEach(b=>b.onclick=()=>{ const v=b.dataset.val; F[b.dataset.f] = isNaN(+v)? v : +v; guardarF(); pintar(); });
+  document.querySelectorAll("[data-quitar]").forEach(b=>b.onclick=()=>{ F[b.dataset.quitar]=DEF[b.dataset.quitar]; guardarF(); pintar(); });
   const filas = [];
   for(const m of marcas){ if(marcaF!=="todas" && marcas.length>1 && m!==marcaF) continue;
     const doc = semana[m]; const mini = doc.miniaturas||{};
     for(const a of doc.anuncios||[]){ const w = ventana(a, doc.hasta);
-      if(w.c>=F.ventas && w.roas>=F.roas) filas.push({m, a, w, mon:doc.moneda||"", mini:mini[a.id], hasta:doc.hasta, ganancia: w.v - w.g*(BE[m]||1.8)}); } }
+      const tipo = (doc.tipos||{})[a.id] || ((a.video_id||/VIDEO/i.test(a.objeto||"")) ? "" : "estatico");
+      if(F.tipo!=="todos" && tipo!==F.tipo) continue;
+      if(w.c>=F.ventas && w.roas>=F.roas) filas.push({m, a, w, tipo, mon:doc.moneda||"", mini:mini[a.id], hasta:doc.hasta, ganancia: w.v - w.g*(BE[m]||1.8)}); } }
   const key = {ventas:x=>x.w.c, roas:x=>x.w.roas, facturacion:x=>x.w.v, ganancia:x=>x.ganancia}[F.orden] || (x=>x.w.c);
   filas.sort((x,y)=>key(y)-key(x));
   const tot = filas.reduce((t,x)=>({c:t.c+x.w.c, g:t.g+x.w.g, v:t.v+x.w.v}),{c:0,g:0,v:0});
@@ -249,6 +279,9 @@ function pintarSemana(){
   if(!filas.length){ $("#gsem").innerHTML = `<div class="vacio" style="grid-column:1/-1">${Object.keys(semana).length?"Ningún anuncio pasa esos filtros. Bajá el ROAS o las ventas.":"Todavía no llegaron datos de la semana: llegan con la rutina de la 1:00 de la marca."}</div>`; return; }
   const conVar = {}; Object.values(items).forEach(it=>{ conVar[it.adId]=(conVar[it.adId]||0)+1; });
   $("#gsem").innerHTML = filas.map((x,i)=>tarjetaSemana(x,i,conVar[x.a.id]||0)).join("");
+  document.querySelectorAll("#gsem .iterar").forEach(b=>b.onclick=()=>pedirIterar(b.dataset.m, b.dataset.ad, "pedido"));
+  document.querySelectorAll("#gsem .cancelar-it").forEach(b=>b.onclick=()=>pedirIterar(b.dataset.m, b.dataset.ad, "cancelado"));
+  document.querySelectorAll("#gsem .ver-var").forEach(b=>b.onclick=()=>{ F.vista="variantes"; guardarF(); pintar(); window.scrollTo(0,0); });
   document.querySelectorAll("#gsem .vid[data-drive]").forEach(vd=>vd.addEventListener("click",()=>{ const u=vd.dataset.link; if(u) window.open(u,"_blank","noopener"); }));
 }
 function tarjetaSemana(x, i, nvar){
@@ -261,14 +294,29 @@ function tarjetaSemana(x, i, nvar){
   const esVideo = a.video_id || /VIDEO/i.test(a.objeto||"");
   return `<div class="item">
     <div class="cab"><div class="av">${i+1}</div>
-      <div class="t"><b>${esc(a.nombre||a.id)}</b><small>${esVideo?"Video":"Imagen"} · gastó ${num(w.g)} ${esc(x.mon)}</small></div>
+      <div class="t"><b>${esc(a.nombre||a.id)}</b><small>${esc(TIPOS_SEM[x.tipo]||(esVideo?"Video":"Imagen"))} · gastó ${num(w.g)} ${esc(x.mon)}</small></div>
       ${link?`<a href="${esc(link)}" target="_blank" rel="noopener" title="Ver el anuncio">↗</a>`:""}</div>
     <div class="vid" data-drive="${esc(x.mini||"")}" data-link="${esc(link)}">${img?`<img src="${esc(img)}" alt="" loading="lazy" onerror="this.style.display='none'">`:`<div class="ph">Sin miniatura todavía</div>`}${esVideo&&img?`<span class="play"></span>`:""}${nvar?`<span class="badge">${nvar} variantes</span>`:""}</div>
     <div class="cuerpo">
       <div class="stats"><div class="st ${rc}"><span>ROAS</span><b>${w.roas.toFixed(2)}</b></div><div class="st"><span>Ventas</span><b>${num(w.c)}</b></div></div>
       <div class="barras" title="Ventas por día">${dias.map(d=>`<i class="${d.f>=w.desde?"en":""}" style="height:${Math.round(d.c/max*100)}%" title="${fdia(d.f)}: ${d.c} ventas"></i>`).join("")}</div>
       <div class="sub2">Facturó ${num(w.v)} ${esc(x.mon)} · ventas por día, en verde el período elegido</div>
+      ${botonIterar(x, nvar)}
     </div></div>`;
+}
+
+function botonIterar(x, nvar){
+  const p = ((semana[x.m]||{}).pedidos||{})[x.a.id] || {};
+  const att = `data-m="${esc(x.m)}" data-ad="${esc(x.a.id)}"`;
+  if(p.estado==="pedido") return `<div class="acciones" style="grid-template-columns:1fr auto"><button class="btn dark" disabled>En cola · sale en ~30 min</button><button class="btn no cancelar-it" ${att} title="Cancelar">✕</button></div>`;
+  if(p.estado==="procesando") return `<div class="acciones" style="grid-template-columns:1fr"><button class="btn dark" disabled>Generando variantes…</button></div>`;
+  if(p.estado==="hecho" || nvar) return `<div class="acciones" style="grid-template-columns:1fr 1fr"><button class="btn ok ver-var">Ver variantes</button><button class="btn iterar" ${att}>Iterar de nuevo</button></div>`;
+  return `<div class="acciones" style="grid-template-columns:1fr"><button class="btn ok iterar" ${att}>Iterar este</button></div>`;
+}
+async function pedirIterar(m, ad, estado){
+  try { await fb.updateDoc(fb.doc(fb.db,"variantes_semana",m), {[`pedidos.${ad}`]: {estado, quien, cuando:new Date().toISOString()}});
+    toast(estado==="pedido" ? "Listo: en la próxima vuelta (cada 30 min) se generan sus variantes" : "Cancelado");
+  } catch(e){ toast("No se pudo guardar: "+e.message); }
 }
 
 function pintarVariantes(){
@@ -380,6 +428,7 @@ function conectar(id){
   el.querySelector(".reintentar")?.addEventListener("click", () => marcar({estado:"corregir", pedido:{}}, "Se vuelve a intentar"));
 }
 
+document.addEventListener("click", () => document.querySelectorAll(".drop.on").forEach(x=>x.classList.remove("on")));
 if(quien) arrancar();
 </script>
 </body>
