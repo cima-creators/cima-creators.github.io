@@ -5,13 +5,14 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta name="robots" content="noindex">
+<meta name="theme-color" content="#7A2335">
 <title>Animados Mi Luz · CIMA</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',-apple-system,BlinkMacSystemFont,sans-serif}
-:root{--bg:#FAF7F4;--card:#FFFFFF;--soft:#F6F2EE;--line:#EFE8E3;--line2:#E2D8D1;--txt:#26211E;--mut:#8A7E77;--mut2:#B5A79F;
-  --ok:#3F8F6B;--ok-bg:#E7F2EC;--warn:#B07B2E;--warn-bg:#F7EEDD;--bad:#C1613C;--bad-bg:#F8E7DF;--r:22px}
+:root{--bg:#FAF7F4;--card:#FFFFFF;--soft:#F6F0EC;--line:#EFE6E1;--line2:#E0D2CB;--txt:#2A1F1F;--mut:#8A7B76;--mut2:#B7A8A2;
+  --acc:#7A2335;--acc-bg:#F6E3E6;--ok:#3F8F6B;--ok-bg:#E7F2EC;--warn:#A8742A;--warn-bg:#F7EEDD;--bad:#B5523A;--bad-bg:#F8E7DF;--r:20px}
 body{background:var(--bg);color:var(--txt);min-height:100vh;-webkit-font-smoothing:antialiased;font-size:14px;line-height:1.5}
 button,select{font:inherit;color:inherit}
 a{color:inherit}
@@ -22,12 +23,12 @@ h1{font-size:30px;font-weight:700;letter-spacing:-.03em;line-height:1.1}
 .sub{color:var(--mut);font-size:13px;margin-top:6px;max-width:70ch}
 .btn{display:inline-flex;align-items:center;justify-content:center;background:var(--card);color:var(--txt);border:1px solid var(--line);padding:10px 17px;border-radius:14px;font-weight:600;font-size:13px;cursor:pointer;min-height:42px;text-decoration:none}
 .btn:hover{border-color:var(--line2)}
-.btn.dark{background:var(--txt);color:#fff;border-color:var(--txt)}
+.btn.dark{background:var(--acc);color:#fff;border-color:var(--acc)}
 .btn.ok{background:var(--ok);color:#fff;border-color:var(--ok)}
 .btn.no{color:var(--bad)}
 .top{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,2fr);gap:11px;margin-bottom:18px}
 @media (max-width:900px){.top{grid-template-columns:minmax(0,1fr)}}
-.hero{border-radius:26px;padding:22px 24px;color:#fff;position:relative;overflow:hidden;background:linear-gradient(135deg,#51463F 0%,#26211E 64%);display:flex;align-items:center;gap:20px;min-height:180px}
+.hero{border-radius:26px;padding:22px 24px;color:#fff;position:relative;overflow:hidden;background:linear-gradient(135deg,#9A3A4D 0%,#5E1A29 64%);display:flex;align-items:center;gap:20px;min-height:180px}
 .hero .blob{position:absolute;width:230px;height:230px;border-radius:50%;background:rgba(255,255,255,.06);right:-80px;bottom:-100px}
 .ringbox{position:relative;width:112px;height:112px;flex-shrink:0}
 .ringbox svg{transform:rotate(-90deg);display:block}
@@ -41,7 +42,7 @@ h1{font-size:30px;font-weight:700;letter-spacing:-.03em;line-height:1.1}
 .kpis{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
 .kpi{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:16px 18px;min-height:84px;display:flex;flex-direction:column;cursor:pointer;text-align:left;transition:border-color .15s}
 .kpi:hover{border-color:var(--line2)}
-.kpi.on{border-color:var(--txt);box-shadow:0 0 0 1px var(--txt)}
+.kpi.on{border-color:var(--acc);box-shadow:0 0 0 1px var(--acc)}
 .kpi .l{font-size:10.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--mut)}
 .kpi .v{font-size:30px;font-weight:700;letter-spacing:-.035em;margin-top:auto;padding-top:8px;line-height:1}
 .kpi .h{font-size:11.5px;color:var(--mut2);margin-top:4px}
@@ -49,7 +50,7 @@ h1{font-size:30px;font-weight:700;letter-spacing:-.03em;line-height:1.1}
 .barra{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between;margin-bottom:18px}
 .marcas{display:flex;gap:4px;background:var(--soft);border:1px solid var(--line);border-radius:16px;padding:4px;max-width:100%;overflow-x:auto}
 .mt{border:0;background:transparent;color:var(--mut);font-weight:600;font-size:13px;padding:8px 14px;border-radius:12px;cursor:pointer;white-space:nowrap}
-.mt.on{background:var(--card);color:var(--txt);box-shadow:0 1px 4px rgba(38,33,30,.08)}
+.mt.on{background:var(--card);color:var(--acc);box-shadow:0 1px 4px rgba(38,33,30,.08)}
 select{border:1px solid var(--line);background:var(--card);border-radius:14px;padding:9px 13px;font-size:13px;font-weight:500;min-height:42px}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,250px),1fr));gap:12px;align-items:start}
 .item{background:var(--card);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;display:flex;flex-direction:column}
@@ -58,11 +59,11 @@ select{border:1px solid var(--line);background:var(--card);border-radius:14px;pa
 .vid video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#1d1916}
 .vid .tag{position:absolute;top:10px;left:10px;font-size:11px;font-weight:600;padding:4px 10px;border-radius:99px;background:rgba(38,33,30,.72);color:#fff}
 .vid .tag.r{left:auto;right:10px}
-.vid .tag.nueva{background:var(--warn)}
+.vid .tag.nueva{background:var(--acc)}
 .vid .tag.hecho{background:var(--ok)}
 .cuerpo{padding:12px 14px 14px;display:flex;flex-direction:column;gap:8px;flex:1}
 .chead{display:flex;align-items:center;gap:10px;padding:12px 14px 10px}
-.av{width:36px;height:36px;border-radius:50%;background:var(--warn-bg);color:var(--warn);display:grid;place-items:center;font-weight:700;font-size:15px;flex-shrink:0}
+.av{width:36px;height:36px;border-radius:50%;background:var(--acc-bg);color:var(--acc);display:grid;place-items:center;font-weight:700;font-size:15px;flex-shrink:0}
 .who{min-width:0;flex:1}
 .who b{display:block;font-size:14.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .who small{display:block;color:var(--mut);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -84,15 +85,15 @@ select{border:1px solid var(--line);background:var(--card);border-radius:14px;pa
 .estrellas{font-size:12px;color:var(--warn);white-space:nowrap;letter-spacing:1px}
 .meta{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
 .pill{display:inline-block;font-size:11.5px;font-weight:500;padding:4px 11px;border-radius:99px;background:var(--soft);color:var(--mut)}
-.pill.m{background:var(--txt);color:#fff}
+.pill.m{background:var(--acc);color:#fff}
 .nums{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
 .num{background:var(--soft);border-radius:14px;padding:8px 10px}
 .num b{display:block;font-size:19px;font-weight:700;letter-spacing:-.03em;line-height:1.1;font-variant-numeric:tabular-nums}
 .num span{font-size:10.5px;color:var(--mut);font-weight:500}
 h4{font-size:10.5px;font-weight:600;color:var(--mut);text-transform:uppercase;letter-spacing:.12em;margin-bottom:3px}
 .txt{font-size:13px;line-height:1.5}
-.unas{background:var(--warn-bg);border-radius:14px;padding:10px 12px}
-.unas h4{color:var(--warn)}
+.unas{background:var(--acc-bg);border-radius:14px;padding:10px 12px}
+.unas h4{color:var(--acc)}
 .links{font-size:12px;color:var(--mut)}
 .links a{color:var(--txt);font-weight:500}
 .acciones{display:flex;gap:8px;margin-top:auto;padding-top:2px}
@@ -117,6 +118,7 @@ summary{cursor:pointer;font-weight:600;font-size:13px}
 #login h1{font-size:23px}
 #login input{width:100%;margin:16px 0 10px;padding:12px 14px;border:1px solid var(--line);border-radius:14px;font-size:15px;background:var(--soft);color:var(--txt)}
 #login .btn{width:100%}
+.acciones .btn.sm[data-acc="mas"]{border:0;background:none;color:var(--acc)}
 .err{color:var(--bad);font-size:12.5px;min-height:18px}
 .toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--txt);color:#fff;padding:11px 18px;border-radius:99px;font-size:13px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:9}
 .toast.on{opacity:1}
@@ -309,7 +311,7 @@ function tarjeta(d){
       <span class="tag ${nueva ? "nueva" : ""}">${nueva ? "Nueva · " : ""}${esc(d.duracion || "?")} s</span>
       <span class="tag r">${esc(d.fuente?.startsWith("TrendTrack") ? "TrendTrack" : "GetHookd")}</span></div>`}
     <div class="cuerpo">
-      <div class="meta"><span class="pill" style="background:var(--warn-bg);color:var(--warn)">${"★".repeat(s)}${"☆".repeat(5-s)}</span><span class="pill">${esc(d.dup)} dup.</span>${d.estilo ? `<span class="pill">${esc(d.estilo)}</span>` : ""}${d.mixto ? `<span class="pill" style="background:var(--warn-bg);color:var(--warn)" title="${esc(d.mixto)}">Tomas reales</span>` : ""}</div>
+      <div class="meta"><span class="pill" style="background:var(--acc-bg);color:var(--acc)">${"★".repeat(s)}${"☆".repeat(5-s)}</span><span class="pill">${esc(d.dup)} dup.</span>${d.estilo ? `<span class="pill">${esc(d.estilo)}</span>` : ""}${d.mixto ? `<span class="pill" style="background:var(--warn-bg);color:var(--warn)" title="${esc(d.mixto)}">Tomas reales</span>` : ""}</div>
       <div class="fmt clamp1">${esc(f === "otro" ? "Otro formato" : f + " · " + FMT[f])}</div>
       <div class="idea-c clamp2">${esc(d.idea || d.hook || "")}</div>
       ${estadoProd(d)}
