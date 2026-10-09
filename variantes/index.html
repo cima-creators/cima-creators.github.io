@@ -205,7 +205,11 @@ body.modal{overflow:hidden}
 <script type="module">
 // Bot 5 (9/10/2026): a la 1:00 la marca manda los anuncios con ROAS >= 3 del día; la Mac de CIMA
 // (creativos/variantes/variantes.py) genera 3-5 variantes de cada uno y las deja acá. Aprobada → Drive de la marca.
-const CLAVES = {"vane-2026":"Vane","cima-2026":"Nacho","abril-2026":"Abril"};
+const CLAVES = {"vane-2026":"Vane","cima-2026":"Nacho","abril-2026":"Abril","miluz-2026":"Luz"};
+// clave de una marca: solo ve lo suyo (Luz entra desde su panel cima-creators.github.io/miluz/sistemas)
+const SOLO_MARCA = {"miluz-2026":"miluz"};
+let soloMarca = null;
+try { soloMarca = SOLO_MARCA[localStorage.getItem("revision_clave")] || null; } catch(e) {}
 const $ = s => document.querySelector(s);
 const ESTADOS = [["revisar","Para revisar"],["procesando","Generándose"],["corregir","Corrigiéndose"],["subido","Aprobadas"],["rechazado","Descartadas"],["error","Con error"]];
 const TIPO = {estatico:"Estático", video:"Video", animado:"Animado"};
@@ -222,7 +226,7 @@ function entrar(){
   const k = $("#clave").value.trim().toLowerCase().replace(/\s+/g,"");
   if(!CLAVES[k]){ $("#login-e").textContent = "Esa clave no es. Probá de nuevo."; return; }
   try { localStorage.setItem("revision_clave", k); } catch(e) {}
-  quien = CLAVES[k]; arrancar();
+  quien = CLAVES[k]; soloMarca = SOLO_MARCA[k] || null; arrancar();
 }
 $("#entrar").addEventListener("click", entrar);
 $("#clave").addEventListener("keydown", e => { if(e.key==="Enter") entrar(); });
@@ -239,11 +243,11 @@ async function arrancar(){
   const db = getFirestore(app);
   fb = {db, doc, updateDoc};
   onSnapshot(collection(db,"variantes_semana"), snap => {
-    snap.docChanges().forEach(c => { if(c.type==="removed") delete semana[c.doc.id]; else semana[c.doc.id] = c.doc.data(); });
+    snap.docChanges().forEach(c => { if(c.type==="removed" || (soloMarca && c.doc.id!==soloMarca)) delete semana[c.doc.id]; else semana[c.doc.id] = c.doc.data(); });
     pintar();
   }, err => console.warn(err));
   onSnapshot(collection(db,"variantes_cola"), snap => {
-    snap.docChanges().forEach(c => { if(c.type==="removed") delete items[c.doc.id]; else items[c.doc.id] = c.doc.data(); });
+    snap.docChanges().forEach(c => { if(c.type==="removed" || (soloMarca && c.doc.data().marca!==soloMarca)) delete items[c.doc.id]; else items[c.doc.id] = c.doc.data(); });
     pintar();
   }, err => { $("#resumen").textContent = "No se pudo leer la cola: " + err.message; });
 }
@@ -327,7 +331,7 @@ function pintarSemana(){
 }
 function tarjetaSemana(x, i, nvar, nrev){
   const {a, w} = x;
-  const img = x.mini ? `https://drive.google.com/thumbnail?id=${esc(x.mini)}&sz=w600` : (a.miniatura||a.imagen_url||"");
+  const img = x.mini ? (/^https?:/.test(x.mini) ? x.mini : `https://drive.google.com/thumbnail?id=${esc(x.mini)}&sz=w600`) : (a.miniatura||a.imagen_url||"");
   const link = a.permalink ? (a.permalink.startsWith("/")?"https://www.facebook.com"+a.permalink:a.permalink) : "";
   const dias = [...(a.dias||[])].sort((p,q)=>p.f.localeCompare(q.f));
   const max = Math.max(1, ...dias.map(d=>d.c));
@@ -418,7 +422,10 @@ function tarjeta(id,it){
   const esImg = /\.(png|jpe?g|webp)$/i.test(it.archivo||"") || it.tipo==="estatico";
   const editable = it.estado==="revisar";
   const m = it.metricas||{};
-  const media = it.driveId
+  // vista previa: Storage (cuando lo generó la Mac de la marca) o Drive (Mac de CIMA)
+  const media = it.url
+    ? (esImg ? `<img src="${esc(it.url)}" alt="" loading="lazy">` : `<div class="marco"><video src="${esc(it.url)}" controls playsinline preload="metadata" style="width:100%;height:100%;object-fit:contain;background:#1d1916"></video></div>`) + `<span class="tag">${esc(TIPO[it.tipo]||it.tipo)}</span>`
+    : it.driveId
     ? `<img src="https://drive.google.com/thumbnail?id=${esc(it.driveId)}&sz=w600" alt="" loading="lazy" onerror="this.style.display='none'">${esImg?"":`<span class="play"></span>`}<span class="tag">${esc(TIPO[it.tipo]||it.tipo)}</span>`
     : `<div class="ph">${it.estado==="error"?"No salió":it.estado==="revisar"?"Subiendo a Drive…":"Generándose…"}</div>`;
   const punto = it.estado==="subido"||it.estado==="aprobado" ? "ok" : it.estado==="error"||it.estado==="rechazado" ? "mal" : "";
@@ -426,8 +433,8 @@ function tarjeta(id,it){
     <div class="cab"><div class="av">V${esc(it.n)}</div>
       <div class="t"><b>${esc(it.codigo||it.adNombre||"Variante")}${it.version>1?` · v${esc(it.version)}`:""}</b>
         <small><i class="${punto}"></i>${esc((ESTADOS.find(e=>e[0]===it.estado)||[,it.estado])[1])} · ${esc(TIPO[it.tipo]||it.tipo)}</small></div>
-      ${it.driveId?`<a href="https://drive.google.com/file/d/${esc(it.driveId)}/view" target="_blank" rel="noopener" title="Abrir en Drive">↗</a>`:""}</div>
-    <div class="vid ${esImg?"img":""}" data-drive="${esc(it.driveId||"")}">${media}</div>
+      ${it.url?`<a href="${esc(it.url)}" target="_blank" rel="noopener" title="Abrir">↗</a>`:it.driveId?`<a href="https://drive.google.com/file/d/${esc(it.driveId)}/view" target="_blank" rel="noopener" title="Abrir en Drive">↗</a>`:""}</div>
+    <div class="vid ${esImg?"img":""}" data-drive="${esc(it.url?"":(it.driveId||""))}">${media}</div>
     <div class="cuerpo">
       <div class="stats"><div class="st ok"><span>ROAS del ganador</span><b>${Number(m.roas||0).toFixed(2)}</b></div><div class="st"><span>Ventas ese día</span><b>${num(m.compras)}</b></div></div>
       <div class="cambio-t">${esc(it.cambio)}</div>
