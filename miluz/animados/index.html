@@ -51,7 +51,7 @@ h1{font-size:30px;font-weight:700;letter-spacing:-.03em;line-height:1.1}
 .mt{border:0;background:transparent;color:var(--mut);font-weight:600;font-size:13px;padding:8px 14px;border-radius:12px;cursor:pointer;white-space:nowrap}
 .mt.on{background:var(--card);color:var(--txt);box-shadow:0 1px 4px rgba(38,33,30,.08)}
 select{border:1px solid var(--line);background:var(--card);border-radius:14px;padding:9px 13px;font-size:13px;font-weight:500;min-height:42px}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,250px),1fr));gap:12px;align-items:stretch}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,250px),1fr));gap:12px;align-items:start}
 .item{background:var(--card);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;display:flex;flex-direction:column}
 .item.fuera{opacity:.55}
 .vid{aspect-ratio:4/5;width:100%;overflow:hidden;background:#1d1916;position:relative;border-bottom:1px solid var(--line)}
@@ -60,7 +60,23 @@ select{border:1px solid var(--line);background:var(--card);border-radius:14px;pa
 .vid .tag.r{left:auto;right:10px}
 .vid .tag.nueva{background:var(--warn)}
 .vid .tag.hecho{background:var(--ok)}
-.cuerpo{padding:12px 14px 14px;display:flex;flex-direction:column;gap:9px;flex:1}
+.cuerpo{padding:12px 14px 14px;display:flex;flex-direction:column;gap:8px;flex:1}
+.chead{display:flex;align-items:center;gap:10px;padding:12px 14px 10px}
+.av{width:36px;height:36px;border-radius:50%;background:var(--warn-bg);color:var(--warn);display:grid;place-items:center;font-weight:700;font-size:15px;flex-shrink:0}
+.who{min-width:0;flex:1}
+.who b{display:block;font-size:14.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.who small{display:block;color:var(--mut);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.clamp1{display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
+.clamp2{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.fmt{font-size:14.5px;font-weight:600;letter-spacing:-.01em}
+.idea-c{font-size:13px;color:var(--mut)}
+.btn.sm{min-height:36px;padding:7px 10px;font-size:12.5px}
+.acciones .btn.sm{flex:0 0 auto;white-space:nowrap}
+.acciones .btn.sm.dark,.acciones .btn.sm.ok{flex:1}
+.extra{display:none;flex-direction:column;gap:9px}
+.item.abierta .extra{display:flex}
+.item.abierta .clamp2{-webkit-line-clamp:unset;display:block}
+
 .fila{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
 .nombre{font-size:16px;font-weight:700;letter-spacing:-.02em;line-height:1.25;overflow-wrap:anywhere}
 .estrellas{font-size:12px;color:var(--warn);white-space:nowrap;letter-spacing:1px}
@@ -273,37 +289,42 @@ function tarjeta(d){
   const f = d.formato || "otro";
   const fuente = (d.fuente || "").replace("GetHookd · ", "");
   const prod = d.estado === "producido";
+  const s = d.senal || 1;
   let botones = "";
-  if (d.estado === "nueva") botones = `<div class="acciones"><button class="btn dark" data-acc="elegir" data-id="${esc(d.id)}">La quiero</button><button class="btn chico no" data-acc="descartar" data-id="${esc(d.id)}">No</button></div>`;
-  if (d.estado === "elegida" || d.estado === "lista") botones = `<div class="acciones"><button class="btn" data-acc="soltar" data-id="${esc(d.id)}">Cancelar</button></div>`;
-  if (d.estado === "descartada") botones = `<div class="acciones"><button class="btn" data-acc="volver" data-id="${esc(d.id)}">Recuperar</button></div>`;
-  if (prod) botones = `<div class="acciones"><a class="btn ok" href="${esc(d.final)}" target="_blank" rel="noopener" download>Bajar el video</a>${d.finalSubs ? `<a class="btn chico" href="${esc(d.finalSubs)}" target="_blank" rel="noopener" download>Con subtítulos</a>` : ""}</div>`;
-  return `<article class="item ${d.estado === "descartada" ? "fuera" : ""}">
-    ${prod ? `<div class="vid final"><video src="${esc(d.final)}" preload="metadata" controls playsinline></video><span class="tag hecho">Mi Luz · ${esc(d.codigo || "")}</span></div>` : ""}
-    <div class="vid" ${prod ? 'style="aspect-ratio:16/9"' : ""}>
+  const mas = `<button class="btn sm" data-acc="mas" data-id="${esc(d.id)}">Más</button>`;
+  if (d.estado === "nueva") botones = `${mas}<button class="btn sm no" data-acc="descartar" data-id="${esc(d.id)}">No</button><button class="btn sm dark" data-acc="elegir" data-id="${esc(d.id)}">La quiero</button>`;
+  if (d.estado === "elegida" || d.estado === "lista") botones = `${mas}<button class="btn sm" data-acc="soltar" data-id="${esc(d.id)}">Cancelar</button>`;
+  if (d.estado === "descartada") botones = `${mas}<button class="btn sm" data-acc="volver" data-id="${esc(d.id)}">Recuperar</button>`;
+  if (d.estado === "produciendo" || d.estado === "fallo") botones = mas;
+  if (prod) botones = `${mas}<a class="btn sm ok" href="${esc(d.final)}" target="_blank" rel="noopener" download>Bajar</a>${d.finalSubs ? `<a class="btn sm" href="${esc(d.finalSubs)}" target="_blank" rel="noopener" download>Con subs</a>` : ""}`;
+  const nueva = d.fecha === hoy && d.estado === "nueva";
+  return `<article class="item ${d.estado === "descartada" ? "fuera" : ""}" data-card="${esc(d.id)}">
+    <div class="chead"><div class="av">${esc((d.marca || "?").charAt(0).toUpperCase())}</div>
+      <div class="who"><b>${esc(d.marca)}</b><small>${esc(d.dias)} días · ${fmtN(d.marcaAds)} ads de la marca</small></div></div>
+    ${prod ? `<div class="vid final"><video src="${esc(d.final)}" preload="metadata" controls playsinline></video><span class="tag hecho">Mi Luz · ${esc(d.codigo || "")}</span></div>` : `<div class="vid">
       <video src="${esc(d.video)}" poster="${esc(d.thumb)}" preload="none" controls playsinline></video>
-      <span class="tag ${d.fecha === hoy && d.estado === "nueva" ? "nueva" : ""}">${prod ? "Referencia · " : d.fecha === hoy && d.estado === "nueva" ? "Nueva · " : ""}${esc(d.duracion || "?")} s</span>
-      <span class="tag r">${esc(d.fuente?.startsWith("TrendTrack") ? "TrendTrack" : "GetHookd")}</span>
-    </div>
+      <span class="tag ${nueva ? "nueva" : ""}">${nueva ? "Nueva · " : ""}${esc(d.duracion || "?")} s</span>
+      <span class="tag r">${esc(d.fuente?.startsWith("TrendTrack") ? "TrendTrack" : "GetHookd")}</span></div>`}
     <div class="cuerpo">
-      <div class="fila"><div class="nombre">${esc(d.marca)}</div><div class="estrellas" title="Señal de que escala">${"★".repeat(d.senal||1)}${"☆".repeat(5-(d.senal||1))}</div></div>
-      <div class="meta"><span class="pill m">${esc(f === "otro" ? "Otro formato" : f + " · " + FMT[f])}</span>${d.estilo ? `<span class="pill">${esc(d.estilo)}</span>` : ""}${d.producto ? `<span class="pill">${esc(d.producto)}</span>` : ""}${d.mixto ? `<span class="pill" style="background:var(--warn-bg);color:var(--warn)" title="${esc(d.mixto)}">Tiene tomas reales</span>` : ""}</div>
-      <div class="nums">
-        <div class="num"><b>${esc(d.dias)}</b><span>días activo</span></div>
-        <div class="num"><b>${esc(d.dup)}</b><span>duplicados</span></div>
-        <div class="num"><b>${fmtN(d.marcaAds)}</b><span>ads de la marca</span></div>
-      </div>
-      <div><h4>La idea</h4><div class="txt">${esc(d.idea || d.hook || "")}</div></div>
-      <div class="unas"><h4>Para uñas</h4><div class="txt">${esc(d.bajada || "")}</div></div>
-      <div class="links">${esc(fuente)} · desde ${esc(d.inicio || "?")}${d.pais ? " · " + esc(d.pais) : ""} · <a href="${esc(d.link)}" target="_blank" rel="noopener">ver anuncio</a></div>
+      <div class="meta"><span class="pill" style="background:var(--warn-bg);color:var(--warn)">${"★".repeat(s)}${"☆".repeat(5-s)}</span><span class="pill">${esc(d.dup)} dup.</span>${d.estilo ? `<span class="pill">${esc(d.estilo)}</span>` : ""}${d.mixto ? `<span class="pill" style="background:var(--warn-bg);color:var(--warn)" title="${esc(d.mixto)}">Tomas reales</span>` : ""}</div>
+      <div class="fmt clamp1">${esc(f === "otro" ? "Otro formato" : f + " · " + FMT[f])}</div>
+      <div class="idea-c clamp2">${esc(d.idea || d.hook || "")}</div>
       ${estadoProd(d)}
-      ${d.estado === "nueva" || d.estado === "descartada" ? "" : desarmado(d)}
-      ${botones}
+      <div class="extra">
+        <div class="unas"><h4>Para uñas</h4><div class="txt">${esc(d.bajada || "")}</div></div>
+        ${d.producto ? `<div class="links">Vende: ${esc(d.producto)}</div>` : ""}
+        <div class="links">${esc(fuente)} · desde ${esc(d.inicio || "?")}${d.pais ? " · " + esc(d.pais) : ""} · <a href="${esc(d.link)}" target="_blank" rel="noopener">ver anuncio</a></div>
+        ${prod ? `<div class="vid" style="aspect-ratio:16/9"><video src="${esc(d.video)}" preload="none" controls playsinline></video><span class="tag">Referencia</span></div>` : ""}
+        ${d.estado === "nueva" || d.estado === "descartada" ? "" : desarmado(d)}
+      </div>
+      <div class="acciones">${botones}</div>
     </div>
   </article>`;
 }
 
 async function accion(id, acc){
+  if (acc === "mas") { const c = document.querySelector(`[data-card="${CSS.escape(id)}"]`); c.classList.toggle("abierta");
+    c.querySelector('[data-acc="mas"]').textContent = c.classList.contains("abierta") ? "Menos" : "Más"; return; }
   const estado = {elegir:"elegida", soltar:"nueva", descartar:"descartada", volver:"nueva"}[acc];
   const extra = acc === "elegir" ? {eligio: quien, eligioEn: new Date().toISOString()} : {};
   try { await fs.updateDoc(fs.doc(fs.db, "animados_luz", id), {estado, ...extra}); toast({elegir:"Elegida: se produce sola ✓", descartar:"Descartada", volver:"Recuperada", soltar:"Cancelada"}[acc]); }
