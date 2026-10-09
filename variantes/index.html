@@ -57,6 +57,8 @@ h1{font-size:30px;font-weight:700;letter-spacing:-.03em;line-height:1.1}
 .cab .t small i{width:7px;height:7px;border-radius:50%;background:var(--warn);display:inline-block}
 .cab .t small i.ok{background:var(--ok)} .cab .t small i.mal{background:var(--bad)}
 .cab a{color:var(--mut);font-size:15px;text-decoration:none}
+.links-cab{display:flex;align-items:center;gap:8px}
+.cab a.drive{font-size:11.5px;font-weight:600;color:var(--acc);background:var(--acc-bg);padding:3px 9px;border-radius:99px}
 .vid{aspect-ratio:1/1;background:var(--soft);position:relative;overflow:hidden;cursor:pointer;display:flex;align-items:center;justify-content:center}
 .vid img{height:100%;width:auto;max-width:100%;object-fit:contain;display:block}
 .vid .play{position:absolute;left:50%;top:50%;width:54px;height:54px;margin:-27px 0 0 -27px;border-radius:50%;background:rgba(38,33,30,.82);display:grid;place-items:center}
@@ -486,7 +488,7 @@ function tarjeta(id,it){
     <div class="cab"><div class="av">V${esc(it.n)}</div>
       <div class="t"><b>${esc(it.codigo||it.adNombre||"Variante")}${it.version>1?` · v${esc(it.version)}`:""}</b>
         <small><i class="${punto}"></i>${esc((ESTADOS.find(e=>e[0]===it.estado)||[,it.estado])[1])} · ${esc(TIPO[it.tipo]||it.tipo)}</small></div>
-      ${it.url?`<a href="${esc(it.url)}" target="_blank" rel="noopener" title="Abrir">↗</a>`:it.driveId?`<a href="https://drive.google.com/file/d/${esc(it.driveId)}/view" target="_blank" rel="noopener" title="Abrir en Drive">↗</a>`:""}</div>
+      <span class="links-cab">${it.url?`<a href="${esc(it.url)}" target="_blank" rel="noopener" title="Abrir el archivo">↗</a>`:""}${(it.driveLink||it.driveId)?`<a class="drive" href="${esc(it.driveLink||`https://drive.google.com/file/d/${it.driveId}/view`)}" target="_blank" rel="noopener" title="El mismo archivo en Drive">Drive</a>`:""}</span></div>
     <div class="vid ${esImg?"img":""}" data-drive="${esc(it.url?"":(it.driveId||""))}">${media}</div>
     <div class="cuerpo">
       <div class="stats"><div class="st ok"><span>ROAS del ganador</span><b>${Number(m.roas||0).toFixed(2)}</b></div><div class="st"><span>Ventas ese día</span><b>${num(m.compras)}</b></div></div>
