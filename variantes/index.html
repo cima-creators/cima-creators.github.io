@@ -380,7 +380,7 @@ function pintarVariantes(){
   document.querySelectorAll("[data-m]").forEach(b=>b.onclick=()=>{marcaF=b.dataset.m; try{localStorage.setItem("variantes_marca",marcaF)}catch(e){} pintar();});
   const lista = deMarca.filter(([,it])=>it.estado===filtro)
     .sort((a,b)=>(b[1].fecha||"").localeCompare(a[1].fecha||"") || ((b[1].metricas||{}).ganancia||0)-((a[1].metricas||{}).ganancia||0) || (a[1].clave||"").localeCompare(b[1].clave||"") || (a[1].n||0)-(b[1].n||0));
-  if(!lista.length){ $("#lista").innerHTML = `<div class="vacio">${filtro==="revisar"?"No hay variantes para revisar. Las de los ganadores de ayer aparecen solas desde la 1:30.":"Nada por acá."}</div>`; return; }
+  if(!lista.length){ $("#lista").innerHTML = `<div class="vacio">${filtro==="revisar"?"No hay variantes para revisar. Aparecen acá cuando tocás "Iterar" en un ganador (salen en ~30 min).":"Nada por acá."}</div>`; return; }
   // si está escribiendo una corrección, no le borramos lo que tipeó: se repinta cuando suelta
   const editando = document.querySelectorAll("#lista .cambio").length || (document.activeElement && document.activeElement.closest("#lista input, #lista textarea"));
   if(editando){ pendiente = true; return; }
