@@ -286,7 +286,7 @@ function tarjeta(d){
     </div>
     <div class="cuerpo">
       <div class="fila"><div class="nombre">${esc(d.marca)}</div><div class="estrellas" title="Señal de que escala">${"★".repeat(d.senal||1)}${"☆".repeat(5-(d.senal||1))}</div></div>
-      <div class="meta"><span class="pill m">${esc(f === "otro" ? "Otro formato" : f + " · " + FMT[f])}</span>${d.estilo ? `<span class="pill">${esc(d.estilo)}</span>` : ""}${d.producto ? `<span class="pill">${esc(d.producto)}</span>` : ""}</div>
+      <div class="meta"><span class="pill m">${esc(f === "otro" ? "Otro formato" : f + " · " + FMT[f])}</span>${d.estilo ? `<span class="pill">${esc(d.estilo)}</span>` : ""}${d.producto ? `<span class="pill">${esc(d.producto)}</span>` : ""}${d.mixto ? `<span class="pill" style="background:var(--warn-bg);color:var(--warn)" title="${esc(d.mixto)}">Tiene tomas reales</span>` : ""}</div>
       <div class="nums">
         <div class="num"><b>${esc(d.dias)}</b><span>días activo</span></div>
         <div class="num"><b>${esc(d.dup)}</b><span>duplicados</span></div>
