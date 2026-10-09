@@ -290,6 +290,7 @@ pintarTabs();
 function chips(t){
   let h="";
   if(t.marca) h+=`<span class="chip m" style="--mc:${esc(MARCAS[t.marca]||"#888")}">${esc(t.marca)}</span>`;
+  if(t.repite==="lunes") h+=`<span class="chip">↻ cada lunes</span>`;
   if(t.min) h+=`<span class="chip min">${esc(t.min)} min</span>`;
   if(t.bloque==="corriendo") h+=`<span class="chip run">${esc(t.chat||"otro chat")}</span>`;
   if(t.bloque==="esperando"&&t.de) h+=`<span class="chip wait">de ${esc(t.de)}</span>`;
@@ -317,6 +318,14 @@ function fila(t){
   return d;
 }
 
+// Tareas que se repiten cada lunes (repite:"lunes"): cuentan como hechas solo si se tildaron
+// desde el último lunes; el lunes siguiente vuelven solas a Hoy.
+function ultimoLunes(){ const d=new Date(); d.setHours(0,0,0,0); d.setDate(d.getDate()-((d.getDay()+6)%7)); return d; }
+function semanal(t){
+  if(t.repite!=="lunes") return t;
+  const hecha=!!(t.hechoEn && new Date(t.hechoEn)>=ultimoLunes());
+  return {...t, hecho:hecha, bloque:"hoy"};
+}
 function render(){
   const hoy=hoyISO();
   let totH=0, totD=0;
@@ -548,7 +557,7 @@ async function conectar(){
     onSnapshot(collection(fs,"tablero_marcas"),snap=>{ marcas=snap.docs.map(d=>({id:d.id,...d.data()})); renderMarcas(); },()=>{});
   }
   onSnapshot(collection(fs,COL),snap=>{
-    docs=snap.docs.map(d=>({id:d.id,...d.data()}));
+    docs=snap.docs.map(d=>semanal({id:d.id,...d.data()}));
     render(); renderMarcas();
     $("#sync").textContent=snap.metadata.fromCache?"sincronizando…":"al día · "+new Date().toLocaleTimeString("es-AR",{hour:"2-digit",minute:"2-digit"});
   },()=>{ $("#sync").textContent="se cortó la conexión, recargá"; });
