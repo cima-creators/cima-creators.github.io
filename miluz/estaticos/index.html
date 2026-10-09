@@ -125,7 +125,9 @@ const $ = s => document.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const hoy = () => new Date().toLocaleDateString("sv-SE");
 const fFecha = f => { if (!f) return ""; const [y,m,d] = f.split("-"); return f === hoy() ? "Hoy" : `${+d}/${+m}`; };
-let quien = null, items = {}, tab = "elegir", filtroDia = "hoy", fb = null;
+let quien = null, items = {}, tab = "elegir", filtroDia = "hoy", filtroTipo = "todas", fb = null;
+const TIPO = d => d.ref?.nicho === "top" ? "top" : d.ref?.nicho === "otro" ? "otro" : "unas";
+const ORDEN_TIPO = {unas:0, top:1, otro:2};
 try { quien = CLAVES[localStorage.getItem("estaticos_clave")] || null; tab = localStorage.getItem("estaticos_tab") || "elegir"; } catch(e) {}
 
 function toast(t){ const el=$("#toast"); el.textContent=t; el.classList.add("on"); clearTimeout(toast.t); toast.t=setTimeout(()=>el.classList.remove("on"),2400); }
@@ -185,14 +187,15 @@ function pillsRef(r){
     <span class="pill a">${"★".repeat(s)}${"☆".repeat(5-s)}</span>
         ${r.dup ? `<span class="pill">${esc(r.dup)} duplicados</span>` : ""}
     ${r.perf ? `<span class="pill">${esc(r.perf)}</span>` : ""}
-    <span class="pill">${r.nicho === "otro" ? esc(r.cat || "Otro nicho") : "Uñas"}</span></div>`;
+    ${r.nicho === "top" ? `<span class="pill a">Marca top${r.cat ? " · " + esc(r.cat) : ""}</span>` : `<span class="pill">${r.nicho === "otro" ? esc(r.cat || "Otro nicho") : "Uñas"}</span>`}</div>`;
 }
 
 function vElegir(lista, hechasHoy, enCola){
   const dias = [...new Set(lista.map(d => d.fecha))].sort().reverse();
   if (!dias.includes(filtroDia) && filtroDia !== "todas") filtroDia = dias[0] || "todas";
   const vis = (filtroDia === "todas" ? lista : lista.filter(d => d.fecha === filtroDia))
-    .sort((a,b) => (a.ref?.nicho==='otro') - (b.ref?.nicho==='otro') || (b.ref?.senal||0) - (a.ref?.senal||0) || (b.ref?.d||0) - (a.ref?.d||0));
+    .filter(d => filtroTipo === "todas" || TIPO(d) === filtroTipo)
+    .sort((a,b) => ORDEN_TIPO[TIPO(a)] - ORDEN_TIPO[TIPO(b)] || (b.ref?.senal||0) - (a.ref?.senal||0) || (b.ref?.d||0) - (a.ref?.d||0));
   const usados = hechasHoy + enCola, pct = Math.min(100, usados / PIEZAS_DIA * 100);
   $("#vista").innerHTML = `
     <div class="banner"><div class="meter"><div class="lbl">Tu cupo de hoy</div>
@@ -200,9 +203,12 @@ function vElegir(lista, hechasHoy, enCola){
       <div class="bar"><i style="width:${pct}%"></i></div></div>
       <div class="sub" style="max-width:420px;margin:0">Son anuncios de otras marcas que llevan 30 días o más al aire (si siguen prendidos, venden). Tocá <b>La quiero</b> en las que te gusten y la hacemos con tus productos: en un rato aparecen en <b>Revisar</b>.</div></div>
     <div class="filtros">${dias.map(f => `<button class="chip ${f===filtroDia?"on":""}" data-f="${f}">${fFecha(f)} · ${lista.filter(d=>d.fecha===f).length}</button>`).join("")}
-      ${dias.length > 1 ? `<button class="chip ${filtroDia==="todas"?"on":""}" data-f="todas">Todas · ${lista.length}</button>` : ""}</div>
+      ${dias.length > 1 ? `<button class="chip ${filtroDia==="todas"?"on":""}" data-f="todas">Todos los días · ${lista.length}</button>` : ""}
+      <span style="width:1px;background:var(--line2);margin:0 4px"></span>
+      ${[["todas","Todas"],["unas","Uñas"],["top","Marcas top"],["otro","Otros rubros"]].map(([k,t]) => { const delDia = filtroDia === "todas" ? lista : lista.filter(d=>d.fecha===filtroDia); const n = k === "todas" ? delDia.length : delDia.filter(d=>TIPO(d)===k).length; return n || k === "todas" ? `<button class="chip ${filtroTipo===k?"on":""}" data-tipo="${k}">${t} · ${n}</button>` : ""; }).join("")}</div>
     ${vis.length ? `<div class="grid">${vis.map(cardElegir).join("")}</div>` : `<div class="vacio">No hay referencias nuevas. Todos los días a las 7 h llegan 30 más.</div>`}`;
   $("#vista").querySelectorAll("[data-f]").forEach(b => b.onclick = () => { filtroDia = b.dataset.f; pintar(); });
+  $("#vista").querySelectorAll("[data-tipo]").forEach(b => b.onclick = () => { filtroTipo = b.dataset.tipo; pintar(); });
   $("#vista").querySelectorAll(".card").forEach(c => {
     const id = c.dataset.id;
     c.querySelector(".img").onclick = () => zoom(items[id].ref.img);
