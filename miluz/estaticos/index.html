@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<title>Estáticos del día</title>
+<meta property="og:title" content="Estáticos del día">
+<meta property="og:description" content="Elegí, revisá y aprobá tus estáticos · CIMA">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',-apple-system,BlinkMacSystemFont,sans-serif}
+:root{--bg:#FAF7F4;--card:#FFFFFF;--soft:#F6F0EC;--line:#EFE6E1;--line2:#E0D2CB;--txt:#2A1F1F;--mut:#8A7B76;--mut2:#B7A8A2;
+  --acc:#7A2335;--acc-bg:#F6E3E6;--ok:#3F8F6B;--ok-bg:#E7F2EC;--warn:#A8742A;--warn-bg:#F7EEDD;--bad:#B5523A;--bad-bg:#F8E7DF;--r:20px}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#141112;--card:#1D191A;--soft:#252022;--line:#2F292B;--line2:#3D3538;--txt:#F2ECEA;--mut:#A99D99;--mut2:#7C716D;
+  --acc:#E58A9C;--acc-bg:#3A2028;--ok:#6CC59B;--ok-bg:#183126;--warn:#E0B061;--warn-bg:#352A16;--bad:#E8866D;--bad-bg:#3A2019}}
+:root[data-theme="dark"]{--bg:#141112;--card:#1D191A;--soft:#252022;--line:#2F292B;--line2:#3D3538;--txt:#F2ECEA;--mut:#A99D99;--mut2:#7C716D;
+  --acc:#E58A9C;--acc-bg:#3A2028;--ok:#6CC59B;--ok-bg:#183126;--warn:#E0B061;--warn-bg:#352A16;--bad:#E8866D;--bad-bg:#3A2019}
+body{background:var(--bg);color:var(--txt);min-height:100vh;-webkit-font-smoothing:antialiased;font-size:14px;line-height:1.5}
+.wrap{max-width:1240px;margin:0 auto;padding:24px 16px 80px}
+header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+h1{font-size:28px;font-weight:700;letter-spacing:-.03em;line-height:1.1}
+.sub{color:var(--mut);font-size:13px;margin-top:6px}
+.btn{background:var(--card);color:var(--txt);border:1px solid var(--line);padding:10px 16px;border-radius:14px;font-weight:600;font-size:13.5px;cursor:pointer;min-height:44px}
+.btn:hover{border-color:var(--line2)}
+.btn.acc{background:var(--acc);color:#fff;border-color:var(--acc)}
+.btn.ok{background:var(--ok);color:#fff;border-color:var(--ok)}
+.btn.no{color:var(--bad)}
+.btn.sm{min-height:36px;padding:7px 12px;font-size:12.5px}
+.btn:disabled{opacity:.45;cursor:default}
+.tabs{display:flex;gap:4px;background:var(--soft);border:1px solid var(--line);border-radius:16px;padding:4px;max-width:100%;overflow-x:auto;margin-bottom:16px;width:max-content}
+.tab{border:0;background:transparent;color:var(--mut);font-weight:600;font-size:13px;padding:9px 14px;border-radius:12px;cursor:pointer;white-space:nowrap}
+.tab.on{background:var(--card);color:var(--txt);box-shadow:0 1px 4px rgba(42,31,31,.08)}
+.tab b{display:inline-block;margin-left:6px;min-width:20px;padding:0 6px;border-radius:99px;background:var(--acc-bg);color:var(--acc);font-size:11px}
+.banner{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;margin-bottom:16px;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.meter{flex:1;min-width:180px}
+.meter .bar{height:8px;border-radius:99px;background:var(--soft);overflow:hidden;margin-top:6px}
+.meter .bar i{display:block;height:100%;background:var(--acc);border-radius:99px}
+.filtros{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.chip{border:1px solid var(--line);background:var(--card);color:var(--mut);border-radius:99px;padding:6px 12px;font-size:12.5px;font-weight:500;cursor:pointer}
+.chip.on{background:var(--txt);color:var(--bg);border-color:var(--txt)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,290px),1fr));gap:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;display:flex;flex-direction:column}
+.card.sel{border-color:var(--acc);box-shadow:0 0 0 2px var(--acc)}
+.card .img{background:var(--soft);aspect-ratio:4/5;position:relative;cursor:zoom-in}
+.card .img img{width:100%;height:100%;object-fit:contain;display:block}
+.card .img .tag{position:absolute;left:10px;top:10px;background:rgba(20,15,15,.72);color:#fff;font-size:11px;font-weight:600;padding:4px 9px;border-radius:99px}
+.card .body{padding:14px;display:flex;flex-direction:column;gap:8px;flex:1}
+.pills{display:flex;flex-wrap:wrap;gap:5px}
+.pill{font-size:11.5px;font-weight:500;padding:3px 10px;border-radius:99px;background:var(--soft);color:var(--mut)}
+.pill.a{background:var(--acc-bg);color:var(--acc)}
+.pill.ok{background:var(--ok-bg);color:var(--ok)} .pill.warn{background:var(--warn-bg);color:var(--warn)} .pill.bad{background:var(--bad-bg);color:var(--bad)}
+.card h3{font-size:15.5px;font-weight:600;letter-spacing:-.01em;line-height:1.3}
+.lbl{font-size:10.5px;font-weight:600;letter-spacing:.11em;text-transform:uppercase;color:var(--mut)}
+.card p{font-size:13px;color:var(--txt)}
+.card p.m{color:var(--mut)}
+.idea{background:var(--acc-bg);border-radius:14px;padding:10px 12px}
+.idea .lbl{color:var(--acc)}
+.acciones{display:flex;gap:8px;flex-wrap:wrap;margin-top:auto;padding-top:6px}
+.acciones .btn{flex:1}
+textarea{width:100%;border:1px solid var(--line);border-radius:14px;padding:10px 12px;font-size:13.5px;background:var(--soft);color:var(--txt);resize:vertical;min-height:64px}
+textarea:focus{outline:none;border-color:var(--line2)}
+details summary{cursor:pointer;color:var(--mut);font-size:12.5px;font-weight:500}
+/* revisar */
+.rev{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px;margin-bottom:12px}
+.rev-top{display:flex;gap:12px;align-items:flex-start;margin-bottom:12px}
+.rev-top img{width:64px;height:80px;object-fit:cover;border-radius:10px;background:var(--soft);cursor:zoom-in;flex-shrink:0}
+.vars{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:10px}
+.var{border:2px solid var(--line);border-radius:16px;overflow:hidden;cursor:pointer;position:relative;background:var(--soft)}
+.var.on{border-color:var(--ok)}
+.var img{width:100%;aspect-ratio:4/5;object-fit:contain;display:block}
+.var .chk{position:absolute;right:10px;top:10px;width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.92);border:2px solid var(--line2);display:grid;place-items:center;font-weight:700;color:var(--ok)}
+.var.on .chk{background:var(--ok);border-color:var(--ok);color:#fff}
+.var .pie{padding:8px 10px;font-size:12px;color:var(--mut);display:flex;justify-content:space-between;gap:8px;align-items:center;background:var(--card)}
+.aviso{background:var(--warn-bg);color:var(--warn);border-radius:12px;padding:8px 11px;font-size:12.5px;margin-top:10px}
+.hist{font-size:12px;color:var(--mut);margin-top:10px}
+.cambio{display:none;margin-top:12px;gap:8px;flex-direction:column}
+.cambio.on{display:flex}
+.vacio{text-align:center;color:var(--mut);padding:56px 20px;background:var(--card);border:1px dashed var(--line2);border-radius:var(--r)}
+.dia{font-size:13px;font-weight:600;color:var(--mut);margin:18px 0 10px}
+#login{max-width:360px;margin:14vh auto;background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:28px}
+#login input{width:100%;margin:16px 0 10px;padding:12px 14px;border:1px solid var(--line);border-radius:14px;font-size:15px;background:var(--soft);color:var(--txt)}
+#lb{position:fixed;inset:0;background:rgba(10,8,8,.88);display:none;align-items:center;justify-content:center;z-index:20;padding:16px;cursor:zoom-out}
+#lb.on{display:flex}
+#lb img{max-width:100%;max-height:100%;border-radius:12px}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--txt);color:var(--bg);padding:11px 18px;border-radius:99px;font-size:13px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:30}
+.toast.on{opacity:1}
+a{color:var(--acc)}
+</style>
+</head>
+<body>
+<div id="login">
+  <h1>Estáticos del día</h1>
+  <p class="sub">Entrá con tu clave.</p>
+  <input id="clave" type="password" placeholder="Clave" autocomplete="current-password">
+  <button class="btn acc" id="entrar" style="width:100%">Entrar</button>
+  <p id="login-e" class="sub" style="color:var(--bad)"></p>
+</div>
+<div class="wrap" id="app" hidden>
+  <header>
+    <div><h1>Estáticos del día</h1><div class="sub" id="resumen">Cargando…</div></div>
+    <button class="btn" id="salir">Salir</button>
+  </header>
+  <div class="tabs" id="tabs"></div>
+  <div id="vista"></div>
+</div>
+<div id="lb"><img alt=""></div>
+<div class="toast" id="toast"></div>
+<script type="module">
+const MARCA = location.pathname.split("/").filter(Boolean)[0] || new URLSearchParams(location.search).get("marca") || "miluz";
+const NOMBRES = {miluz:"Mi Luz"};
+const CLAVES = {"miluz-2026":"Luz","cima-2026":"Nacho"};
+const PIEZAS_DIA = 9;
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const hoy = () => new Date().toLocaleDateString("sv-SE");
+const fFecha = f => { if (!f) return ""; const [y,m,d] = f.split("-"); return f === hoy() ? "Hoy" : `${+d}/${+m}`; };
+let quien = null, items = {}, tab = "elegir", filtroDia = "hoy", fb = null;
+try { quien = CLAVES[localStorage.getItem("estaticos_clave")] || null; tab = localStorage.getItem("estaticos_tab") || "elegir"; } catch(e) {}
+
+function toast(t){ const el=$("#toast"); el.textContent=t; el.classList.add("on"); clearTimeout(toast.t); toast.t=setTimeout(()=>el.classList.remove("on"),2400); }
+function zoom(src){ $("#lb img").src = src; $("#lb").classList.add("on"); }
+$("#lb").onclick = () => $("#lb").classList.remove("on");
+
+$("#entrar").onclick = () => { const c = $("#clave").value.trim(); if (!CLAVES[c]) { $("#login-e").textContent = "Clave incorrecta."; return; }
+  try { localStorage.setItem("estaticos_clave", c); } catch(e) {} quien = CLAVES[c]; iniciar(); };
+$("#clave").onkeydown = e => { if (e.key === "Enter") $("#entrar").click(); };
+$("#salir").onclick = () => { try { localStorage.removeItem("estaticos_clave"); } catch(e) {} location.reload(); };
+if (quien) iniciar();
+
+async function iniciar(){
+  $("#login").hidden = true; $("#app").hidden = false;
+  document.title = `Estáticos · ${NOMBRES[MARCA] || MARCA}`;
+  const [{initializeApp},{getFirestore,collection,doc,onSnapshot,updateDoc,query,where},{getAuth,signInAnonymously}] = await Promise.all([
+    import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js"),
+    import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js"),
+    import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js")]);
+  const app = initializeApp({apiKey:"AIzaSyCTv4DiRCpbCpGYP6E86TPHlkPvaAZTN3g",authDomain:"cleargy-creators.firebaseapp.com",projectId:"cleargy-creators",storageBucket:"cleargy-creators.firebasestorage.app",messagingSenderId:"313543582398",appId:"1:313543582398:web:99fe78991adeea2e7cb4ef"});
+  await signInAnonymously(getAuth(app));
+  const db = getFirestore(app);
+  fb = {db, doc, updateDoc};
+  onSnapshot(query(collection(db,"estaticos"), where("marca","==",MARCA)), snap => {
+    items = {}; snap.forEach(d => items[d.id] = {id:d.id, ...d.data()}); pintar();
+  }, err => { $("#resumen").textContent = "No se pudo leer: " + err.message; });
+}
+
+async function marcar(id, datos, msg){
+  try { await fb.updateDoc(fb.doc(fb.db,"estaticos",id), {...datos, por:quien, actualizado:new Date().toISOString()}); toast(msg); }
+  catch(e){ toast("No se guardó: " + e.message); }
+}
+
+const GRUPOS = {
+  elegir: d => d.estado === "elegir",
+  proceso: d => ["elegida","generando","modificar","error"].includes(d.estado),
+  revisar: d => d.estado === "revisar",
+  listas: d => ["aprobada","lista"].includes(d.estado),
+  descartadas: d => d.estado === "descartada",
+};
+const TITULOS = {elegir:"Elegir", proceso:"En proceso", revisar:"Revisar", listas:"Listas", descartadas:"Descartadas"};
+
+function pintar(){
+  const todos = Object.values(items);
+  const n = k => todos.filter(GRUPOS[k]).length;
+  const hechasHoy = todos.filter(d => d.generadoDia === hoy()).length;
+  const enCola = todos.filter(d => d.estado === "elegida").length;
+  $("#resumen").textContent = `${NOMBRES[MARCA] || MARCA} · ${n("revisar")} para revisar · ${hechasHoy} de ${PIEZAS_DIA} piezas hoy` + (enCola ? ` · ${enCola} en cola` : "");
+  $("#tabs").innerHTML = Object.keys(GRUPOS).map(k => `<button class="tab ${k===tab?"on":""}" data-t="${k}">${TITULOS[k]}${n(k)&&k!=="descartadas"?`<b>${n(k)}</b>`:""}</button>`).join("");
+  $("#tabs").querySelectorAll(".tab").forEach(b => b.onclick = () => { tab = b.dataset.t; try{localStorage.setItem("estaticos_tab",tab)}catch(e){} pintar(); });
+  ({elegir:vElegir, proceso:vProceso, revisar:vRevisar, listas:vListas, descartadas:vDescartadas})[tab](todos.filter(GRUPOS[tab]), hechasHoy, enCola);
+}
+
+function pillsRef(r){
+  const s = r.senal ?? 0;
+  return `<div class="pills">
+    <span class="pill a">${"★".repeat(s)}${"☆".repeat(5-s)}</span>
+    <span class="pill">${esc(r.d)} días al aire</span>
+    ${r.dup ? `<span class="pill">${esc(r.dup)} duplicados</span>` : ""}
+    ${r.perf ? `<span class="pill">${esc(r.perf)}</span>` : ""}
+    <span class="pill">${r.nicho === "otro" ? esc(r.cat || "Otro nicho") : "Uñas"}</span></div>`;
+}
+
+function vElegir(lista, hechasHoy, enCola){
+  const dias = [...new Set(lista.map(d => d.fecha))].sort().reverse();
+  if (!dias.includes(filtroDia) && filtroDia !== "todas") filtroDia = dias[0] || "todas";
+  const vis = (filtroDia === "todas" ? lista : lista.filter(d => d.fecha === filtroDia))
+    .sort((a,b) => (a.ref?.nicho==='otro') - (b.ref?.nicho==='otro') || (b.ref?.senal||0) - (a.ref?.senal||0) || (b.ref?.d||0) - (a.ref?.d||0));
+  const usados = hechasHoy + enCola, pct = Math.min(100, usados / PIEZAS_DIA * 100);
+  $("#vista").innerHTML = `
+    <div class="banner"><div class="meter"><div class="lbl">Tu cupo de hoy</div>
+      <div style="font-size:14px;margin-top:2px"><b>${Math.min(usados,PIEZAS_DIA)} de ${PIEZAS_DIA}</b> piezas elegidas${usados > PIEZAS_DIA ? ` · ${usados-PIEZAS_DIA} pasan a mañana` : ""}</div>
+      <div class="bar"><i style="width:${pct}%"></i></div></div>
+      <div class="sub" style="max-width:420px;margin:0">Son anuncios de otras marcas que llevan 30 días o más al aire (si siguen prendidos, venden). Tocá <b>La quiero</b> en las que te gusten y la hacemos con tus productos: en un rato aparecen en <b>Revisar</b>.</div></div>
+    <div class="filtros">${dias.map(f => `<button class="chip ${f===filtroDia?"on":""}" data-f="${f}">${fFecha(f)} · ${lista.filter(d=>d.fecha===f).length}</button>`).join("")}
+      ${dias.length > 1 ? `<button class="chip ${filtroDia==="todas"?"on":""}" data-f="todas">Todas · ${lista.length}</button>` : ""}</div>
+    ${vis.length ? `<div class="grid">${vis.map(cardElegir).join("")}</div>` : `<div class="vacio">No hay referencias nuevas. Todos los días a las 7 h llegan 30 más.</div>`}`;
+  $("#vista").querySelectorAll("[data-f]").forEach(b => b.onclick = () => { filtroDia = b.dataset.f; pintar(); });
+  $("#vista").querySelectorAll(".card").forEach(c => {
+    const id = c.dataset.id;
+    c.querySelector(".img").onclick = () => zoom(items[id].ref.img);
+    c.querySelector(".si").onclick = () => marcar(id, {estado:"elegida", elegidaEn:new Date().toISOString(), notaElegir:c.querySelector("textarea").value.trim()}, "Elegida: en un rato está en Revisar");
+    c.querySelector(".no").onclick = () => marcar(id, {estado:"descartada", descartadaEn:"elegir"}, "Descartada");
+  });
+}
+function cardElegir(d){
+  const r = d.ref || {};
+  return `<div class="card" data-id="${esc(d.id)}">
+    <div class="img"><img loading="lazy" src="${esc(r.img)}" alt=""><span class="tag">${esc(r.m)}</span></div>
+    <div class="body">${pillsRef(r)}
+      <h3>${esc(d.formato)}</h3>
+      <div><div class="lbl">Por qué funciona</div><p class="m">${esc(d.porque)}</p></div>
+      <div class="idea"><div class="lbl">Así quedaría en ${esc(NOMBRES[MARCA]||MARCA)}</div><p>${esc(d.idea)}</p></div>
+      <details><summary>Agregar un pedido (opcional)</summary><textarea placeholder="Ej: con el Ultra Efecto Gel rojo, fondo rosa"></textarea></details>
+      ${r.link ? `<a href="${esc(r.link)}" target="_blank" rel="noopener" style="font-size:12px">Ver el anuncio original</a>` : ""}
+      <div class="acciones"><button class="btn no sm">No</button><button class="btn acc si">La quiero</button></div>
+    </div></div>`;
+}
+
+function vProceso(lista, hechasHoy){
+  const orden = {generando:0, modificar:1, elegida:2, error:3};
+  lista.sort((a,b) => orden[a.estado]-orden[b.estado] || String(a.elegidaEn).localeCompare(String(b.elegidaEn)));
+  let cupo = Math.max(0, PIEZAS_DIA - hechasHoy);
+  $("#vista").innerHTML = lista.length ? `<div class="grid">${lista.map(d => {
+    let est;
+    if (d.estado === "generando") est = `<span class="pill warn">Generándose ahora</span>`;
+    else if (d.estado === "modificar") est = `<span class="pill warn">Aplicando tu cambio</span>`;
+    else if (d.estado === "error") est = `<span class="pill bad">Hubo un error, lo estamos viendo</span>`;
+    else est = cupo-- > 0 ? `<span class="pill">En cola · sale hoy</span>` : `<span class="pill">En cola · sale mañana</span>`;
+    const img = d.variantes?.[0]?.url || d.ref?.img;
+    return `<div class="card"><div class="img" onclick="void 0"><img loading="lazy" src="${esc(img)}" alt=""><span class="tag">${esc(d.codigo || d.ref?.m)}</span></div>
+      <div class="body"><div class="pills">${est}</div><h3>${esc(d.formato)}</h3>
+      ${d.notaElegir ? `<p class="m">Tu pedido: ${esc(d.notaElegir)}</p>` : ""}${d.notaModificar ? `<p class="m">Cambio: ${esc(d.notaModificar)}</p>` : ""}
+      ${d.estado === "error" && quien === "Nacho" ? `<p class="m" style="color:var(--bad)">${esc(d.error)}</p><div class="acciones"><button class="btn sm" data-re="${esc(d.id)}">Reintentar</button></div>` : ""}
+      </div></div>`; }).join("")}</div>`
+    : `<div class="vacio">Nada en proceso. Elegí referencias en la pestaña Elegir.</div>`;
+  $("#vista").querySelectorAll("[data-re]").forEach(b => b.onclick = () => marcar(b.dataset.re, {estado: items[b.dataset.re].variantes?.length ? "revisar" : "elegida", error:""}, "Vuelve a la cola"));
+}
+
+const sel = {};   // variantes marcadas por pieza
+function vRevisar(lista){
+  lista.sort((a,b) => String(a.actualizado).localeCompare(String(b.actualizado)));
+  $("#vista").innerHTML = lista.length ? lista.map(d => {
+    const vs = d.variantes || [];
+    sel[d.id] ??= new Set(vs.length === 1 ? [0] : []);
+    const malas = vs.filter(v => !v.ok);
+    return `<div class="rev" data-id="${esc(d.id)}">
+      <div class="rev-top"><img src="${esc(d.ref?.img)}" alt="" class="refimg" title="Referencia original">
+        <div style="min-width:0"><div class="pills"><span class="pill a">${esc(d.codigo)}</span>${d.maqueta ? `<span class="pill warn">Maqueta: antes de pautar, foto o frase real</span>` : ""}</div>
+        <h3 style="font-size:16px;margin-top:6px">${esc(d.formato)}</h3><p class="sub" style="margin-top:2px">${esc(d.idea)}</p></div></div>
+      <div class="vars">${vs.map((v,i) => `<div class="var ${sel[d.id].has(i)?"on":""}" data-i="${i}"><img loading="lazy" src="${esc(v.url)}" alt=""><span class="chk">✓</span>
+        <div class="pie"><span>Opción ${i+1}</span><button class="btn sm zoom" data-src="${esc(v.url)}">Ver grande</button></div></div>`).join("")}</div>
+      ${malas.length ? `<div class="aviso">Ojo, el control automático vio algo en ${malas.length === vs.length ? "las dos opciones" : "una opción"}: ${esc(malas.map(v=>(v.problemas||[])[0]).filter(Boolean).join(" · "))}</div>` : ""}
+      ${d.historial?.length > 1 ? `<div class="hist">${d.historial.map(esc).join("<br>")}</div>` : ""}
+      <div class="acciones"><button class="btn no sm desc">Descartar</button><button class="btn sm pedir">Pedir un cambio</button>
+        <button class="btn ok aprobar" ${sel[d.id].size?"":"disabled"}>Aprobar ${sel[d.id].size > 1 ? `las ${sel[d.id].size}` : "la marcada"}</button></div>
+      <div class="cambio"><textarea placeholder="¿Qué cambiamos? Ej: el título más grande, sacar la mano, fondo bordó"></textarea>
+        ${vs.length > 1 ? `<label class="sub" style="margin:0">Sobre la <select class="base">${vs.map((v,i)=>`<option value="${i}">opción ${i+1}</option>`).join("")}</select></label>` : ""}
+        <button class="btn acc enviar">Mandar el cambio</button></div>
+    </div>`; }).join("") : `<div class="vacio">No hay nada para revisar. Cuando una pieza esté lista aparece acá.</div>`;
+  $("#vista").querySelectorAll(".rev").forEach(c => {
+    const id = c.dataset.id, s = sel[id];
+    c.querySelector(".refimg").onclick = () => zoom(items[id].ref.img);
+    c.querySelectorAll(".var").forEach(v => v.onclick = e => { if (e.target.closest(".zoom")) return; const i = +v.dataset.i; s.has(i) ? s.delete(i) : s.add(i); pintar(); });
+    c.querySelectorAll(".zoom").forEach(b => b.onclick = () => zoom(b.dataset.src));
+    c.querySelector(".aprobar").onclick = () => marcar(id, {estado:"aprobada", aprobadas:[...s].sort(), aprobadaEn:new Date().toISOString()}, "Aprobada: va a tu carpeta de Drive");
+    c.querySelector(".desc").onclick = () => { if (confirm("¿Descartar esta pieza?")) marcar(id, {estado:"descartada", descartadaEn:"revisar"}, "Descartada"); };
+    c.querySelector(".pedir").onclick = () => c.querySelector(".cambio").classList.toggle("on");
+    c.querySelector(".enviar").onclick = () => { const t = c.querySelector(".cambio textarea").value.trim(); if (!t) return toast("Escribí qué cambiar");
+      const base = c.querySelector(".base") ? +c.querySelector(".base").value : 0;
+      marcar(id, {estado:"modificar", notaModificar:t, base}, "Cambio pedido: en un rato vuelve a Revisar"); };
+  });
+}
+
+function vListas(lista){
+  lista.sort((a,b) => String(b.entregadoEn || b.aprobadaEn).localeCompare(String(a.entregadoEn || a.aprobadaEn)));
+  $("#vista").innerHTML = lista.length ? `<p class="sub" style="margin:0 0 14px">Las aprobadas se guardan solas en tu Drive: <b>Mi Luz · Estáticos › Diario › fecha</b>. El nombre del archivo es el código que va en el nombre del anuncio en Meta.</p>
+    <div class="grid">${lista.flatMap(d => (d.aprobadas || [0]).map(i => d.variantes?.[i]).filter(Boolean).map((v,k) => `
+      <div class="card"><div class="img"><img loading="lazy" src="${esc(v.url)}" alt="" data-z="${esc(v.url)}"><span class="tag">${esc(d.codigo)}</span></div>
+      <div class="body"><div class="pills">${d.estado === "lista" ? `<span class="pill ok">En tu Drive · ${fFecha((d.entregado||"").split("/").pop())}</span>` : `<span class="pill warn">Copiándose a Drive</span>`}
+        ${d.maqueta ? `<span class="pill warn">Maqueta</span>` : ""}</div>
+        <h3>${esc(d.formato)}</h3>${d.archivos?.[k] ? `<p class="m">${esc(d.archivos[k])}</p>` : ""}
+        <a href="${esc(v.url)}" target="_blank" rel="noopener" style="font-size:12.5px">Abrir la imagen</a></div></div>`)).join("")}</div>`
+    : `<div class="vacio">Todavía no aprobaste ninguna.</div>`;
+  $("#vista").querySelectorAll("[data-z]").forEach(i => i.parentElement.onclick = () => zoom(i.dataset.z));
+}
+
+function vDescartadas(lista){
+  $("#vista").innerHTML = lista.length ? `<div class="grid">${lista.map(d => `<div class="card" data-id="${esc(d.id)}">
+    <div class="img"><img loading="lazy" src="${esc(d.variantes?.[0]?.url || d.ref?.img)}" alt=""><span class="tag">${esc(d.ref?.m)}</span></div>
+    <div class="body"><h3>${esc(d.formato)}</h3><div class="acciones"><button class="btn sm volver">Recuperar</button></div></div></div>`).join("")}</div>`
+    : `<div class="vacio">Nada descartado.</div>`;
+  $("#vista").querySelectorAll(".card").forEach(c => c.querySelector(".volver").onclick = () => {
+    const d = items[c.dataset.id]; marcar(d.id, {estado: d.variantes?.length ? "revisar" : "elegir"}, "Recuperada"); });
+}
+</script>
+</body>
+</html>
