@@ -51,18 +51,16 @@ h1{font-size:30px;font-weight:700;letter-spacing:-.03em;line-height:1.1}
 .mt{border:0;background:transparent;color:var(--mut);font-weight:600;font-size:13px;padding:8px 14px;border-radius:12px;cursor:pointer;white-space:nowrap}
 .mt.on{background:var(--card);color:var(--txt);box-shadow:0 1px 4px rgba(38,33,30,.08)}
 select{border:1px solid var(--line);background:var(--card);border-radius:14px;padding:9px 13px;font-size:13px;font-weight:500;min-height:42px}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:12px}
-@media (max-width:600px){.grid{grid-template-columns:minmax(0,1fr)}}
-.item{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:12px;display:flex;flex-direction:column;gap:10px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,250px),1fr));gap:12px;align-items:stretch}
+.item{background:var(--card);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;display:flex;flex-direction:column}
 .item.fuera{opacity:.55}
-.vid{aspect-ratio:9/16;width:100%;border-radius:16px;overflow:hidden;background:#1d1916;position:relative;max-height:480px}
-@media (max-width:600px){.vid{max-height:72vh}}
+.vid{aspect-ratio:4/5;width:100%;overflow:hidden;background:#1d1916;position:relative;border-bottom:1px solid var(--line)}
 .vid video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#1d1916}
 .vid .tag{position:absolute;top:10px;left:10px;font-size:11px;font-weight:600;padding:4px 10px;border-radius:99px;background:rgba(38,33,30,.72);color:#fff}
 .vid .tag.r{left:auto;right:10px}
 .vid .tag.nueva{background:var(--warn)}
 .vid .tag.hecho{background:var(--ok)}
-.cuerpo{padding:2px 4px 4px;display:flex;flex-direction:column;gap:9px;flex:1}
+.cuerpo{padding:12px 14px 14px;display:flex;flex-direction:column;gap:9px;flex:1}
 .fila{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
 .nombre{font-size:16px;font-weight:700;letter-spacing:-.02em;line-height:1.25;overflow-wrap:anywhere}
 .estrellas{font-size:12px;color:var(--warn);white-space:nowrap;letter-spacing:1px}
@@ -86,7 +84,7 @@ h4{font-size:10.5px;font-weight:600;color:var(--mut);text-transform:uppercase;le
 .aviso.w{background:var(--warn-bg);color:var(--warn)}
 .aviso.ok{background:var(--ok-bg);color:var(--ok)}
 .aviso.mal{background:var(--bad-bg);color:var(--bad)}
-.final{border:2px solid var(--ok);border-radius:18px;overflow:hidden}
+.final{border-bottom:3px solid var(--ok)}
 details{background:var(--soft);border-radius:14px;padding:10px 12px}
 summary{cursor:pointer;font-weight:600;font-size:13px}
 .des{display:flex;flex-direction:column;gap:10px;margin-top:10px;font-size:12.5px}
@@ -282,7 +280,7 @@ function tarjeta(d){
   if (prod) botones = `<div class="acciones"><a class="btn ok" href="${esc(d.final)}" target="_blank" rel="noopener" download>Bajar el video</a>${d.finalSubs ? `<a class="btn chico" href="${esc(d.finalSubs)}" target="_blank" rel="noopener" download>Con subtítulos</a>` : ""}</div>`;
   return `<article class="item ${d.estado === "descartada" ? "fuera" : ""}">
     ${prod ? `<div class="vid final"><video src="${esc(d.final)}" preload="metadata" controls playsinline></video><span class="tag hecho">Mi Luz · ${esc(d.codigo || "")}</span></div>` : ""}
-    <div class="vid" ${prod ? 'style="max-height:220px"' : ""}>
+    <div class="vid" ${prod ? 'style="aspect-ratio:16/9"' : ""}>
       <video src="${esc(d.video)}" poster="${esc(d.thumb)}" preload="none" controls playsinline></video>
       <span class="tag ${d.fecha === hoy && d.estado === "nueva" ? "nueva" : ""}">${prod ? "Referencia · " : d.fecha === hoy && d.estado === "nueva" ? "Nueva · " : ""}${esc(d.duracion || "?")} s</span>
       <span class="tag r">${esc(d.fuente?.startsWith("TrendTrack") ? "TrendTrack" : "GetHookd")}</span>
