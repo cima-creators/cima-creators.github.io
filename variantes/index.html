@@ -122,6 +122,15 @@ h3{margin:4px 0 8px;font-size:10.5px;font-weight:600;color:var(--mut);text-trans
 .barras i{flex:1;background:var(--line2);border-radius:3px 3px 0 0;min-height:2px}
 .barras i.en{background:var(--ok)}
 [hidden]{display:none!important}
+#vvar{position:fixed;inset:0;background:rgba(38,33,30,.45);z-index:20;overflow:auto;padding:24px 16px}
+#vvar .panel{max-width:1240px;margin:0 auto;background:var(--bg);border-radius:26px;padding:22px 22px 40px;position:relative}
+#vvar .cerrar{position:absolute;right:18px;top:18px}
+#vvar h2.tt{font-size:22px;font-weight:700;letter-spacing:-.02em;margin:0 50px 14px 0}
+.revbtn{background:var(--warn-bg);color:var(--warn);border:0;border-radius:12px;font-weight:600;font-size:13px;padding:9px 14px;cursor:pointer;min-height:40px}
+.cuantas{display:none;grid-template-columns:auto 1fr 1fr 1fr;gap:6px;align-items:center}
+.cuantas.on{display:grid}
+.cuantas span{font-size:12px;color:var(--mut);font-weight:600;margin-right:2px}
+body.modal{overflow:hidden}
 .filtros{background:var(--soft);border:1px solid var(--line);border-radius:20px;padding:12px 14px;margin-bottom:14px;display:flex;flex-direction:column;gap:10px}
 .aplicados{display:flex;align-items:center;gap:7px;flex-wrap:wrap;font-size:13px;font-weight:600}
 .aplicados .ap{display:inline-flex;align-items:center;gap:6px;background:var(--txt);color:#fff;border-radius:99px;padding:5px 7px 5px 13px;font-weight:500;font-size:12.5px}
@@ -144,6 +153,23 @@ h3{margin:4px 0 8px;font-size:10.5px;font-weight:600;color:var(--mut);text-trans
 @media (max-width:700px){.resumen-sem{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .resumen-sem .kpi{cursor:default}
 .badge{position:absolute;right:10px;top:10px;background:var(--ok);color:#fff;font-size:11px;font-weight:600;padding:3px 9px;border-radius:99px}
+/* Paleta Mi Luz (Nacho 9/10: "la estética para Luz va así"): bordó + rosa suave */
+:root{--acc:#7B2340;--acc-bg:#F8E6EB;--acc2:#5E1A31}
+.btn.ok{background:var(--acc);border-color:var(--acc);color:#fff}
+.btn.ok:hover{background:var(--acc2)}
+.btn.no{color:var(--acc)}
+.cab .av{background:var(--acc-bg);color:var(--acc)}
+.pill.roas{background:var(--acc-bg);color:var(--acc)}
+.st.ok b{color:var(--acc)}
+.barras i.en{background:var(--acc)}
+.badge{background:var(--acc)}
+.chip.on,.aplicados .ap,.btn.dark{background:#2A201E;border-color:#2A201E}
+.revbtn{background:var(--acc-bg);color:var(--acc)}
+.drop>button .dot{background:var(--acc)}
+.menu button.sel:after{color:var(--acc)}
+.kpi.on{border-color:var(--acc);box-shadow:0 0 0 1px var(--acc)}
+.kpi.alerta .v{color:var(--acc)}
+.cab .t small i.ok{background:#3F8F6B}
 </style>
 </head>
 <body>
@@ -162,8 +188,8 @@ h3{margin:4px 0 8px;font-size:10.5px;font-weight:600;color:var(--mut);text-trans
   <div class="marcas" id="vistas"></div>
   <div class="marcas" id="marcas"></div>
   <div id="vsem" hidden><div class="filtros" id="filtros"></div><div class="resumen-sem" id="rsem"></div><div class="grilla" id="gsem"></div></div>
-  <div id="vvar"><div class="top"><div class="hero" id="hero"></div><div class="kpis" id="tabs"></div></div>
-  <div id="lista"></div></div>
+  <div id="vvar" hidden><div class="panel"><button class="btn cerrar" id="cerrarVar">✕ Cerrar</button><h2 class="tt" id="ttVar">Variantes</h2><div class="top"><div class="hero" id="hero"></div><div class="kpis" id="tabs"></div></div>
+  <div id="lista"></div></div></div>
 </div>
 <div class="toast" id="toast"></div>
 <script type="module">
@@ -174,6 +200,7 @@ const $ = s => document.querySelector(s);
 const ESTADOS = [["revisar","Para revisar"],["procesando","Generándose"],["corregir","Corrigiéndose"],["subido","Aprobadas"],["rechazado","Descartadas"],["error","Con error"]];
 const TIPO = {estatico:"Estático", video:"Video", animado:"Animado"};
 let quien = null, items = {}, filtro = "revisar", fb = null, pendiente = false, semana = {};
+let soloAd = null;
 const F = {vista:"semana", per:7, roas:1.8, ventas:10, orden:"ventas", tipo:"todos"};
 const TIPOS_SEM = {ugc:"UGC", founder:"Founder", broll:"B-roll", animado:"Animado", estatico:"Estático"};
 try { Object.assign(F, JSON.parse(localStorage.getItem("variantes_filtros")||"{}")); } catch(e) {}
@@ -215,14 +242,14 @@ const fdia = f => (f||"").slice(0,10).split("-").reverse().slice(0,2).join("/");
 const num = n => Number(n||0).toLocaleString("es-AR",{maximumFractionDigits:0});
 
 function guardarF(){ try { localStorage.setItem("variantes_filtros", JSON.stringify(F)); } catch(e) {} }
+function abrirVariantes(ad){ soloAd = ad || null; filtro = "revisar"; $("#vvar").hidden = false; document.body.classList.add("modal"); pintar(); }
+function cerrarVariantes(){ $("#vvar").hidden = true; document.body.classList.remove("modal"); soloAd = null; pintar(); }
+document.addEventListener("keydown", e => { if(e.key==="Escape" && !$("#vvar").hidden) cerrarVariantes(); });
 function pintar(){
-  const pr = Object.values(items).filter(it=>it.estado==="revisar").length;
-  $("#vistas").innerHTML = [["semana","Ganadores de la semana"],["variantes","Variantes"]].map(([v,t]) =>
-    `<button class="mt ${F.vista===v?"on":""}" data-v="${v}">${t}${v==="variantes"&&pr?`<b>${pr}</b>`:""}</button>`).join("");
-  document.querySelectorAll("[data-v]").forEach(b=>b.onclick=()=>{F.vista=b.dataset.v; guardarF(); pintar();});
-  $("#vsem").hidden = F.vista!=="semana"; $("#vvar").hidden = F.vista!=="variantes";
-  if(F.vista==="semana"){ pintarSemana(); return; }
-  pintarVariantes();
+  $("#vistas").hidden = true; $("#vsem").hidden = false;
+  $("#cerrarVar").onclick = cerrarVariantes;
+  pintarSemana();
+  if(!$("#vvar").hidden) pintarVariantes();
 }
 
 const BE = {miluz:1.8};
@@ -252,12 +279,14 @@ function pintarSemana(){
   const lab = k => (OPS[k].find(o=>o[0]===F[k])||[,""])[1];
   const ap = Object.keys(DEF).filter(k=>F[k]!==DEF[k]);
   $("#filtros").innerHTML = `
+    ${(()=>{ const pr = Object.values(items).filter(it=>it.estado==="revisar").length; return pr?`<div><button class="revbtn" id="abrirRev">${pr} ${pr===1?"variante espera":"variantes esperan"} tu revisión →</button></div>`:""; })()}
     <div class="aplicados">Filtros aplicados (${ap.length}):${ap.length?ap.map(k=>`<span class="ap">${NOM[k]} <b>${lab(k)}</b><button data-quitar="${k}" title="Quitar">✕</button></span>`).join(""):` <span style="font-weight:400;color:var(--mut)">ninguno · 7 días, ROAS 1,8+, 10+ ventas</span>`}</div>
     <div class="drops">${Object.keys(OPS).map(k=>`<div class="drop" data-drop="${k}"><button>${IC[k]}${NOM[k]}: <b>${lab(k)}</b>${F[k]!==DEF[k]?'<span class="dot"></span>':''}<span class="car">▾</span></button>
       <div class="menu">${OPS[k].map(([v,t])=>`<button class="${F[k]===v?"sel":""}" data-f="${k}" data-val="${v}">${t}</button>`).join("")}</div></div>`).join("")}</div>`;
   document.querySelectorAll("[data-drop]>button").forEach(b=>b.onclick=e=>{ e.stopPropagation(); const d=b.parentElement, on=d.classList.contains("on");
     document.querySelectorAll(".drop.on").forEach(x=>x.classList.remove("on")); if(!on) d.classList.add("on"); });
   document.querySelectorAll("[data-f]").forEach(b=>b.onclick=()=>{ const v=b.dataset.val; F[b.dataset.f] = isNaN(+v)? v : +v; guardarF(); pintar(); });
+  $("#abrirRev") && ($("#abrirRev").onclick = () => abrirVariantes(null));
   document.querySelectorAll("[data-quitar]").forEach(b=>b.onclick=()=>{ F[b.dataset.quitar]=DEF[b.dataset.quitar]; guardarF(); pintar(); });
   const filas = [];
   for(const m of marcas){ if(marcaF!=="todas" && marcas.length>1 && m!==marcaF) continue;
@@ -279,9 +308,10 @@ function pintarSemana(){
   if(!filas.length){ $("#gsem").innerHTML = `<div class="vacio" style="grid-column:1/-1">${Object.keys(semana).length?"Ningún anuncio pasa esos filtros. Bajá el ROAS o las ventas.":"Todavía no llegaron datos de la semana: llegan con la rutina de la 1:00 de la marca."}</div>`; return; }
   const conVar = {}; Object.values(items).forEach(it=>{ conVar[it.adId]=(conVar[it.adId]||0)+1; });
   $("#gsem").innerHTML = filas.map((x,i)=>tarjetaSemana(x,i,conVar[x.a.id]||0)).join("");
-  document.querySelectorAll("#gsem .iterar").forEach(b=>b.onclick=()=>pedirIterar(b.dataset.m, b.dataset.ad, "pedido"));
+  document.querySelectorAll("#gsem .iterar").forEach(b=>b.onclick=()=>{ const c=document.querySelector(`[data-cuantas="${b.dataset.ad}"]`); c.classList.toggle("on"); });
+  document.querySelectorAll("#gsem .pedir").forEach(b=>b.onclick=()=>pedirIterar(b.dataset.m, b.dataset.ad, "pedido", +b.dataset.n));
   document.querySelectorAll("#gsem .cancelar-it").forEach(b=>b.onclick=()=>pedirIterar(b.dataset.m, b.dataset.ad, "cancelado"));
-  document.querySelectorAll("#gsem .ver-var").forEach(b=>b.onclick=()=>{ F.vista="variantes"; guardarF(); pintar(); window.scrollTo(0,0); });
+  document.querySelectorAll("#gsem .ver-var").forEach(b=>b.onclick=()=>abrirVariantes(b.dataset.ad));
   document.querySelectorAll("#gsem .vid[data-drive]").forEach(vd=>vd.addEventListener("click",()=>{ const u=vd.dataset.link; if(u) window.open(u,"_blank","noopener"); }));
 }
 function tarjetaSemana(x, i, nvar){
@@ -300,7 +330,7 @@ function tarjetaSemana(x, i, nvar){
     <div class="cuerpo">
       <div class="stats"><div class="st ${rc}"><span>ROAS</span><b>${w.roas.toFixed(2)}</b></div><div class="st"><span>Ventas</span><b>${num(w.c)}</b></div></div>
       <div class="barras" title="Ventas por día">${dias.map(d=>`<i class="${d.f>=w.desde?"en":""}" style="height:${Math.round(d.c/max*100)}%" title="${fdia(d.f)}: ${d.c} ventas"></i>`).join("")}</div>
-      <div class="sub2">Facturó ${num(w.v)} ${esc(x.mon)} · ventas por día, en verde el período elegido</div>
+      <div class="sub2">Facturó ${num(w.v)} ${esc(x.mon)} · ventas por día · marcado el período elegido</div>
       ${botonIterar(x, nvar)}
     </div></div>`;
 }
@@ -308,20 +338,22 @@ function tarjetaSemana(x, i, nvar){
 function botonIterar(x, nvar){
   const p = ((semana[x.m]||{}).pedidos||{})[x.a.id] || {};
   const att = `data-m="${esc(x.m)}" data-ad="${esc(x.a.id)}"`;
-  if(p.estado==="pedido") return `<div class="acciones" style="grid-template-columns:1fr auto"><button class="btn dark" disabled>En cola · sale en ~30 min</button><button class="btn no cancelar-it" ${att} title="Cancelar">✕</button></div>`;
+  if(p.estado==="pedido") return `<div class="acciones" style="grid-template-columns:1fr auto"><button class="btn dark" disabled>${p.n||4} en cola · salen en ~30 min</button><button class="btn no cancelar-it" ${att} title="Cancelar">✕</button></div>`;
   if(p.estado==="procesando") return `<div class="acciones" style="grid-template-columns:1fr"><button class="btn dark" disabled>Generando variantes…</button></div>`;
-  if(p.estado==="hecho" || nvar) return `<div class="acciones" style="grid-template-columns:1fr 1fr"><button class="btn ok ver-var">Ver variantes</button><button class="btn iterar" ${att}>Iterar de nuevo</button></div>`;
-  return `<div class="acciones" style="grid-template-columns:1fr"><button class="btn ok iterar" ${att}>Iterar este</button></div>`;
+  const cuantas = `<div class="cuantas" data-cuantas="${esc(x.a.id)}"><span>¿Cuántas?</span>${[3,5,9].map(k=>`<button class="btn dark pedir" ${att} data-n="${k}">${k}</button>`).join("")}</div>`;
+  if(p.estado==="hecho" || nvar) return `<div class="acciones" style="grid-template-columns:1fr 1fr"><button class="btn ok ver-var" data-ad="${esc(x.a.id)}">Variantes (${nvar})</button><button class="btn iterar" ${att}>Iterar de nuevo</button></div>${cuantas}`;
+  return `<div class="acciones" style="grid-template-columns:1fr"><button class="btn ok iterar" ${att}>Iterar este</button></div>${cuantas}`;
 }
-async function pedirIterar(m, ad, estado){
-  try { await fb.updateDoc(fb.doc(fb.db,"variantes_semana",m), {[`pedidos.${ad}`]: {estado, quien, cuando:new Date().toISOString()}});
+async function pedirIterar(m, ad, estado, n){
+  try { await fb.updateDoc(fb.doc(fb.db,"variantes_semana",m), {[`pedidos.${ad}`]: {estado, quien, n:n||4, cuando:new Date().toISOString()}});
     toast(estado==="pedido" ? "Listo: en la próxima vuelta (cada 30 min) se generan sus variantes" : "Cancelado");
   } catch(e){ toast("No se pudo guardar: "+e.message); }
 }
 
 function pintarVariantes(){
-  $("#marcas").hidden = false;
-  const todos = Object.entries(items);
+  const todos = Object.entries(items).filter(([,it]) => !soloAd || it.adId===soloAd);
+  const g0 = todos[0] && todos[0][1];
+  $("#ttVar").textContent = soloAd ? `Variantes de ${g0?.adNombre||g0?.codigo||"este anuncio"}` : "Variantes de los ganadores";
   const marcas = [...new Set(todos.map(([,it])=>it.marca))].sort(); const nom = m => (todos.find(([,it])=>it.marca===m)||[,{}])[1].marcaNombre||m;
   const deMarca = todos.filter(([,it]) => marcaF==="todas" || it.marca===marcaF);
   const cuenta = e => deMarca.filter(([,it])=>it.estado===e).length;
@@ -344,7 +376,6 @@ function pintarVariantes(){
   $("#tabs").innerHTML = ESTADOS.map(([e,t]) => `<button class="kpi ${cls(e)} ${e===filtro?"on":""}" data-e="${e}"><span class="l">${t}</span><span class="v">${cuenta(e)}</span></button>`).join("");
   if(marcaF!=="todas" && !marcas.includes(marcaF) && marcas.length) marcaF = "todas";
   const porRevisar = m => todos.filter(([,it]) => (m==="todas"||it.marca===m) && it.estado==="revisar").length;
-  $("#marcas").innerHTML = ["todas",...marcas].map(m=>`<button class="mt ${m===marcaF?"on":""}" data-m="${m}">${m==="todas"?"Todas las marcas":esc(nom(m))}${porRevisar(m)?`<b>${porRevisar(m)}</b>`:""}</button>`).join("");
   document.querySelectorAll("[data-e]").forEach(b=>b.onclick=()=>{filtro=b.dataset.e;pintar();});
   document.querySelectorAll("[data-m]").forEach(b=>b.onclick=()=>{marcaF=b.dataset.m; try{localStorage.setItem("variantes_marca",marcaF)}catch(e){} pintar();});
   const lista = deMarca.filter(([,it])=>it.estado===filtro)
