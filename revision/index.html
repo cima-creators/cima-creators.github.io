@@ -20,8 +20,10 @@ h1{font-size:20px;margin:0;font-weight:700;letter-spacing:-.01em}
 .tab{border:1px solid var(--line);background:var(--card);color:var(--ink2);border-radius:999px;padding:7px 14px;font:600 13px Inter,sans-serif;cursor:pointer}
 .tab b{font-weight:700;margin-left:4px;color:var(--ink)}
 .tab.on{background:var(--ink);color:var(--card);border-color:var(--ink)}.tab.on b{color:var(--card)}
-.marcas{display:flex;gap:6px;flex-wrap:wrap;margin:-6px 0 16px}
-.marcas .tab{padding:5px 12px;font-size:12px}
+.marcas{display:flex;gap:0;flex-wrap:wrap;margin:0 0 16px;border-bottom:1px solid var(--line)}
+.marcas .mt{border:0;background:none;color:var(--ink2);font:700 15px Inter,sans-serif;padding:10px 16px;cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-1px}
+.marcas .mt b{display:inline-block;margin-left:6px;min-width:22px;padding:1px 7px;border-radius:999px;background:var(--warn-bg);color:var(--warn);font-size:12px}
+.marcas .mt.on{color:var(--ink);border-bottom-color:var(--acc)}
 .item{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px;margin-bottom:14px;display:grid;grid-template-columns:minmax(0,300px) minmax(0,1fr);gap:18px}
 @media (max-width:760px){.item{grid-template-columns:minmax(0,1fr)}}
 .vid{aspect-ratio:9/16;width:100%;border-radius:10px;overflow:hidden;background:#000;position:relative}
@@ -71,8 +73,8 @@ a{color:var(--acc)}
     <div><h1>Revisión de videos</h1><div class="sub" id="resumen">Cargando…</div></div>
     <button class="b" id="salir">Salir</button>
   </header>
-  <div class="tabs" id="tabs"></div>
   <div class="marcas" id="marcas"></div>
+  <div class="tabs" id="tabs"></div>
   <div id="lista"></div>
 </div>
 <div class="toast" id="toast"></div>
@@ -80,7 +82,8 @@ a{color:var(--acc)}
 const CLAVES = {"vane-2026":"Vane","cima-2026":"Nacho","abril-2026":"Abril"};
 const $ = s => document.querySelector(s);
 const ESTADOS = [["revisar","Para revisar"],["procesando","Editándose"],["corregir","Corrigiéndose"],["subido","Aprobados"],["rechazado","Rechazados"],["error","Con error"]];
-let quien = null, items = {}, filtro = "revisar", marcaF = "todas", fb = null;
+let quien = null, items = {}, filtro = "revisar", fb = null;
+let marcaF = new URLSearchParams(location.search).get("marca") || (()=>{ try { return localStorage.getItem("revision_marca") } catch(e){ return null } })() || "todas";
 try { quien = CLAVES[localStorage.getItem("revision_clave")] || null; } catch(e) {}
 function toast(t){ const el=$("#toast"); el.textContent=t; el.classList.add("on"); setTimeout(()=>el.classList.remove("on"),2200); }
 function esc(s){ return String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
@@ -117,9 +120,11 @@ function pintar(){
   const cuenta = e => deMarca.filter(([,it])=>it.estado===e).length;
   $("#resumen").textContent = `Hola ${quien} · ${cuenta("revisar")} para revisar · ${cuenta("procesando")+cuenta("corregir")} editándose`;
   $("#tabs").innerHTML = ESTADOS.map(([e,t]) => `<button class="tab ${e===filtro?"on":""}" data-e="${e}">${t}<b>${cuenta(e)}</b></button>`).join("");
-  $("#marcas").innerHTML = marcas.length>1 ? ["todas",...marcas].map(m=>`<button class="tab ${m===marcaF?"on":""}" data-m="${m}">${m==="todas"?"Todas las marcas":esc(nom(m))}</button>`).join("") : "";
+  if(marcaF!=="todas" && !marcas.includes(marcaF) && marcas.length) marcaF = "todas";
+  const porRevisar = m => todos.filter(([,it]) => (m==="todas"||it.marca===m) && it.estado==="revisar").length;
+  $("#marcas").innerHTML = ["todas",...marcas].map(m=>`<button class="mt ${m===marcaF?"on":""}" data-m="${m}">${m==="todas"?"Todas":esc(nom(m))}${porRevisar(m)?`<b>${porRevisar(m)}</b>`:""}</button>`).join("");
   document.querySelectorAll("[data-e]").forEach(b=>b.onclick=()=>{filtro=b.dataset.e;pintar();});
-  document.querySelectorAll("[data-m]").forEach(b=>b.onclick=()=>{marcaF=b.dataset.m;pintar();});
+  document.querySelectorAll("[data-m]").forEach(b=>b.onclick=()=>{marcaF=b.dataset.m; try{localStorage.setItem("revision_marca",marcaF)}catch(e){} pintar();});
   const lista = deMarca.filter(([,it])=>it.estado===filtro).sort((a,b)=>(a[1].fechaCrudo||"").localeCompare(b[1].fechaCrudo||""));
   if(!lista.length){ $("#lista").innerHTML = `<div class="vacio">${filtro==="revisar"?"No hay videos para revisar. Los de hoy aparecen solos cuando terminan de editarse.":"Nada por acá."}</div>`; return; }
   // si está escribiendo una corrección, no le borramos lo que tipeó: se repinta cuando suelta
@@ -133,8 +138,9 @@ let pendiente = false;
 document.addEventListener("focusout", () => setTimeout(() => { if(pendiente && !document.querySelector("#lista .cambio, #lista .otro-broll:checked")) pintar(); }, 200));
 
 function tarjeta(id,it){
-  const vid = it.driveId
-    ? `<iframe src="https://drive.google.com/file/d/${esc(it.driveId)}/preview" allow="autoplay" loading="lazy"></iframe>`
+  const verId = it.vistaId || it.driveId;   // la versión liviana: Drive la prepara en 1-2 min
+  const vid = verId
+    ? `<iframe src="https://drive.google.com/file/d/${esc(verId)}/preview" allow="autoplay" loading="lazy"></iframe>`
     : `<div class="ph">${it.estado==="revisar"?"El video se está terminando de subir a Drive…":"Editándose…"}</div>`;
   const fecha = (it.fechaCrudo||"").slice(0,10).split("-").reverse().join("/");
   const subs = (it.pantallas||[]).map((t,i)=>`<label><span>${i+1}</span><input data-i="${i}" value="${esc(t)}" data-orig="${esc(t)}"></label>`).join("");
