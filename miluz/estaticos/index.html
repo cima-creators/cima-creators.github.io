@@ -41,11 +41,19 @@ h1{font-size:28px;font-weight:700;letter-spacing:-.03em;line-height:1.1}
 .filtros{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
 .chip{border:1px solid var(--line);background:var(--card);color:var(--mut);border-radius:99px;padding:6px 12px;font-size:12.5px;font-weight:500;cursor:pointer}
 .chip.on{background:var(--txt);color:var(--bg);border-color:var(--txt)}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,290px),1fr));gap:12px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,290px),1fr));gap:14px;align-items:start}
 .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;display:flex;flex-direction:column}
 .card.sel{border-color:var(--acc);box-shadow:0 0 0 2px var(--acc)}
-.card .img{background:var(--soft);aspect-ratio:4/5;position:relative;cursor:zoom-in}
-.card .img img{width:100%;height:100%;object-fit:contain;display:block}
+.card .img{background:var(--soft);position:relative;cursor:zoom-in;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.card .img img{width:100%;height:auto;display:block;min-height:120px}
+.chead{display:flex;align-items:center;gap:11px;padding:14px 14px 12px}
+.av{width:40px;height:40px;border-radius:50%;background:var(--acc-bg);color:var(--acc);display:grid;place-items:center;font-weight:700;font-size:16px;flex-shrink:0}
+.chead .who{min-width:0;flex:1}
+.chead .who b{display:block;font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chead .who small{display:flex;align-items:center;gap:6px;color:var(--mut);font-size:12.5px}
+.chead .who small i{width:9px;height:9px;border-radius:50%;background:var(--ok);display:inline-block;flex-shrink:0}
+.chead a.ext{color:var(--mut);display:grid;place-items:center;width:34px;height:34px;border-radius:10px}
+.chead a.ext:hover{background:var(--soft);color:var(--txt)}
 .card .img .tag{position:absolute;left:10px;top:10px;background:rgba(20,15,15,.72);color:#fff;font-size:11px;font-weight:600;padding:4px 9px;border-radius:99px}
 .card .body{padding:14px;display:flex;flex-direction:column;gap:8px;flex:1}
 .pills{display:flex;flex-wrap:wrap;gap:5px}
@@ -70,7 +78,7 @@ details summary{cursor:pointer;color:var(--mut);font-size:12.5px;font-weight:500
 .vars{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:10px}
 .var{border:2px solid var(--line);border-radius:16px;overflow:hidden;cursor:pointer;position:relative;background:var(--soft)}
 .var.on{border-color:var(--ok)}
-.var img{width:100%;aspect-ratio:4/5;object-fit:contain;display:block}
+.var img{width:100%;height:auto;display:block}
 .var .chk{position:absolute;right:10px;top:10px;width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.92);border:2px solid var(--line2);display:grid;place-items:center;font-weight:700;color:var(--ok)}
 .var.on .chk{background:var(--ok);border-color:var(--ok);color:#fff}
 .var .pie{padding:8px 10px;font-size:12px;color:var(--mut);display:flex;justify-content:space-between;gap:8px;align-items:center;background:var(--card)}
@@ -175,8 +183,7 @@ function pillsRef(r){
   const s = r.senal ?? 0;
   return `<div class="pills">
     <span class="pill a">${"★".repeat(s)}${"☆".repeat(5-s)}</span>
-    <span class="pill">${esc(r.d)} días al aire</span>
-    ${r.dup ? `<span class="pill">${esc(r.dup)} duplicados</span>` : ""}
+        ${r.dup ? `<span class="pill">${esc(r.dup)} duplicados</span>` : ""}
     ${r.perf ? `<span class="pill">${esc(r.perf)}</span>` : ""}
     <span class="pill">${r.nicho === "otro" ? esc(r.cat || "Otro nicho") : "Uñas"}</span></div>`;
 }
@@ -203,16 +210,23 @@ function vElegir(lista, hechasHoy, enCola){
     c.querySelector(".no").onclick = () => marcar(id, {estado:"descartada", descartadaEn:"elegir"}, "Descartada");
   });
 }
+const MESES = ["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
+const fLarga = f => { if (!f) return ""; const [y,m,d] = f.split("-"); return `${+d} ${MESES[+m-1]} ${y}`; };
+const EXT = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6"/><path d="M20 4l-9 9"/><path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>`;
 function cardElegir(d){
   const r = d.ref || {};
+  const nombre = String(r.m || "").replace(/\s*\(.*\)\s*$/, ""), pais = (String(r.m || "").match(/\(([^)]+)\)/) || [])[1];
   return `<div class="card" data-id="${esc(d.id)}">
-    <div class="img"><img loading="lazy" src="${esc(r.img)}" alt=""><span class="tag">${esc(r.m)}</span></div>
+    <div class="chead"><div class="av">${esc(nombre.charAt(0).toUpperCase())}</div>
+      <div class="who"><b>${esc(nombre)}${pais ? ` <span style="color:var(--mut);font-weight:500">· ${esc(pais)}</span>` : ""}</b>
+        <small><i></i>${r.ini ? `${esc(fLarga(r.ini))} – hoy · ` : ""}${esc(r.d)} días</small></div>
+      ${r.link ? `<a class="ext" href="${esc(r.link)}" target="_blank" rel="noopener" title="Ver el anuncio original">${EXT}</a>` : ""}</div>
+    <div class="img"><img loading="lazy" src="${esc(r.img)}" alt=""></div>
     <div class="body">${pillsRef(r)}
       <h3>${esc(d.formato)}</h3>
-      <div><div class="lbl">Por qué funciona</div><p class="m">${esc(d.porque)}</p></div>
+      <p class="m">${esc(d.porque)}</p>
       <div class="idea"><div class="lbl">Así quedaría en ${esc(NOMBRES[MARCA]||MARCA)}</div><p>${esc(d.idea)}</p></div>
       <details><summary>Agregar un pedido (opcional)</summary><textarea placeholder="Ej: con el Ultra Efecto Gel rojo, fondo rosa"></textarea></details>
-      ${r.link ? `<a href="${esc(r.link)}" target="_blank" rel="noopener" style="font-size:12px">Ver el anuncio original</a>` : ""}
       <div class="acciones"><button class="btn no sm">No</button><button class="btn acc si">La quiero</button></div>
     </div></div>`;
 }
