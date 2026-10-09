@@ -53,10 +53,10 @@ h2{font-size:12px;font-weight:600;letter-spacing:.13em;text-transform:uppercase;
 .st{font-size:11px;font-weight:600;padding:4px 10px;border-radius:99px;white-space:nowrap}
 .st.ok{background:var(--ok-bg);color:var(--ok)} .st.warn{background:var(--warn-bg);color:var(--warn)} .st.off{background:var(--soft);color:var(--mut)}
 .que{font-size:12.5px;color:var(--mut)}
-.nums{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
-.n{background:var(--soft);border-radius:14px;padding:10px 12px}
-.n b{display:block;font-size:22px;font-weight:700;letter-spacing:-.03em;line-height:1.1}
-.n span{font-size:11px;color:var(--mut);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nums{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
+.n{background:var(--soft);border-radius:14px;padding:10px 10px;min-width:0}
+.n b{display:block;font-size:21px;font-weight:700;letter-spacing:-.03em;line-height:1.1}
+.n span{font-size:10.5px;color:var(--mut);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .n.toca{background:var(--acc-bg)} .n.toca b{color:var(--acc)}
 .pie{display:flex;align-items:flex-end;justify-content:space-between;gap:10px}
 .pie small{color:var(--mut2);font-size:11.5px}
@@ -174,22 +174,22 @@ function pintar() {
   const bots = [
     {ico: "🖼️", nom: "Estáticos", cuando: "Todos los días a las 7", url: "/miluz/estaticos",
      que: "Busca imágenes que venden en tu nicho y en otros, vos elegís y genera las tuyas con tu packaging.",
-     nums: [[cuenta(est, "elegir"), "para elegir", true], [cuenta(est, "revisar"), "para revisar", true], [cuenta(est, "lista", "aprobada"), "listas"]],
+     nums: [[cuenta(est, "elegir"), "elegir", true], [cuenta(est, "revisar"), "revisar", true], [cuenta(est, "elegida", "generando", "modificar"), "en curso"], [cuenta(est, "lista", "aprobada"), "listas"]],
      ult: ultimo(est), horas: 30},
     {ico: "🎬", nom: "Animados", cuando: "Propuestas a las 8 · produce cada 30 min", url: "/miluz/animados",
      que: "Te propone anuncios animados que están escalando; los que elegís se producen solos.",
-     nums: [[cuenta(ani, "nueva"), "para elegir", true], [cuenta(ani, "producido"), "para revisar", true], [cuenta(ani, "elegida", "lista", "produciendo"), "haciéndose"]],
+     nums: [[cuenta(ani, "nueva"), "elegir", true], [cuenta(ani, "producido"), "revisar", true], [cuenta(ani, "elegida", "lista", "produciendo", "cambiar"), "en curso"], [cuenta(ani, "aprobado"), "listos"]],
      ult: ultimo(ani), horas: 30},
     {ico: "✂️", nom: "Edición de crudos", cuando: "Cada hora", url: "/revision",
      que: "Edita los crudos de tus creadoras con el estilo de la marca: cortes, subtítulos, b-roll y música.",
-     nums: [[cuenta(edi, "revisar"), "para revisar"], [cuenta(edi, "procesando"), "editándose"], [cuenta(edi, "subido", "aprobado"), "listos"]],
+     nums: [[edi.length, "crudos"], [cuenta(edi, "revisar"), "revisar", true], [cuenta(edi, "procesando", "corregir"), "en curso"], [cuenta(edi, "subido", "aprobado"), "listos"]],
      ult: ultimo(edi), horas: 30, apagado: edi.length ? "" : "Arranca cuando suban crudos"},
     {ico: "🎙️", nom: "B-roll + voz en off", cuando: "Todos los días a las 7", url: "",
      que: "Arma historias reales con las tomas de tus creadoras y una voz en off. Se entregan en tu Drive.",
-     nums: [["–", "para revisar"], ["–", "haciéndose"], ["–", "en tu Drive"]], ult: "", horas: 30, apagado: "Se entrega en tu Drive"},
+     nums: [["–", "historias"], ["–", "revisar"], ["–", "en curso"], ["–", "listos"]], ult: "", horas: 30, apagado: "Se entrega en tu Drive"},
     {ico: "🚀", nom: "Variantes de ganadores", cuando: "Lee tus ventas a la 1 am", url: "/variantes",
      que: "Cada noche lee lo que vendió en la semana (10+ ventas y ROAS 1,8+). Vos elegís cuál iterar y cuántas (3 · 5 · 9) y te llegan para aprobar.",
-     nums: [[ganadores, "ganadores", true], [cuenta(va, "revisar"), "para revisar", true], [cuenta(va, "subido"), "subidas"]],
+     nums: [[ganadores, "elegir", true], [cuenta(va, "revisar"), "revisar", true], [cuenta(va, "procesando", "corregir"), "en curso"], [cuenta(va, "subido", "aprobado"), "listas"]],
      ult: [ultimo(va), ultimo(gan), (datos.sem && datos.sem.recibido) || ""].sort().pop(), horas: 30},
   ];
   $("#bots").innerHTML = bots.map(b => {
@@ -219,7 +219,7 @@ function pintar() {
   $("#k3").textContent = ganadores;
   $("#k4").textContent = cuenta(est, "lista", "aprobada");
   $("#k5").textContent = cuenta(ani, "producido", "aprobado");
-  $("#k6").textContent = cuenta(va, "subido");
+  $("#k6").textContent = cuenta(va, "subido", "aprobado");
 
   const NOM = {est: "Estáticos", ani: "Animados", edi: "Edición", var: "Variantes"};
   const ESTADO = {elegida: "elegida", generando: "generándose", revisar: "para revisar", lista: "lista", aprobada: "aprobada",
