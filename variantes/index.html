@@ -337,7 +337,7 @@ function tarjetaSemana(x, i, nvar, nrev){
     <div class="cab"><div class="av">${i+1}</div>
       <div class="t"><b>${esc(a.nombre||a.id)}</b><small>${esc(TIPOS_SEM[x.tipo]||(esVideo?"Video":"Imagen"))} · gastó ${num(w.g)} ${esc(x.mon)}</small></div>
       ${link?`<a href="${esc(link)}" target="_blank" rel="noopener" title="Ver el anuncio">↗</a>`:""}</div>
-    <div class="vid" data-drive="${esc(x.mini||"")}" data-link="${esc(link)}">${img?`<img src="${esc(img)}" alt="" loading="lazy" onerror="this.style.display='none'">`:`<div class="ph">Sin miniatura todavía</div>`}${esVideo&&img?`<span class="play"></span>`:""}${nrev?`<span class="badge">${nrev} para revisar</span>`:nvar?`<span class="badge">${nvar} variantes</span>`:""}</div>
+    <div class="vid" data-drive="${esc(x.mini||"")}" data-link="${esc(link)}">${img?`<img src="${esc(img)}" alt="" loading="lazy" onerror="this.style.display='none'">`:`<div class="ph">Sin miniatura todavía</div>`}${esVideo&&img?`<span class="play"></span>`:""}${nrev?`<span class="badge">${nrev} para revisar</span>`:nvar?`<span class="badge">${nvar} ${nvar===1?"variante":"variantes"}</span>`:""}</div>
     <div class="cuerpo">
       <div class="stats"><div class="st ${rc}"><span>ROAS</span><b>${w.roas.toFixed(2)}</b></div><div class="st"><span>Ventas</span><b>${num(w.c)}</b></div></div>
       <div class="mini"><div><span>CPA</span>${num(w.cpa)} ${esc(x.mon)}</div><div><span>CTR</span>${w.ctr==null?"—":w.ctr.toFixed(2)+"%"}</div><div><span>Hook rate</span>${w.hook==null?"—":w.hook.toFixed(0)+"%"}</div></div>
@@ -353,7 +353,7 @@ function botonIterar(x, nvar, nrev){
   if(p.estado==="pedido") return `<div class="acciones" style="grid-template-columns:1fr auto"><button class="btn dark" disabled>${p.n||4} en cola · salen en ~30 min</button><button class="btn no cancelar-it" ${att} title="Cancelar">✕</button></div>`;
   if(p.estado==="procesando") return `<div class="acciones" style="grid-template-columns:1fr"><button class="btn dark" disabled>Generando variantes…</button></div>`;
   const cuantas = `<div class="cuantas" data-cuantas="${esc(x.a.id)}"><span>¿Cuántas?</span>${[3,5,9].map(k=>`<button class="btn dark pedir" ${att} data-n="${k}">${k}</button>`).join("")}</div>`;
-  if(p.estado==="hecho" || nvar) return `<div class="acciones" style="grid-template-columns:1fr 1fr"><button class="btn ok ver-var" data-ad="${esc(x.a.id)}">${nrev?`${nrev} para revisar`:`Variantes (${nvar})`}</button><button class="btn iterar" ${att}>Iterar de nuevo</button></div>${cuantas}`;
+  if(nvar) return `<div class="acciones" style="grid-template-columns:1fr 1fr"><button class="btn ok ver-var" data-ad="${esc(x.a.id)}">${nrev?`${nrev} para revisar`:`Variantes (${nvar})`}</button><button class="btn iterar" ${att}>Iterar de nuevo</button></div>${cuantas}`;
   return `<div class="acciones" style="grid-template-columns:1fr"><button class="btn ok iterar" ${att}>Iterar este</button></div>${cuantas}`;
 }
 async function pedirIterar(m, ad, estado, n){
