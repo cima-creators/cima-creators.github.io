@@ -343,7 +343,8 @@ function tarjeta(d){
       <div class="extra">
         ${bajar}
         ${d.plan ? `<div class="unas"><h4>Plan aprobado</h4><div class="txt" style="white-space:pre-line">${esc(d.plan)}</div></div>` : ""}
-        <div class="unas"><h4>Para uñas</h4><div class="txt">${esc(d.bajada || "")}</div></div>
+        <div class="unas"><h4>Para uñas</h4><div class="txt">${esc(d.bajada || "")}</div>
+          ${d.fraseVoc ? `<div class="txt" style="margin-top:6px"><b>Palabras de la clienta:</b> «${esc(d.fraseVoc)}»${d.cuantasVoc ? ` · lo dicen ${esc(d.cuantasVoc)} personas (${esc(d.anguloVoc)})` : ""}</div>` : ""}</div>
         ${d.producto ? `<div class="links">Vende: ${esc(d.producto)}</div>` : ""}
         <div class="links">${esc(fuente)} · desde ${esc(d.inicio || "?")}${d.pais ? " · " + esc(d.pais) : ""} · <a href="${esc(d.link)}" target="_blank" rel="noopener">ver anuncio</a></div>
         ${prod ? `<div class="vid" style="aspect-ratio:16/9"><video src="${esc(d.video)}" preload="none" controls playsinline></video><span class="tag">Referencia</span></div>` : ""}
@@ -396,6 +397,8 @@ function abrirPlan(id){
     `Formato: ${f === "otro" ? "el mismo de la referencia" : FMT[f]}, con la misma estructura y el mismo ritmo que la referencia.`,
     ``,
     `Idea para Mi Luz: ${d.bajada || ""}`,
+    ``,
+    `Palabras de la clienta: «${d.fraseVoc || ""}»${d.cuantasVoc ? ` (lo dicen ${d.cuantasVoc} personas · ${d.anguloVoc})` : ""}`,
     ``,
     `Personaje: mujer de 45-64 (la que compra), siempre la misma en todo el video.`,
     `Producto: Tratamiento Fénix (foto real del frasco). Cuando se habla del tratamiento, se ve la uña pintándose.`,
