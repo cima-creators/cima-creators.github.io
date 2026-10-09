@@ -279,14 +279,12 @@ function pintarSemana(){
   const lab = k => (OPS[k].find(o=>o[0]===F[k])||[,""])[1];
   const ap = Object.keys(DEF).filter(k=>F[k]!==DEF[k]);
   $("#filtros").innerHTML = `
-    ${(()=>{ const pr = Object.values(items).filter(it=>it.estado==="revisar").length; return pr?`<div><button class="revbtn" id="abrirRev">${pr} ${pr===1?"variante espera":"variantes esperan"} tu revisión →</button></div>`:""; })()}
     <div class="aplicados">Filtros aplicados (${ap.length}):${ap.length?ap.map(k=>`<span class="ap">${NOM[k]} <b>${lab(k)}</b><button data-quitar="${k}" title="Quitar">✕</button></span>`).join(""):` <span style="font-weight:400;color:var(--mut)">ninguno · 7 días, ROAS 1,8+, 10+ ventas</span>`}</div>
     <div class="drops">${Object.keys(OPS).map(k=>`<div class="drop" data-drop="${k}"><button>${IC[k]}${NOM[k]}: <b>${lab(k)}</b>${F[k]!==DEF[k]?'<span class="dot"></span>':''}<span class="car">▾</span></button>
       <div class="menu">${OPS[k].map(([v,t])=>`<button class="${F[k]===v?"sel":""}" data-f="${k}" data-val="${v}">${t}</button>`).join("")}</div></div>`).join("")}</div>`;
   document.querySelectorAll("[data-drop]>button").forEach(b=>b.onclick=e=>{ e.stopPropagation(); const d=b.parentElement, on=d.classList.contains("on");
     document.querySelectorAll(".drop.on").forEach(x=>x.classList.remove("on")); if(!on) d.classList.add("on"); });
   document.querySelectorAll("[data-f]").forEach(b=>b.onclick=()=>{ const v=b.dataset.val; F[b.dataset.f] = isNaN(+v)? v : +v; guardarF(); pintar(); });
-  $("#abrirRev") && ($("#abrirRev").onclick = () => abrirVariantes(null));
   document.querySelectorAll("[data-quitar]").forEach(b=>b.onclick=()=>{ F[b.dataset.quitar]=DEF[b.dataset.quitar]; guardarF(); pintar(); });
   const filas = [];
   for(const m of marcas){ if(marcaF!=="todas" && marcas.length>1 && m!==marcaF) continue;
@@ -306,15 +304,16 @@ function pintarSemana(){
     <div class="kpi"><span class="l">Facturación ${esc(mon)}</span><span class="v">${num(tot.v)}</span></div>`;
   $("#resumen").textContent = `Hola ${quien} · ${F.per===1?"ayer":`últimos ${F.per} días`}${hasta?` hasta el ${fdia(hasta)}`:""} · datos de Meta de la 1:00`;
   if(!filas.length){ $("#gsem").innerHTML = `<div class="vacio" style="grid-column:1/-1">${Object.keys(semana).length?"Ningún anuncio pasa esos filtros. Bajá el ROAS o las ventas.":"Todavía no llegaron datos de la semana: llegan con la rutina de la 1:00 de la marca."}</div>`; return; }
-  const conVar = {}; Object.values(items).forEach(it=>{ conVar[it.adId]=(conVar[it.adId]||0)+1; });
-  $("#gsem").innerHTML = filas.map((x,i)=>tarjetaSemana(x,i,conVar[x.a.id]||0)).join("");
+  const conVar = {}, porRev = {};
+  Object.values(items).forEach(it=>{ conVar[it.adId]=(conVar[it.adId]||0)+1; if(it.estado==="revisar") porRev[it.adId]=(porRev[it.adId]||0)+1; });
+  $("#gsem").innerHTML = filas.map((x,i)=>tarjetaSemana(x,i,conVar[x.a.id]||0,porRev[x.a.id]||0)).join("");
   document.querySelectorAll("#gsem .iterar").forEach(b=>b.onclick=()=>{ const c=document.querySelector(`[data-cuantas="${b.dataset.ad}"]`); c.classList.toggle("on"); });
   document.querySelectorAll("#gsem .pedir").forEach(b=>b.onclick=()=>pedirIterar(b.dataset.m, b.dataset.ad, "pedido", +b.dataset.n));
   document.querySelectorAll("#gsem .cancelar-it").forEach(b=>b.onclick=()=>pedirIterar(b.dataset.m, b.dataset.ad, "cancelado"));
   document.querySelectorAll("#gsem .ver-var").forEach(b=>b.onclick=()=>abrirVariantes(b.dataset.ad));
   document.querySelectorAll("#gsem .vid[data-drive]").forEach(vd=>vd.addEventListener("click",()=>{ const u=vd.dataset.link; if(u) window.open(u,"_blank","noopener"); }));
 }
-function tarjetaSemana(x, i, nvar){
+function tarjetaSemana(x, i, nvar, nrev){
   const {a, w} = x;
   const img = x.mini ? `https://drive.google.com/thumbnail?id=${esc(x.mini)}&sz=w600` : (a.miniatura||a.imagen_url||"");
   const link = a.permalink ? (a.permalink.startsWith("/")?"https://www.facebook.com"+a.permalink:a.permalink) : "";
@@ -326,22 +325,22 @@ function tarjetaSemana(x, i, nvar){
     <div class="cab"><div class="av">${i+1}</div>
       <div class="t"><b>${esc(a.nombre||a.id)}</b><small>${esc(TIPOS_SEM[x.tipo]||(esVideo?"Video":"Imagen"))} · gastó ${num(w.g)} ${esc(x.mon)}</small></div>
       ${link?`<a href="${esc(link)}" target="_blank" rel="noopener" title="Ver el anuncio">↗</a>`:""}</div>
-    <div class="vid" data-drive="${esc(x.mini||"")}" data-link="${esc(link)}">${img?`<img src="${esc(img)}" alt="" loading="lazy" onerror="this.style.display='none'">`:`<div class="ph">Sin miniatura todavía</div>`}${esVideo&&img?`<span class="play"></span>`:""}${nvar?`<span class="badge">${nvar} variantes</span>`:""}</div>
+    <div class="vid" data-drive="${esc(x.mini||"")}" data-link="${esc(link)}">${img?`<img src="${esc(img)}" alt="" loading="lazy" onerror="this.style.display='none'">`:`<div class="ph">Sin miniatura todavía</div>`}${esVideo&&img?`<span class="play"></span>`:""}${nrev?`<span class="badge">${nrev} para revisar</span>`:nvar?`<span class="badge">${nvar} variantes</span>`:""}</div>
     <div class="cuerpo">
       <div class="stats"><div class="st ${rc}"><span>ROAS</span><b>${w.roas.toFixed(2)}</b></div><div class="st"><span>Ventas</span><b>${num(w.c)}</b></div></div>
       <div class="barras" title="Ventas por día">${dias.map(d=>`<i class="${d.f>=w.desde?"en":""}" style="height:${Math.round(d.c/max*100)}%" title="${fdia(d.f)}: ${d.c} ventas"></i>`).join("")}</div>
       <div class="sub2">Facturó ${num(w.v)} ${esc(x.mon)} · ventas por día · marcado el período elegido</div>
-      ${botonIterar(x, nvar)}
+      ${botonIterar(x, nvar, nrev)}
     </div></div>`;
 }
 
-function botonIterar(x, nvar){
+function botonIterar(x, nvar, nrev){
   const p = ((semana[x.m]||{}).pedidos||{})[x.a.id] || {};
   const att = `data-m="${esc(x.m)}" data-ad="${esc(x.a.id)}"`;
   if(p.estado==="pedido") return `<div class="acciones" style="grid-template-columns:1fr auto"><button class="btn dark" disabled>${p.n||4} en cola · salen en ~30 min</button><button class="btn no cancelar-it" ${att} title="Cancelar">✕</button></div>`;
   if(p.estado==="procesando") return `<div class="acciones" style="grid-template-columns:1fr"><button class="btn dark" disabled>Generando variantes…</button></div>`;
   const cuantas = `<div class="cuantas" data-cuantas="${esc(x.a.id)}"><span>¿Cuántas?</span>${[3,5,9].map(k=>`<button class="btn dark pedir" ${att} data-n="${k}">${k}</button>`).join("")}</div>`;
-  if(p.estado==="hecho" || nvar) return `<div class="acciones" style="grid-template-columns:1fr 1fr"><button class="btn ok ver-var" data-ad="${esc(x.a.id)}">Variantes (${nvar})</button><button class="btn iterar" ${att}>Iterar de nuevo</button></div>${cuantas}`;
+  if(p.estado==="hecho" || nvar) return `<div class="acciones" style="grid-template-columns:1fr 1fr"><button class="btn ok ver-var" data-ad="${esc(x.a.id)}">${nrev?`${nrev} para revisar`:`Variantes (${nvar})`}</button><button class="btn iterar" ${att}>Iterar de nuevo</button></div>${cuantas}`;
   return `<div class="acciones" style="grid-template-columns:1fr"><button class="btn ok iterar" ${att}>Iterar este</button></div>${cuantas}`;
 }
 async function pedirIterar(m, ad, estado, n){
