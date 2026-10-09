@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<title>Revisión de videos · CIMA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f6f5f2;--card:#fff;--ink:#17171a;--ink2:#55565c;--ink3:#8b8c92;--line:#e6e4df;--acc:#1f6f5c;--acc-bg:#e3f1ec;--warn:#9a6a12;--warn-bg:#fbf1dc;--bad:#a8322a;--bad-bg:#fbe7e5;--r:12px}
+@media (prefers-color-scheme:dark){:root{--bg:#121315;--card:#1b1c1f;--ink:#efeff1;--ink2:#b4b6bc;--ink3:#83858c;--line:#2c2e33;--acc:#5fc2a3;--acc-bg:#16302a;--warn:#e3b45a;--warn-bg:#33290f;--bad:#ef7d74;--bad-bg:#3a1a18}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1120px;margin:0 auto;padding:16px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:8px 0 16px}
+h1{font-size:20px;margin:0;font-weight:700;letter-spacing:-.01em}
+.sub{color:var(--ink3);font-size:13px}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+.tab{border:1px solid var(--line);background:var(--card);color:var(--ink2);border-radius:999px;padding:7px 14px;font:600 13px Inter,sans-serif;cursor:pointer}
+.tab b{font-weight:700;margin-left:4px;color:var(--ink)}
+.tab.on{background:var(--ink);color:var(--card);border-color:var(--ink)}.tab.on b{color:var(--card)}
+.marcas{display:flex;gap:6px;flex-wrap:wrap;margin:-6px 0 16px}
+.marcas .tab{padding:5px 12px;font-size:12px}
+.item{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px;margin-bottom:14px;display:grid;grid-template-columns:minmax(0,300px) minmax(0,1fr);gap:18px}
+@media (max-width:760px){.item{grid-template-columns:minmax(0,1fr)}}
+.vid{aspect-ratio:9/16;width:100%;border-radius:10px;overflow:hidden;background:#000;position:relative}
+.vid iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.vid .ph{position:absolute;inset:0;display:grid;place-items:center;color:#aaa;font-size:13px;text-align:center;padding:20px}
+.meta{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:10px}
+.chip{font-size:12px;font-weight:600;padding:3px 9px;border-radius:999px;background:var(--bg);color:var(--ink2);border:1px solid var(--line)}
+.chip.m{background:var(--acc-bg);color:var(--acc);border-color:transparent}
+.chip.e-revisar{background:var(--warn-bg);color:var(--warn);border-color:transparent}
+.chip.e-error,.chip.e-rechazado{background:var(--bad-bg);color:var(--bad);border-color:transparent}
+.chip.e-subido,.chip.e-aprobado{background:var(--acc-bg);color:var(--acc);border-color:transparent}
+h3{margin:4px 0 10px;font-size:13px;font-weight:600;color:var(--ink3);text-transform:uppercase;letter-spacing:.06em}
+.subs{max-height:420px;overflow:auto;border:1px solid var(--line);border-radius:10px}
+.subs label{display:grid;grid-template-columns:28px minmax(0,1fr);align-items:center;gap:6px;padding:4px 8px;border-top:1px solid var(--line)}
+.subs label:first-child{border-top:0}
+.subs span{color:var(--ink3);font-size:12px;text-align:right;font-variant-numeric:tabular-nums}
+.subs input{width:100%;border:1px solid transparent;background:transparent;color:var(--ink);font:14px Inter,sans-serif;padding:6px 8px;border-radius:6px}
+.subs input:focus{outline:none;border-color:var(--acc);background:var(--bg)}
+.subs input.cambio{background:var(--warn-bg);color:var(--warn)}
+.acciones{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;align-items:center}
+button.b{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:8px;padding:10px 16px;font:600 14px Inter,sans-serif;cursor:pointer;min-height:44px}
+button.b:hover{border-color:var(--ink3)}
+button.ok{background:var(--acc);border-color:var(--acc);color:#fff}
+button.no{color:var(--bad)}
+button:disabled{opacity:.5;cursor:default}
+.chk{display:flex;gap:6px;align-items:center;font-size:13px;color:var(--ink2)}
+.nota{width:100%;margin-top:10px;border:1px solid var(--line);border-radius:8px;padding:9px 10px;font:14px Inter,sans-serif;background:var(--card);color:var(--ink)}
+.err{background:var(--bad-bg);color:var(--bad);border-radius:8px;padding:10px;font-size:13px;white-space:pre-wrap;margin-top:10px}
+.vacio{text-align:center;color:var(--ink3);padding:60px 20px;background:var(--card);border:1px dashed var(--line);border-radius:var(--r)}
+#login{max-width:340px;margin:12vh auto;background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:24px}
+#login input{width:100%;margin:12px 0 8px;padding:12px;border:1px solid var(--line);border-radius:8px;font:15px Inter,sans-serif;background:var(--bg);color:var(--ink)}
+.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--ink);color:var(--card);padding:10px 16px;border-radius:999px;font-size:14px;opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.on{opacity:1}
+a{color:var(--acc)}
+</style>
+</head>
+<body>
+<div id="login">
+  <h1>Revisión de videos</h1>
+  <p class="sub">Entrá con tu clave.</p>
+  <input id="clave" type="password" placeholder="Clave" autocomplete="current-password">
+  <button class="b ok" id="entrar" style="width:100%">Entrar</button>
+  <p id="login-e" class="sub" style="color:var(--bad)"></p>
+</div>
+<div class="wrap" id="app" hidden>
+  <header>
+    <div><h1>Revisión de videos</h1><div class="sub" id="resumen">Cargando…</div></div>
+    <button class="b" id="salir">Salir</button>
+  </header>
+  <div class="tabs" id="tabs"></div>
+  <div class="marcas" id="marcas"></div>
+  <div id="lista"></div>
+</div>
+<div class="toast" id="toast"></div>
+<script type="module">
+const CLAVES = {"vane-2026":"Vane","cima-2026":"Nacho","abril-2026":"Abril"};
+const $ = s => document.querySelector(s);
+const ESTADOS = [["revisar","Para revisar"],["procesando","Editándose"],["corregir","Corrigiéndose"],["subido","Aprobados"],["rechazado","Rechazados"],["error","Con error"]];
+let quien = null, items = {}, filtro = "revisar", marcaF = "todas", fb = null;
+try { quien = CLAVES[localStorage.getItem("revision_clave")] || null; } catch(e) {}
+function toast(t){ const el=$("#toast"); el.textContent=t; el.classList.add("on"); setTimeout(()=>el.classList.remove("on"),2200); }
+function esc(s){ return String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+function entrar(){
+  const k = $("#clave").value.trim();
+  if(!CLAVES[k]){ $("#login-e").textContent = "Esa clave no es. Probá de nuevo."; return; }
+  try { localStorage.setItem("revision_clave", k); } catch(e) {}
+  quien = CLAVES[k]; arrancar();
+}
+$("#entrar").addEventListener("click", entrar);
+$("#clave").addEventListener("keydown", e => { if(e.key==="Enter") entrar(); });
+$("#salir").addEventListener("click", () => { try { localStorage.removeItem("revision_clave"); } catch(e) {} location.reload(); });
+
+async function arrancar(){
+  $("#login").hidden = true; $("#app").hidden = false;
+  const [{initializeApp},{getFirestore,collection,doc,onSnapshot,updateDoc},{getAuth,signInAnonymously}] = await Promise.all([
+    import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js"),
+    import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js"),
+    import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js")]);
+  const app = initializeApp({apiKey:"AIzaSyCTv4DiRCpbCpGYP6E86TPHlkPvaAZTN3g",authDomain:"cleargy-creators.firebaseapp.com",projectId:"cleargy-creators",storageBucket:"cleargy-creators.firebasestorage.app",messagingSenderId:"313543582398",appId:"1:313543582398:web:99fe78991adeea2e7cb4ef"});
+  await signInAnonymously(getAuth(app));
+  const db = getFirestore(app);
+  fb = {db, doc, updateDoc};
+  onSnapshot(collection(db,"edicion_cola"), snap => {
+    snap.docChanges().forEach(c => { if(c.type==="removed") delete items[c.doc.id]; else items[c.doc.id] = c.doc.data(); });
+    pintar();
+  }, err => { $("#resumen").textContent = "No se pudo leer la cola: " + err.message; });
+}
+
+function pintar(){
+  const todos = Object.entries(items);
+  const marcas = [...new Set(todos.map(([,it])=>it.marca))].sort();
+  const deMarca = todos.filter(([,it]) => marcaF==="todas" || it.marca===marcaF);
+  const cuenta = e => deMarca.filter(([,it])=>it.estado===e).length;
+  $("#resumen").textContent = `Hola ${quien} · ${cuenta("revisar")} para revisar · ${cuenta("procesando")+cuenta("corregir")} editándose`;
+  $("#tabs").innerHTML = ESTADOS.map(([e,t]) => `<button class="tab ${e===filtro?"on":""}" data-e="${e}">${t}<b>${cuenta(e)}</b></button>`).join("");
+  $("#marcas").innerHTML = marcas.length>1 ? ["todas",...marcas].map(m=>`<button class="tab ${m===marcaF?"on":""}" data-m="${m}">${m==="todas"?"Todas las marcas":esc(m)}</button>`).join("") : "";
+  document.querySelectorAll("[data-e]").forEach(b=>b.onclick=()=>{filtro=b.dataset.e;pintar();});
+  document.querySelectorAll("[data-m]").forEach(b=>b.onclick=()=>{marcaF=b.dataset.m;pintar();});
+  const lista = deMarca.filter(([,it])=>it.estado===filtro).sort((a,b)=>(a[1].fechaCrudo||"").localeCompare(b[1].fechaCrudo||""));
+  if(!lista.length){ $("#lista").innerHTML = `<div class="vacio">${filtro==="revisar"?"No hay videos para revisar. Los de hoy aparecen solos cuando terminan de editarse.":"Nada por acá."}</div>`; return; }
+  // si está escribiendo una corrección, no le borramos lo que tipeó: se repinta cuando suelta
+  const editando = [...document.querySelectorAll("#lista .cambio, #lista .otro-broll:checked")].length || (document.activeElement && document.activeElement.closest("#lista input"));
+  if(editando){ pendiente = true; return; }
+  pendiente = false;
+  $("#lista").innerHTML = lista.map(([id,it]) => tarjeta(id,it)).join("");
+  lista.forEach(([id]) => conectar(id));
+}
+let pendiente = false;
+document.addEventListener("focusout", () => setTimeout(() => { if(pendiente && !document.querySelector("#lista .cambio, #lista .otro-broll:checked")) pintar(); }, 200));
+
+function tarjeta(id,it){
+  const vid = it.driveId
+    ? `<iframe src="https://drive.google.com/file/d/${esc(it.driveId)}/preview" allow="autoplay" loading="lazy"></iframe>`
+    : `<div class="ph">${it.estado==="revisar"?"El video se está terminando de subir a Drive…":"Editándose…"}</div>`;
+  const fecha = (it.fechaCrudo||"").slice(0,10).split("-").reverse().join("/");
+  const subs = (it.pantallas||[]).map((t,i)=>`<label><span>${i+1}</span><input data-i="${i}" value="${esc(t)}" data-orig="${esc(t)}"></label>`).join("");
+  const editable = it.estado==="revisar";
+  return `<div class="item" id="it-${esc(id)}">
+    <div class="vid">${vid}</div>
+    <div>
+      <div class="meta"><span class="chip m">${esc(it.marca)}</span><span class="chip">Guion ${esc(it.guion||"—")}</span><span class="chip">${esc(it.creadora||"")}</span><span class="chip">${fecha}</span><span class="chip e-${esc(it.estado)}">${esc((ESTADOS.find(e=>e[0]===it.estado)||[,it.estado])[1])}</span></div>
+      ${it.driveId?`<div class="sub" style="margin-bottom:10px"><a href="https://drive.google.com/file/d/${esc(it.driveId)}/view" target="_blank" rel="noopener">Abrir en Drive</a> · <a href="${esc(it.crudoLink)}" target="_blank" rel="noopener">Ver el crudo</a></div>`:""}
+      ${it.error?`<div class="err">${esc(it.error)}</div>`:""}
+      ${subs?`<h3>Subtítulos ${editable?"· tocá uno para corregirlo":""}</h3><div class="subs">${subs}</div>`:""}
+      ${editable?`
+      <label class="chk" style="margin-top:12px"><input type="checkbox" class="otro-broll"> Cambiar el b-roll (vuelve a elegirlo de cero)</label>
+      <div class="acciones">
+        <button class="b ok aprobar">Aprobar</button>
+        <button class="b corregir" disabled>Corregir y volver a editar</button>
+        <button class="b no rechazar">Rechazar</button>
+      </div>
+      <input class="nota" placeholder="Nota (obligatoria para rechazar): por qué no sirve el crudo">`:""}
+      ${it.estado==="error"?`<div class="acciones"><button class="b reintentar">Volver a intentar</button></div>`:""}
+      ${it.nota?`<p class="sub">Nota: ${esc(it.nota)}</p>`:""}
+    </div></div>`;
+}
+
+function conectar(id){
+  const el = document.getElementById("it-"+id); if(!el) return;
+  const corr = el.querySelector(".corregir"), ob = el.querySelector(".otro-broll");
+  const hayCambios = () => [...el.querySelectorAll(".subs input")].some(i=>i.value!==i.dataset.orig) || (ob && ob.checked);
+  el.querySelectorAll(".subs input").forEach(i => i.addEventListener("input", () => { i.classList.toggle("cambio", i.value!==i.dataset.orig); if(corr) corr.disabled=!hayCambios(); }));
+  ob && ob.addEventListener("change", () => { corr.disabled = !hayCambios(); });
+  const ref = fb.doc(fb.db,"edicion_cola",id);
+  const marcar = async (datos,msg) => { try { await fb.updateDoc(ref,{...datos,revisadoPor:quien,actualizado:new Date().toISOString()}); toast(msg);
+      el.querySelectorAll(".cambio").forEach(i=>i.classList.remove("cambio")); if(ob) ob.checked=false; document.activeElement?.blur(); pintar(); } catch(e){ toast("No se pudo guardar: "+e.message); } };
+  el.querySelector(".aprobar")?.addEventListener("click", () => marcar({estado:"aprobado"}, "Aprobado: pasa a Editados y a la app"));
+  corr?.addEventListener("click", () => {
+    const pantallas = [...el.querySelectorAll(".subs input")].map(i=>i.value);
+    marcar({estado:"corregir", pedido:{pantallas, broll:!!(ob&&ob.checked)}}, "Listo: se vuelve a editar con tus cambios");
+  });
+  el.querySelector(".rechazar")?.addEventListener("click", () => {
+    const n = el.querySelector(".nota").value.trim();
+    if(!n){ el.querySelector(".nota").focus(); toast("Escribí por qué lo rechazás"); return; }
+    marcar({estado:"rechazado", nota:n}, "Rechazado");
+  });
+  el.querySelector(".reintentar")?.addEventListener("click", () => marcar({estado:"corregir", pedido:{}}, "Se vuelve a intentar"));
+}
+
+if(quien) arrancar();
+</script>
+</body>
+</html>
