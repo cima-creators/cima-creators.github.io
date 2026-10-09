@@ -114,11 +114,11 @@ summary{cursor:pointer;font-weight:600;font-size:14px}
     </div>
     <div class="cnt"><b id="nElegidas">0</b><span>elegidas</span></div>
   </div>
-  <p class="sub">Cada día, 50 anuncios 100% animados de cualquier nicho que siguen prendidos. Tocá <b>La quiero</b> en los que te gusten: en menos de media hora quedan en <b>Elegidas</b> desarmados escena por escena, con el prompt listo para producirlo con la skill.</p>
+  <p class="sub">Anuncios 100% animados de cualquier nicho que siguen prendidos; todos los días se suman 20 nuevos. Tocá <b>La quiero</b> en los que te gusten (en menos de media hora quedan en <b>Elegidas</b>, desarmados escena por escena y con el prompt listo) y <b>No</b> en los que no te sirven. Los que no toques quedan acá para elegir otro día.</p>
   <div class="tabs" role="group" aria-label="Vista">
-    <button class="tab" data-v="hoy" aria-pressed="true">Hoy<i id="nHoy"></i></button>
+    <button class="tab" data-v="hoy" aria-pressed="true">Para elegir<i id="nHoy"></i></button>
     <button class="tab" data-v="elegidas" aria-pressed="false">Elegidas<i id="nEleg"></i></button>
-    <button class="tab" data-v="todas" aria-pressed="false">Días anteriores<i id="nTodas"></i></button>
+    <button class="tab" data-v="todas" aria-pressed="false">Descartadas<i id="nTodas"></i></button>
   </div>
   <div class="filtros" id="filtros">
     <button class="chip" data-f="" aria-pressed="true">Todos los formatos</button>
@@ -191,18 +191,18 @@ function pintar(){
   const hoy = fechas[0];
   const elegidas = docs.filter(d => d.estado === "elegida" || d.estado === "lista");
   $("#nElegidas").textContent = elegidas.length;
-  $("#nHoy").textContent = docs.filter(d => d.fecha === hoy).length || "";
+  const nuevas = docs.filter(d => d.estado === "nueva"), descartadas = docs.filter(d => d.estado === "descartada");
+  $("#nHoy").textContent = nuevas.length || "";
   $("#nEleg").textContent = elegidas.length || "";
-  $("#nTodas").textContent = docs.filter(d => d.fecha !== hoy).length || "";
-  if (hoy) $("#fecha").textContent = "Tanda del " + new Date(hoy + "T12:00").toLocaleDateString("es-AR", {weekday:"long", day:"numeric", month:"long"});
-  let lista = vista === "hoy" ? docs.filter(d => d.fecha === hoy)
-            : vista === "elegidas" ? elegidas
-            : docs.filter(d => d.fecha !== hoy);
+  $("#nTodas").textContent = descartadas.length || "";
+  if (hoy) $("#fecha").textContent = docs.filter(d => d.fecha === hoy).length + " nuevos el " + new Date(hoy + "T12:00").toLocaleDateString("es-AR", {weekday:"long", day:"numeric", month:"long"});
+  window._hoy = hoy;
+  let lista = vista === "hoy" ? nuevas : vista === "elegidas" ? elegidas : descartadas;
   if (filtro) lista = lista.filter(d => (d.formato || "otro") === filtro);
   const k = {senal: d => (d.senal||0)*10 + (d.calidad||0), dias: d => d.dias||0, dup: d => d.dup||0, marca: d => d.marcaAds||0}[orden];
-  lista.sort((a, b) => (vista === "todas" ? (b.fecha||"").localeCompare(a.fecha||"") : 0) || k(b) - k(a));
+  lista.sort((a, b) => (b.fecha||"").localeCompare(a.fecha||"") || k(b) - k(a));
   if (!lista.length) {
-    $("#grid").innerHTML = `<div class="vacio">${vista === "elegidas" ? "Todavía no elegiste ninguno. Tocá <b>La quiero</b> en la pestaña Hoy." : "No hay anuncios para mostrar con este filtro."}</div>`;
+    $("#grid").innerHTML = `<div class="vacio">${vista === "elegidas" ? "Todavía no elegiste ninguno. Tocá <b>La quiero</b> en la pestaña Para elegir." : vista === "todas" ? "No descartaste ninguno." : "No hay anuncios para mostrar con este filtro."}</div>`;
     return;
   }
   $("#grid").innerHTML = lista.map(tarjeta).join("");
@@ -236,7 +236,7 @@ function tarjeta(d){
   return `<article class="card ${d.estado === "descartada" ? "descartada" : ""}">
     <div class="vid">
       <video src="${esc(d.video)}" poster="${esc(d.thumb)}" preload="none" controls playsinline></video>
-      <span class="badge">${esc(d.duracion || "?")} s</span>
+      <span class="badge">${d.fecha === window._hoy && d.estado === "nueva" ? "Nueva · " : ""}${esc(d.duracion || "?")} s</span>
       <span class="badge r">${esc(d.fuente?.startsWith("TrendTrack") ? "TrendTrack" : "GetHookd")}</span>
     </div>
     <div class="body">
