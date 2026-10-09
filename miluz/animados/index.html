@@ -323,7 +323,7 @@ function tarjeta(d){
   if (d.estado === "descartada") botones = `${mas}<button class="btn sm" data-acc="volver" data-id="${esc(d.id)}">Recuperar</button>`;
   if (d.estado === "produciendo" || d.estado === "fallo") botones = mas;
   if (d.estado === "producido") botones = `${mas}<button class="btn sm" data-acc="cambiar" data-id="${esc(d.id)}">Cambiar</button><button class="btn sm dark" data-acc="aprobar" data-id="${esc(d.id)}">Aprobar</button>`;
-  if (d.estado === "aprobado") botones = `${mas}<a class="btn sm ok" href="${esc(d.finalSubs || d.final)}" target="_blank" rel="noopener" download>Bajar</a>`;
+  if (d.estado === "aprobado") botones = `${mas}${d.driveUrl ? `<a class="btn sm ok" href="${esc(d.driveUrl)}" target="_blank" rel="noopener">Ver en Drive</a>` : `<span class="btn sm" style="flex:1">Pasando a Drive…</span>`}`;
   const caja = d.estado === "producido" ? `<div class="cambio" hidden><textarea placeholder="¿Qué cambiamos? Ej: al principio, cuando dice las semanas, mostrá la uña pintándose" rows="3"></textarea><div class="acciones"><button class="btn sm" data-acc="nocambio" data-id="${esc(d.id)}">Cancelar</button><button class="btn sm dark" data-acc="enviarcambio" data-id="${esc(d.id)}">Enviar cambio</button></div></div>` : "";
   const bajar = prod ? `<div class="links"><a href="${esc(d.finalSubs || d.final)}" target="_blank" rel="noopener" download>Bajar con subtítulos</a>${d.finalSubs ? ` · <a href="${esc(d.final)}" target="_blank" rel="noopener" download>sin subtítulos</a>` : ""}</div>` : "";
   const nueva = d.fecha === hoy && d.estado === "nueva";
