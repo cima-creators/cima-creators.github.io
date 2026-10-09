@@ -118,6 +118,9 @@ h3{margin:4px 0 8px;font-size:10.5px;font-weight:600;color:var(--mut);text-trans
 .st b{display:block;font-size:22px;font-weight:700;letter-spacing:-.03em;line-height:1.15}
 .st.ok b{color:var(--ok)} .st.warn b{color:var(--warn)}
 .sub2{font-size:11.5px;color:var(--mut)}
+.mini{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.mini div{font-size:13px;font-weight:600;line-height:1.25}
+.mini span{display:block;font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--mut)}
 .barras{display:flex;align-items:flex-end;gap:3px;height:34px;padding:0 2px}
 .barras i{flex:1;background:var(--line2);border-radius:3px 3px 0 0;min-height:2px}
 .barras i.en{background:var(--ok)}
@@ -162,6 +165,12 @@ body.modal{overflow:hidden}
 .pill.roas{background:var(--acc-bg);color:var(--acc)}
 .st.ok b{color:var(--acc)}
 .barras i.en{background:var(--acc)}
+.barras i{cursor:pointer;transition:opacity .12s}
+.barras:hover i{opacity:.45} .barras i:hover{opacity:1}
+#tip{position:fixed;z-index:30;pointer-events:none;background:#2A201E;color:#fff;border-radius:12px;padding:9px 12px;font-size:12px;line-height:1.5;box-shadow:0 8px 24px rgba(38,33,30,.25);display:none;min-width:150px}
+#tip b{display:block;font-size:12.5px;margin-bottom:3px}
+#tip div{display:flex;justify-content:space-between;gap:14px}
+#tip span{opacity:.7}
 .badge{background:var(--acc)}
 .chip.on,.aplicados .ap,.btn.dark{background:#2A201E;border-color:#2A201E}
 .revbtn{background:var(--acc-bg);color:var(--acc)}
@@ -192,6 +201,7 @@ body.modal{overflow:hidden}
   <div id="lista"></div></div></div>
 </div>
 <div class="toast" id="toast"></div>
+<div id="tip"></div>
 <script type="module">
 // Bot 5 (9/10/2026): a la 1:00 la marca manda los anuncios con ROAS >= 3 del día; la Mac de CIMA
 // (creativos/variantes/variantes.py) genera 3-5 variantes de cada uno y las deja acá. Aprobada → Drive de la marca.
@@ -258,8 +268,9 @@ function ventana(a, hasta){
   const corte = new Date(hasta+"T12:00:00"); corte.setDate(corte.getDate()-F.per+1);
   const desde = corte.toISOString().slice(0,10);
   const ds = (a.dias||[]).filter(d=>d.f>=desde && d.f<=hasta);
-  const g = ds.reduce((x,d)=>x+d.g,0), c = ds.reduce((x,d)=>x+d.c,0), v = ds.reduce((x,d)=>x+d.v,0);
-  return {g, c, v, roas: g? v/g : 0, desde};
+  const sum = k => ds.reduce((x,d)=>x+(d[k]||0),0);
+  const g = sum("g"), c = sum("c"), v = sum("v"), i = sum("i"), l = sum("l"), p3 = sum("p3");
+  return {g, c, v, i, l, p3, roas: g? v/g : 0, cpa: c? g/c : 0, ctr: i? l/i*100 : null, hook: (i && p3)? p3/i*100 : null, desde};
 }
 function pintarSemana(){
   const marcas = Object.keys(semana).sort();
@@ -273,7 +284,7 @@ function pintarSemana(){
     orden:'<svg viewBox="0 0 24 24"><path d="M7 4v16M3 16l4 4 4-4M17 20V4M13 8l4-4 4 4"/></svg>'};
   const OPS = {per:[[1,"Ayer"],[3,"3 días"],[7,"7 días"]], roas:[[1.8,"1,8+"],[2.5,"2,5+"],[3.5,"3,5+"],[4,"4+"]],
     ventas:[[10,"10+"],[20,"20+"],[50,"50+"]], tipo:[["todos","Todos"],["ugc","UGC"],["founder","Founder"],["broll","B-roll"],["animado","Animado"],["estatico","Estático"]],
-    orden:[["ventas","Ventas"],["roas","ROAS"],["facturacion","Facturación"],["ganancia","Ganancia"]]};
+    orden:[["ventas","Ventas"],["roas","ROAS"],["facturacion","Facturación"],["ganancia","Ganancia"],["cpa","CPA más bajo"],["ctr","CTR"],["hook","Hook rate"]]};
   const NOM = {per:"Período", roas:"ROAS", ventas:"Ventas", tipo:"Tipo", orden:"Ordenar"};
   const DEF = {per:7, roas:1.8, ventas:10, tipo:"todos", orden:"ventas"};
   const lab = k => (OPS[k].find(o=>o[0]===F[k])||[,""])[1];
@@ -293,19 +304,20 @@ function pintarSemana(){
       const tipo = (doc.tipos||{})[a.id] || ((a.video_id||/VIDEO/i.test(a.objeto||"")) ? "" : "estatico");
       if(F.tipo!=="todos" && tipo!==F.tipo) continue;
       if(w.c>=F.ventas && w.roas>=F.roas) filas.push({m, a, w, tipo, mon:doc.moneda||"", mini:mini[a.id], hasta:doc.hasta, ganancia: w.v - w.g*(BE[m]||1.8)}); } }
-  const key = {ventas:x=>x.w.c, roas:x=>x.w.roas, facturacion:x=>x.w.v, ganancia:x=>x.ganancia}[F.orden] || (x=>x.w.c);
+  const key = {ventas:x=>x.w.c, roas:x=>x.w.roas, facturacion:x=>x.w.v, ganancia:x=>x.ganancia, cpa:x=>-(x.w.cpa||1e9), ctr:x=>x.w.ctr||0, hook:x=>x.w.hook||0}[F.orden] || (x=>x.w.c);
   filas.sort((x,y)=>key(y)-key(x));
   const tot = filas.reduce((t,x)=>({c:t.c+x.w.c, g:t.g+x.w.g, v:t.v+x.w.v}),{c:0,g:0,v:0});
+  // orden también por CPA (menor primero), CTR y hook rate
   const mon = filas[0]?.mon || "";
   const hasta = Object.values(semana)[0]?.hasta;
   $("#rsem").innerHTML = `<div class="kpi"><span class="l">Anuncios</span><span class="v">${filas.length}</span></div>
     <div class="kpi"><span class="l">Ventas</span><span class="v">${num(tot.c)}</span></div>
     <div class="kpi"><span class="l">ROAS juntos</span><span class="v">${tot.g?(tot.v/tot.g).toFixed(2):"—"}</span></div>
-    <div class="kpi"><span class="l">Facturación ${esc(mon)}</span><span class="v">${num(tot.v)}</span></div>`;
+    <div class="kpi"><span class="l">CPA juntos ${esc(mon)}</span><span class="v">${tot.c? num(tot.g/tot.c) : "—"}</span></div>`;
   $("#resumen").textContent = `Hola ${quien} · ${F.per===1?"ayer":`últimos ${F.per} días`}${hasta?` hasta el ${fdia(hasta)}`:""} · datos de Meta de la 1:00`;
   if(!filas.length){ $("#gsem").innerHTML = `<div class="vacio" style="grid-column:1/-1">${Object.keys(semana).length?"Ningún anuncio pasa esos filtros. Bajá el ROAS o las ventas.":"Todavía no llegaron datos de la semana: llegan con la rutina de la 1:00 de la marca."}</div>`; return; }
   const conVar = {}, porRev = {};
-  Object.values(items).forEach(it=>{ conVar[it.adId]=(conVar[it.adId]||0)+1; if(it.estado==="revisar") porRev[it.adId]=(porRev[it.adId]||0)+1; });
+  Object.values(items).filter(it=>it.estado!=="rechazado").forEach(it=>{ conVar[it.adId]=(conVar[it.adId]||0)+1; if(it.estado==="revisar") porRev[it.adId]=(porRev[it.adId]||0)+1; });
   $("#gsem").innerHTML = filas.map((x,i)=>tarjetaSemana(x,i,conVar[x.a.id]||0,porRev[x.a.id]||0)).join("");
   document.querySelectorAll("#gsem .iterar").forEach(b=>b.onclick=()=>{ const c=document.querySelector(`[data-cuantas="${b.dataset.ad}"]`); c.classList.toggle("on"); });
   document.querySelectorAll("#gsem .pedir").forEach(b=>b.onclick=()=>pedirIterar(b.dataset.m, b.dataset.ad, "pedido", +b.dataset.n));
@@ -328,8 +340,9 @@ function tarjetaSemana(x, i, nvar, nrev){
     <div class="vid" data-drive="${esc(x.mini||"")}" data-link="${esc(link)}">${img?`<img src="${esc(img)}" alt="" loading="lazy" onerror="this.style.display='none'">`:`<div class="ph">Sin miniatura todavía</div>`}${esVideo&&img?`<span class="play"></span>`:""}${nrev?`<span class="badge">${nrev} para revisar</span>`:nvar?`<span class="badge">${nvar} variantes</span>`:""}</div>
     <div class="cuerpo">
       <div class="stats"><div class="st ${rc}"><span>ROAS</span><b>${w.roas.toFixed(2)}</b></div><div class="st"><span>Ventas</span><b>${num(w.c)}</b></div></div>
-      <div class="barras" title="Ventas por día">${dias.map(d=>`<i class="${d.f>=w.desde?"en":""}" style="height:${Math.round(d.c/max*100)}%" title="${fdia(d.f)}: ${d.c} ventas"></i>`).join("")}</div>
-      <div class="sub2">Facturó ${num(w.v)} ${esc(x.mon)} · ventas por día · marcado el período elegido</div>
+      <div class="mini"><div><span>CPA</span>${num(w.cpa)} ${esc(x.mon)}</div><div><span>CTR</span>${w.ctr==null?"—":w.ctr.toFixed(2)+"%"}</div><div><span>Hook rate</span>${w.hook==null?"—":w.hook.toFixed(0)+"%"}</div></div>
+      <div class="barras" title="Ventas por día">${dias.map(d=>`<i class="${d.f>=w.desde?"en":""}" style="height:${Math.max(4,Math.round(d.c/max*100))}%" data-f="${d.f}" data-c="${d.c}" data-g="${d.g}" data-v="${d.v}" data-i="${d.i||0}" data-l="${d.l||0}" data-p="${d.p3||0}" data-mon="${esc(x.mon)}"></i>`).join("")}</div>
+      <div class="sub2">Facturó ${num(w.v)} ${esc(x.mon)} · pasá el mouse por las barras para ver cada día</div>
       ${botonIterar(x, nvar, nrev)}
     </div></div>`;
 }
@@ -459,6 +472,19 @@ function conectar(id){
 }
 
 document.addEventListener("click", () => document.querySelectorAll(".drop.on").forEach(x=>x.classList.remove("on")));
+// cartel al pasar por una barra: el día completo
+const DIAS = ["dom","lun","mar","mié","jue","vie","sáb"];
+document.addEventListener("mouseover", e => {
+  const b = e.target.closest && e.target.closest(".barras i"); const tip = $("#tip");
+  if(!b){ tip.style.display = "none"; return; }
+  const g = +b.dataset.g, v = +b.dataset.v, c = +b.dataset.c, f = b.dataset.f, mon = b.dataset.mon, im = +b.dataset.i, cl = +b.dataset.l, p3 = +b.dataset.p;
+  const d = new Date(f+"T12:00:00");
+  tip.innerHTML = `<b>${DIAS[d.getDay()]} ${fdia(f)}</b><div><span>Ventas</span>${num(c)}</div><div><span>ROAS</span>${g? (v/g).toFixed(2) : "—"}</div><div><span>CPA</span>${c? num(g/c)+" "+mon : "—"}</div><div><span>CTR</span>${im? (cl/im*100).toFixed(2)+"%" : "—"}</div><div><span>Hook rate</span>${im&&p3? (p3/im*100).toFixed(0)+"%" : "—"}</div><div><span>Gasto</span>${num(g)} ${mon}</div><div><span>Facturó</span>${num(v)} ${mon}</div>`;
+  tip.style.display = "block";
+  const r = b.getBoundingClientRect(), t = tip.getBoundingClientRect();
+  tip.style.left = Math.max(8, Math.min(innerWidth - t.width - 8, r.left + r.width/2 - t.width/2)) + "px";
+  tip.style.top = Math.max(8, r.top - t.height - 8) + "px";
+});
 if(quien) arrancar();
 </script>
 </body>
