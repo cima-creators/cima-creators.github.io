@@ -117,6 +117,16 @@ summary{cursor:pointer;font-weight:600;font-size:13px}
 #login{max-width:360px;margin:14vh auto;background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:28px}
 #login h1{font-size:23px}
 #login input{width:100%;margin:16px 0 10px;padding:12px 14px;border:1px solid var(--line);border-radius:14px;font-size:15px;background:var(--soft);color:var(--txt)}
+#plan{position:fixed;inset:0;background:rgba(42,31,31,.55);display:none;align-items:center;justify-content:center;padding:16px;z-index:20}
+#plan.on{display:flex}
+#plan .box{background:var(--card);border-radius:var(--r);max-width:560px;width:100%;max-height:92vh;overflow:auto;padding:20px;display:flex;flex-direction:column;gap:12px}
+#plan h2{font-size:19px;font-weight:700;letter-spacing:-.02em}
+#plan .ref{display:flex;gap:12px;align-items:flex-start}
+#plan .ref img{width:72px;height:90px;object-fit:cover;border-radius:12px;background:var(--soft);flex-shrink:0}
+#plan .ref p{font-size:12.5px;color:var(--mut)}
+#plan textarea{width:100%;min-height:210px;border:1px solid var(--line);border-radius:14px;padding:12px 14px;font-size:13.5px;line-height:1.55;background:var(--soft);color:var(--txt);resize:vertical}
+#plan textarea:focus{outline:none;border-color:var(--acc)}
+#plan .ayuda{font-size:12px;color:var(--mut)}
 #login .btn{width:100%}
 .cambio textarea{width:100%;border:1px solid var(--line);border-radius:14px;padding:10px 12px;font-size:13px;background:var(--soft);color:var(--txt);resize:vertical;margin-bottom:6px}
 .cambio textarea:focus{outline:none;border-color:var(--acc)}
@@ -185,6 +195,13 @@ summary{cursor:pointer;font-weight:600;font-size:13px}
   </div>
   <div class="grid" id="grid"></div>
 </div>
+<div id="plan" role="dialog" aria-modal="true" aria-labelledby="planT"><div class="box">
+  <h2 id="planT">Así lo haría para Mi Luz</h2>
+  <div class="ref"><img id="planImg" alt=""><div><b id="planMarca"></b><p id="planIdea"></p></div></div>
+  <textarea id="planTxt"></textarea>
+  <div class="ayuda">Cambiá lo que quieras: agregá, sacá o escribí otra idea. El video se hace <b>exactamente</b> con esto; lo que no esté acá no se agrega.</div>
+  <div class="acciones"><button class="btn" id="planNo">Cancelar</button><button class="btn dark" id="planSi">Producir con este plan</button></div>
+</div></div>
 <div class="toast" id="toast"></div>
 
 <script type="module">
@@ -324,6 +341,7 @@ function tarjeta(d){
       ${estadoProd(d)}
       <div class="extra">
         ${bajar}
+        ${d.plan ? `<div class="unas"><h4>Plan aprobado</h4><div class="txt" style="white-space:pre-line">${esc(d.plan)}</div></div>` : ""}
         <div class="unas"><h4>Para uñas</h4><div class="txt">${esc(d.bajada || "")}</div></div>
         ${d.producto ? `<div class="links">Vende: ${esc(d.producto)}</div>` : ""}
         <div class="links">${esc(fuente)} · desde ${esc(d.inicio || "?")}${d.pais ? " · " + esc(d.pais) : ""} · <a href="${esc(d.link)}" target="_blank" rel="noopener">ver anuncio</a></div>
@@ -354,11 +372,46 @@ async function accion(id, acc){
     catch (e) { toast("No se pudo guardar: " + e.code); }
     return;
   }
+  if (acc === "elegir") { abrirPlan(id); return; }
   const estado = {elegir:"elegida", soltar:"nueva", descartar:"descartada", volver:"nueva"}[acc];
   const extra = acc === "elegir" ? {eligio: quien, eligioEn: new Date().toISOString()} : {};
   try { await fs.updateDoc(fs.doc(fs.db, "animados_luz", id), {estado, ...extra}); toast({elegir:"Elegida: se produce sola ✓", descartar:"Descartada", volver:"Recuperada", soltar:"Cancelada"}[acc]); }
   catch (e) { toast("No se pudo guardar: " + e.code); }
 }
+
+let planId = null;
+function abrirPlan(id){
+  const d = docs.find(x => x.id === id); if (!d) return;
+  planId = id;
+  const f = d.formato || "otro";
+  $("#planImg").src = d.thumb || "";
+  $("#planMarca").textContent = `${d.marca} · ${f === "otro" ? "Otro formato" : f + " · " + FMT[f]}`;
+  $("#planIdea").textContent = "Referencia: " + (d.idea || d.hook || "");
+  $("#planTxt").value = d.plan || [
+    `Formato: ${f === "otro" ? "el mismo de la referencia" : FMT[f]}, con la misma estructura y el mismo ritmo que la referencia.`,
+    ``,
+    `Idea para Mi Luz: ${d.bajada || ""}`,
+    ``,
+    `Personaje: mujer de 45-64 (la que compra), siempre la misma en todo el video.`,
+    `Producto: Tratamiento Fénix (foto real del frasco). Cuando se habla del tratamiento, se ve la uña pintándose.`,
+    ``,
+    `Qué NO va: `,
+  ].join("\n");
+  $("#plan").classList.add("on");
+  $("#planTxt").focus();
+}
+function cerrarPlan(){ $("#plan").classList.remove("on"); planId = null; }
+$("#planNo").onclick = cerrarPlan;
+$("#plan").addEventListener("click", e => { if (e.target.id === "plan") cerrarPlan(); });
+document.addEventListener("keydown", e => { if (e.key === "Escape" && planId) cerrarPlan(); });
+$("#planSi").onclick = async () => {
+  const plan = $("#planTxt").value.trim(), id = planId;
+  if (!plan) { toast("El plan no puede quedar vacío"); return; }
+  try {
+    await fs.updateDoc(fs.doc(fs.db, "animados_luz", id), {estado: "elegida", plan, eligio: quien, eligioEn: new Date().toISOString()});
+    cerrarPlan(); toast("Elegida: se produce con tu plan ✓");
+  } catch (e) { toast("No se pudo guardar: " + e.code); }
+};
 </script>
 </body>
 </html>
