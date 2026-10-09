@@ -112,12 +112,12 @@ async function arrancar(){
 
 function pintar(){
   const todos = Object.entries(items);
-  const marcas = [...new Set(todos.map(([,it])=>it.marca))].sort();
+  const marcas = [...new Set(todos.map(([,it])=>it.marca))].sort(); const nom = m => (todos.find(([,it])=>it.marca===m)||[,{}])[1].marcaNombre||m;
   const deMarca = todos.filter(([,it]) => marcaF==="todas" || it.marca===marcaF);
   const cuenta = e => deMarca.filter(([,it])=>it.estado===e).length;
   $("#resumen").textContent = `Hola ${quien} · ${cuenta("revisar")} para revisar · ${cuenta("procesando")+cuenta("corregir")} editándose`;
   $("#tabs").innerHTML = ESTADOS.map(([e,t]) => `<button class="tab ${e===filtro?"on":""}" data-e="${e}">${t}<b>${cuenta(e)}</b></button>`).join("");
-  $("#marcas").innerHTML = marcas.length>1 ? ["todas",...marcas].map(m=>`<button class="tab ${m===marcaF?"on":""}" data-m="${m}">${m==="todas"?"Todas las marcas":esc(m)}</button>`).join("") : "";
+  $("#marcas").innerHTML = marcas.length>1 ? ["todas",...marcas].map(m=>`<button class="tab ${m===marcaF?"on":""}" data-m="${m}">${m==="todas"?"Todas las marcas":esc(nom(m))}</button>`).join("") : "";
   document.querySelectorAll("[data-e]").forEach(b=>b.onclick=()=>{filtro=b.dataset.e;pintar();});
   document.querySelectorAll("[data-m]").forEach(b=>b.onclick=()=>{marcaF=b.dataset.m;pintar();});
   const lista = deMarca.filter(([,it])=>it.estado===filtro).sort((a,b)=>(a[1].fechaCrudo||"").localeCompare(b[1].fechaCrudo||""));
@@ -142,7 +142,7 @@ function tarjeta(id,it){
   return `<div class="item" id="it-${esc(id)}">
     <div class="vid">${vid}</div>
     <div>
-      <div class="meta"><span class="chip m">${esc(it.marca)}</span><span class="chip">Guion ${esc(it.guion||"—")}</span><span class="chip">${esc(it.creadora||"")}</span><span class="chip">${fecha}</span><span class="chip e-${esc(it.estado)}">${esc((ESTADOS.find(e=>e[0]===it.estado)||[,it.estado])[1])}</span></div>
+      <div class="meta"><span class="chip m">${esc(it.marcaNombre||it.marca)}</span><span class="chip">Guion ${esc(it.guion||"—")}</span><span class="chip">${esc(it.creadora||"")}</span><span class="chip">${fecha}</span><span class="chip e-${esc(it.estado)}">${esc((ESTADOS.find(e=>e[0]===it.estado)||[,it.estado])[1])}</span></div>
       ${it.driveId?`<div class="sub" style="margin-bottom:10px"><a href="https://drive.google.com/file/d/${esc(it.driveId)}/view" target="_blank" rel="noopener">Abrir en Drive</a> · <a href="${esc(it.crudoLink)}" target="_blank" rel="noopener">Ver el crudo</a></div>`:""}
       ${it.error?`<div class="err">${esc(it.error)}</div>`:""}
       ${subs?`<h3>Subtítulos ${editable?"· tocá uno para corregirlo":""}</h3><div class="subs">${subs}</div>`:""}
