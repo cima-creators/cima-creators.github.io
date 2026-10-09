@@ -217,7 +217,8 @@ async function arrancar(){
   const db = getFirestore(app);
   fs = {db, doc, updateDoc};
   onSnapshot(collection(db, "animados_luz"), snap => {
-    docs = snap.docs.map(d => ({id: d.id, ...d.data()})).filter(d => /^\d{4}-/.test(d.fecha || ""));
+    docs = snap.docs.map(d => ({id: d.id, ...d.data()})).filter(d => /^\d{4}-/.test(d.fecha || ""))
+      .filter(d => d.estado !== "nueva" || (d.duracion || 0) >= 40);   // Nacho, 9/10: mínimo 40 s
     pintar();
   }, err => { $("#grid").innerHTML = `<div class="vacio">No se pudo cargar (${esc(err.code)}). Recargá la página.</div>`; });
 }
