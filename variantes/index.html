@@ -176,7 +176,7 @@ body.modal{overflow:hidden}
 <div id="login">
   <h1>Variantes de ganadores</h1>
   <p class="sub">Entrá con tu clave.</p>
-  <input id="clave" type="password" placeholder="Clave" autocomplete="current-password">
+  <input id="clave" type="password" placeholder="Clave" autocomplete="current-password" autocapitalize="off" autocorrect="off" spellcheck="false">
   <button class="btn dark" id="entrar" style="width:100%">Entrar</button>
   <p id="login-e" class="sub" style="color:var(--bad)"></p>
 </div>
@@ -209,7 +209,7 @@ try { quien = CLAVES[localStorage.getItem("revision_clave")] || null; } catch(e)
 function toast(t){ const el=$("#toast"); el.textContent=t; el.classList.add("on"); setTimeout(()=>el.classList.remove("on"),2200); }
 function esc(s){ return String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
 function entrar(){
-  const k = $("#clave").value.trim();
+  const k = $("#clave").value.trim().toLowerCase().replace(/\s+/g,"");
   if(!CLAVES[k]){ $("#login-e").textContent = "Esa clave no es. Probá de nuevo."; return; }
   try { localStorage.setItem("revision_clave", k); } catch(e) {}
   quien = CLAVES[k]; arrancar();
