@@ -249,7 +249,7 @@ function tarjeta(d){
       </div>
       <p class="idea">${esc(d.idea || d.hook || "")}</p>
       <p class="unas"><b>Para uñas:</b> ${esc(d.bajada || "")}</p>
-      <div class="meta">Desde ${esc(d.inicio || "?")}${d.pais ? " · " + esc(d.pais) : ""} · <a href="${esc(d.link)}" target="_blank" rel="noopener">ver anuncio</a></div>
+      <div class="meta">${esc((d.fuente || "").replace("GetHookd · ", ""))} · desde ${esc(d.inicio || "?")}${d.pais ? " · " + esc(d.pais) : ""} · <a href="${esc(d.link)}" target="_blank" rel="noopener">ver anuncio</a></div>
       ${extra}
       ${d.estado === "lista" ? "" : `<div class="acc">
         <button class="btn si" data-acc="${elegida ? "soltar" : "elegir"}" data-id="${esc(d.id)}" aria-pressed="${elegida}">${elegida ? "✓ Elegida" : "La quiero"}</button>
