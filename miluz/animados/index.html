@@ -147,6 +147,7 @@ summary{cursor:pointer;font-weight:600;font-size:13px}
   <div class="barra">
     <div class="marcas" id="filtros">
       <button class="mt on" data-f="">Todos</button>
+      <button class="mt" data-f="pixar">Pixar / Disney</button>
       <button class="mt" data-f="A1">A1 Canción</button>
       <button class="mt" data-f="A2">A2 Problema habla</button>
       <button class="mt" data-f="A3">A3 A vs B</button>
@@ -156,7 +157,7 @@ summary{cursor:pointer;font-weight:600;font-size:13px}
       <button class="mt" data-f="otro">Otro</button>
     </div>
     <select id="orden" aria-label="Ordenar">
-      <option value="senal">Más señal primero</option>
+      <option value="senal">Pixar / Disney y más señal primero</option>
       <option value="dias">Más días activo</option>
       <option value="dup">Más duplicados</option>
       <option value="marca">Marca con más anuncios</option>
@@ -236,8 +237,10 @@ function pintar(){
       : `Elegí ${META - elegidasTot} más. Cada uno trae cuántos días lleva prendido, cuántas veces lo duplicó la marca y cómo se haría para uñas.`;
   } else { $("#heroT").textContent = "Todavía no hay propuestas"; $("#heroP").textContent = "La primera tanda se está armando."; }
   let lista = vista === "hoy" ? nuevas : vista === "elegidas" ? curso : vista === "hechos" ? hechos : descartadas;
-  if (filtro) lista = lista.filter(d => (d.formato || "otro") === filtro);
-  const k = {senal: d => (d.senal||0)*10 + (d.calidad||0), dias: d => d.dias||0, dup: d => d.dup||0, marca: d => d.marcaAds||0}[orden];
+  const esPixar = d => /pixar|disney/i.test(d.estilo || "");
+  if (filtro === "pixar") lista = lista.filter(esPixar);
+  else if (filtro) lista = lista.filter(d => (d.formato || "otro") === filtro);
+  const k = {senal: d => (esPixar(d) ? 100 : 0) + (d.senal||0)*10 + (d.calidad||0), dias: d => d.dias||0, dup: d => d.dup||0, marca: d => d.marcaAds||0}[orden];
   lista.sort((a, b) => vista === "hechos" ? (b.producidoEn||"").localeCompare(a.producidoEn||"") : ((b.fecha||"").localeCompare(a.fecha||"") || k(b) - k(a)));
   if (!lista.length) {
     $("#grid").innerHTML = `<div class="vacio">${{elegidas:"No hay nada en producción. Tocá <b>La quiero</b> en Para elegir.", hechos:"Todavía no hay videos producidos.", todas:"No descartaste ninguno.", hoy:"No hay anuncios con este filtro."}[vista]}</div>`;
