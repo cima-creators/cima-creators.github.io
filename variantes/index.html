@@ -47,7 +47,7 @@ h1{font-size:30px;font-weight:700;letter-spacing:-.03em;line-height:1.1}
 .kpi .l{font-size:10.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--mut)}
 .kpi .v{font-size:30px;font-weight:700;letter-spacing:-.035em;margin-top:auto;padding-top:8px;line-height:1}
 .kpi.alerta .v{color:var(--warn)} .kpi.mal .v{color:var(--bad)}
-.grilla{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px;margin-bottom:8px}
+.grilla{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px;margin-bottom:8px}
 .item{background:var(--card);border:1px solid var(--line);border-radius:20px;overflow:hidden;display:flex;flex-direction:column}
 .cab{display:flex;align-items:center;gap:10px;padding:12px 14px}
 .cab .av{width:34px;height:34px;border-radius:50%;background:var(--txt);color:#fff;display:grid;place-items:center;font-weight:700;font-size:13px;flex-shrink:0}
@@ -57,7 +57,7 @@ h1{font-size:30px;font-weight:700;letter-spacing:-.03em;line-height:1.1}
 .cab .t small i{width:7px;height:7px;border-radius:50%;background:var(--warn);display:inline-block}
 .cab .t small i.ok{background:var(--ok)} .cab .t small i.mal{background:var(--bad)}
 .cab a{color:var(--mut);font-size:15px;text-decoration:none}
-.vid{height:300px;background:var(--soft);position:relative;overflow:hidden;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.vid{aspect-ratio:1/1;background:var(--soft);position:relative;overflow:hidden;cursor:pointer;display:flex;align-items:center;justify-content:center}
 .vid img{height:100%;width:auto;max-width:100%;object-fit:contain;display:block}
 .vid .play{position:absolute;left:50%;top:50%;width:54px;height:54px;margin:-27px 0 0 -27px;border-radius:50%;background:rgba(38,33,30,.82);display:grid;place-items:center}
 .vid .play:after{content:"";border-left:17px solid #fff;border-top:11px solid transparent;border-bottom:11px solid transparent;margin-left:4px}
@@ -112,6 +112,24 @@ h3{margin:4px 0 8px;font-size:10.5px;font-weight:600;color:var(--mut);text-trans
 .grupo h2{font-size:17px;font-weight:700;letter-spacing:-.02em}
 .grupo a{color:var(--mut);font-size:12.5px}
 .pill.roas{background:var(--ok-bg);color:var(--ok);font-weight:600}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.st{background:var(--soft);border-radius:12px;padding:7px 10px 8px}
+.st span{display:block;font-size:10px;font-weight:600;letter-spacing:.11em;text-transform:uppercase;color:var(--mut)}
+.st b{display:block;font-size:22px;font-weight:700;letter-spacing:-.03em;line-height:1.15}
+.st.ok b{color:var(--ok)} .st.warn b{color:var(--warn)}
+.sub2{font-size:11.5px;color:var(--mut)}
+.barras{display:flex;align-items:flex-end;gap:3px;height:34px;padding:0 2px}
+.barras i{flex:1;background:var(--line2);border-radius:3px 3px 0 0;min-height:2px}
+.barras i.en{background:var(--ok)}
+.filtros{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:12px 14px;display:flex;flex-wrap:wrap;gap:10px 22px;margin-bottom:14px}
+.fgr{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.fgr>span{font-size:10.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--mut);margin-right:2px}
+.chip{border:1px solid var(--line);background:var(--card);color:var(--txt);font-weight:600;font-size:12.5px;padding:6px 12px;border-radius:99px;cursor:pointer}
+.chip.on{background:var(--txt);color:#fff;border-color:var(--txt)}
+.resumen-sem{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:11px;margin-bottom:14px}
+@media (max-width:700px){.resumen-sem{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.resumen-sem .kpi{cursor:default}
+.badge{position:absolute;right:10px;top:10px;background:var(--ok);color:#fff;font-size:11px;font-weight:600;padding:3px 9px;border-radius:99px}
 </style>
 </head>
 <body>
@@ -127,9 +145,11 @@ h3{margin:4px 0 8px;font-size:10.5px;font-weight:600;color:var(--mut);text-trans
     <div><h1>Variantes de ganadores</h1><div class="sub" id="resumen">Cargando…</div></div>
     <button class="btn" id="salir">Salir</button>
   </header>
+  <div class="marcas" id="vistas"></div>
   <div class="marcas" id="marcas"></div>
-  <div class="top"><div class="hero" id="hero"></div><div class="kpis" id="tabs"></div></div>
-  <div id="lista"></div>
+  <div id="vsem" hidden><div class="filtros" id="filtros"></div><div class="resumen-sem" id="rsem"></div><div class="grilla" id="gsem"></div></div>
+  <div id="vvar"><div class="top"><div class="hero" id="hero"></div><div class="kpis" id="tabs"></div></div>
+  <div id="lista"></div></div>
 </div>
 <div class="toast" id="toast"></div>
 <script type="module">
@@ -139,7 +159,9 @@ const CLAVES = {"vane-2026":"Vane","cima-2026":"Nacho","abril-2026":"Abril"};
 const $ = s => document.querySelector(s);
 const ESTADOS = [["revisar","Para revisar"],["procesando","Generándose"],["corregir","Corrigiéndose"],["subido","Aprobadas"],["rechazado","Descartadas"],["error","Con error"]];
 const TIPO = {estatico:"Estático", video:"Video", animado:"Animado"};
-let quien = null, items = {}, filtro = "revisar", fb = null, pendiente = false;
+let quien = null, items = {}, filtro = "revisar", fb = null, pendiente = false, semana = {};
+const F = {vista:"semana", per:7, roas:1.8, ventas:10, orden:"ventas"};
+try { Object.assign(F, JSON.parse(localStorage.getItem("variantes_filtros")||"{}")); } catch(e) {}
 let marcaF = new URLSearchParams(location.search).get("marca") || (()=>{ try { return localStorage.getItem("variantes_marca") } catch(e){ return null } })() || "todas";
 try { quien = CLAVES[localStorage.getItem("revision_clave")] || null; } catch(e) {}
 function toast(t){ const el=$("#toast"); el.textContent=t; el.classList.add("on"); setTimeout(()=>el.classList.remove("on"),2200); }
@@ -164,6 +186,10 @@ async function arrancar(){
   await signInAnonymously(getAuth(app));
   const db = getFirestore(app);
   fb = {db, doc, updateDoc};
+  onSnapshot(collection(db,"variantes_semana"), snap => {
+    snap.docChanges().forEach(c => { if(c.type==="removed") delete semana[c.doc.id]; else semana[c.doc.id] = c.doc.data(); });
+    pintar();
+  }, err => console.warn(err));
   onSnapshot(collection(db,"variantes_cola"), snap => {
     snap.docChanges().forEach(c => { if(c.type==="removed") delete items[c.doc.id]; else items[c.doc.id] = c.doc.data(); });
     pintar();
@@ -173,7 +199,80 @@ async function arrancar(){
 const fdia = f => (f||"").slice(0,10).split("-").reverse().slice(0,2).join("/");
 const num = n => Number(n||0).toLocaleString("es-AR",{maximumFractionDigits:0});
 
+function guardarF(){ try { localStorage.setItem("variantes_filtros", JSON.stringify(F)); } catch(e) {} }
 function pintar(){
+  const pr = Object.values(items).filter(it=>it.estado==="revisar").length;
+  $("#vistas").innerHTML = [["semana","Ganadores de la semana"],["variantes","Variantes"]].map(([v,t]) =>
+    `<button class="mt ${F.vista===v?"on":""}" data-v="${v}">${t}${v==="variantes"&&pr?`<b>${pr}</b>`:""}</button>`).join("");
+  document.querySelectorAll("[data-v]").forEach(b=>b.onclick=()=>{F.vista=b.dataset.v; guardarF(); pintar();});
+  $("#vsem").hidden = F.vista!=="semana"; $("#vvar").hidden = F.vista!=="variantes";
+  if(F.vista==="semana"){ pintarSemana(); return; }
+  pintarVariantes();
+}
+
+const BE = {miluz:1.8};
+function ventana(a, hasta){
+  const fechas = [...new Set((a.dias||[]).map(d=>d.f))].sort();
+  const corte = new Date(hasta+"T12:00:00"); corte.setDate(corte.getDate()-F.per+1);
+  const desde = corte.toISOString().slice(0,10);
+  const ds = (a.dias||[]).filter(d=>d.f>=desde && d.f<=hasta);
+  const g = ds.reduce((x,d)=>x+d.g,0), c = ds.reduce((x,d)=>x+d.c,0), v = ds.reduce((x,d)=>x+d.v,0);
+  return {g, c, v, roas: g? v/g : 0, desde};
+}
+function pintarSemana(){
+  const marcas = Object.keys(semana).sort();
+  $("#marcas").innerHTML = marcas.length>1 ? ["todas",...marcas].map(m=>`<button class="mt ${m===marcaF?"on":""}" data-m="${m}">${m==="todas"?"Todas las marcas":esc(m)}</button>`).join("") : "";
+  document.querySelectorAll("[data-m]").forEach(b=>b.onclick=()=>{marcaF=b.dataset.m; try{localStorage.setItem("variantes_marca",marcaF)}catch(e){} pintar();});
+  $("#marcas").hidden = marcas.length<2;
+  const chips = (k, ops) => ops.map(([v,t])=>`<button class="chip ${F[k]===v?"on":""}" data-f="${k}" data-val="${v}">${t}</button>`).join("");
+  $("#filtros").innerHTML = `
+    <div class="fgr"><span>Período</span>${chips("per",[[1,"Ayer"],[3,"3 días"],[7,"7 días"]])}</div>
+    <div class="fgr"><span>ROAS</span>${chips("roas",[[1.8,"1,8+"],[2.5,"2,5+"],[3.5,"3,5+"],[4,"4+"]])}</div>
+    <div class="fgr"><span>Ventas</span>${chips("ventas",[[10,"10+"],[20,"20+"],[50,"50+"]])}</div>
+    <div class="fgr"><span>Ordenar</span>${chips("orden",[["ventas","Ventas"],["roas","ROAS"],["facturacion","Facturación"],["ganancia","Ganancia"]])}</div>`;
+  document.querySelectorAll("[data-f]").forEach(b=>b.onclick=()=>{ const v=b.dataset.val; F[b.dataset.f] = isNaN(+v)? v : +v; guardarF(); pintar(); });
+  const filas = [];
+  for(const m of marcas){ if(marcaF!=="todas" && marcas.length>1 && m!==marcaF) continue;
+    const doc = semana[m]; const mini = doc.miniaturas||{};
+    for(const a of doc.anuncios||[]){ const w = ventana(a, doc.hasta);
+      if(w.c>=F.ventas && w.roas>=F.roas) filas.push({m, a, w, mon:doc.moneda||"", mini:mini[a.id], hasta:doc.hasta, ganancia: w.v - w.g*(BE[m]||1.8)}); } }
+  const key = {ventas:x=>x.w.c, roas:x=>x.w.roas, facturacion:x=>x.w.v, ganancia:x=>x.ganancia}[F.orden] || (x=>x.w.c);
+  filas.sort((x,y)=>key(y)-key(x));
+  const tot = filas.reduce((t,x)=>({c:t.c+x.w.c, g:t.g+x.w.g, v:t.v+x.w.v}),{c:0,g:0,v:0});
+  const mon = filas[0]?.mon || "";
+  const hasta = Object.values(semana)[0]?.hasta;
+  $("#rsem").innerHTML = `<div class="kpi"><span class="l">Anuncios</span><span class="v">${filas.length}</span></div>
+    <div class="kpi"><span class="l">Ventas</span><span class="v">${num(tot.c)}</span></div>
+    <div class="kpi"><span class="l">ROAS juntos</span><span class="v">${tot.g?(tot.v/tot.g).toFixed(2):"—"}</span></div>
+    <div class="kpi"><span class="l">Facturación ${esc(mon)}</span><span class="v">${num(tot.v)}</span></div>`;
+  $("#resumen").textContent = `Hola ${quien} · ${F.per===1?"ayer":`últimos ${F.per} días`}${hasta?` hasta el ${fdia(hasta)}`:""} · datos de Meta de la 1:00`;
+  if(!filas.length){ $("#gsem").innerHTML = `<div class="vacio" style="grid-column:1/-1">${Object.keys(semana).length?"Ningún anuncio pasa esos filtros. Bajá el ROAS o las ventas.":"Todavía no llegaron datos de la semana: llegan con la rutina de la 1:00 de la marca."}</div>`; return; }
+  const conVar = {}; Object.values(items).forEach(it=>{ conVar[it.adId]=(conVar[it.adId]||0)+1; });
+  $("#gsem").innerHTML = filas.map((x,i)=>tarjetaSemana(x,i,conVar[x.a.id]||0)).join("");
+  document.querySelectorAll("#gsem .vid[data-drive]").forEach(vd=>vd.addEventListener("click",()=>{ const u=vd.dataset.link; if(u) window.open(u,"_blank","noopener"); }));
+}
+function tarjetaSemana(x, i, nvar){
+  const {a, w} = x;
+  const img = x.mini ? `https://drive.google.com/thumbnail?id=${esc(x.mini)}&sz=w600` : (a.miniatura||a.imagen_url||"");
+  const link = a.permalink ? (a.permalink.startsWith("/")?"https://www.facebook.com"+a.permalink:a.permalink) : "";
+  const dias = [...(a.dias||[])].sort((p,q)=>p.f.localeCompare(q.f));
+  const max = Math.max(1, ...dias.map(d=>d.c));
+  const rc = w.roas>=3 ? "ok" : w.roas<2.5 ? "warn" : "";
+  const esVideo = a.video_id || /VIDEO/i.test(a.objeto||"");
+  return `<div class="item">
+    <div class="cab"><div class="av">${i+1}</div>
+      <div class="t"><b>${esc(a.nombre||a.id)}</b><small>${esVideo?"Video":"Imagen"} · gastó ${num(w.g)} ${esc(x.mon)}</small></div>
+      ${link?`<a href="${esc(link)}" target="_blank" rel="noopener" title="Ver el anuncio">↗</a>`:""}</div>
+    <div class="vid" data-drive="${esc(x.mini||"")}" data-link="${esc(link)}">${img?`<img src="${esc(img)}" alt="" loading="lazy" onerror="this.style.display='none'">`:`<div class="ph">Sin miniatura todavía</div>`}${esVideo&&img?`<span class="play"></span>`:""}${nvar?`<span class="badge">${nvar} variantes</span>`:""}</div>
+    <div class="cuerpo">
+      <div class="stats"><div class="st ${rc}"><span>ROAS</span><b>${w.roas.toFixed(2)}</b></div><div class="st"><span>Ventas</span><b>${num(w.c)}</b></div></div>
+      <div class="barras" title="Ventas por día">${dias.map(d=>`<i class="${d.f>=w.desde?"en":""}" style="height:${Math.round(d.c/max*100)}%" title="${fdia(d.f)}: ${d.c} ventas"></i>`).join("")}</div>
+      <div class="sub2">Facturó ${num(w.v)} ${esc(x.mon)} · ventas por día, en verde el período elegido</div>
+    </div></div>`;
+}
+
+function pintarVariantes(){
+  $("#marcas").hidden = false;
   const todos = Object.entries(items);
   const marcas = [...new Set(todos.map(([,it])=>it.marca))].sort(); const nom = m => (todos.find(([,it])=>it.marca===m)||[,{}])[1].marcaNombre||m;
   const deMarca = todos.filter(([,it]) => marcaF==="todas" || it.marca===marcaF);
@@ -239,7 +338,7 @@ function tarjeta(id,it){
       ${it.driveId?`<a href="https://drive.google.com/file/d/${esc(it.driveId)}/view" target="_blank" rel="noopener" title="Abrir en Drive">↗</a>`:""}</div>
     <div class="vid ${esImg?"img":""}" data-drive="${esc(it.driveId||"")}">${media}</div>
     <div class="cuerpo">
-      <div class="pills"><span class="pill roas">ROAS ${Number(m.roas||0).toFixed(2)}</span><span class="pill">${num(m.compras)} compras</span><span class="pill">V${esc(it.n)}</span></div>
+      <div class="stats"><div class="st ok"><span>ROAS del ganador</span><b>${Number(m.roas||0).toFixed(2)}</b></div><div class="st"><span>Ventas ese día</span><b>${num(m.compras)}</b></div></div>
       <div class="cambio-t">${esc(it.cambio)}</div>
       <div class="txt">"${esc(it.texto)}"</div>
       ${it.voz?`<div class="dato">Voz: "${esc(it.voz)}"</div>`:""}
