@@ -128,6 +128,9 @@ a{color:var(--acc)}
 .origen img{width:28px;height:35px;object-fit:cover;border-radius:6px;flex-shrink:0;background:var(--card)}
 .origen span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .origen b{color:var(--txt);font-weight:600}
+.btn.drv{display:inline-flex;align-items:center;gap:5px;text-decoration:none}
+.btn.drv::before{content:"";width:13px;height:13px;background:conic-gradient(#1FA463 0 33%,#FFD04B 0 66%,#4688F4 0);border-radius:3px;display:inline-block}
+a.btn{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;color:var(--txt)}
 </style>
 </head>
 <body>
@@ -323,7 +326,7 @@ function vRevisar(lista){
         <div style="min-width:0"><div class="pills"><span class="pill a">${esc(d.codigo)}</span>${d.maqueta ? `<span class="pill warn">Maqueta: antes de pautar, foto o frase real</span>` : ""}</div>
         <h3 style="font-size:16px;margin-top:6px">${esc(d.formato)}</h3><p class="sub" style="margin-top:2px">${esc(d.idea)}</p></div></div>
       <div class="vars">${vs.map((v,i) => `<div class="var ${sel[d.id].has(i)?"on":""}" data-i="${i}"><img loading="lazy" src="${esc(v.url)}" alt=""><span class="chk">✓</span>
-        <div class="pie"><span>Opción ${i+1}</span><button class="btn sm zoom" data-src="${esc(v.url)}">Ver grande</button></div></div>`).join("")}</div>
+        <div class="pie"><span>Opción ${i+1}</span><span style="display:flex;gap:6px"><button class="btn sm zoom" data-src="${esc(v.url)}">Ver</button>${v.driveId ? `<a class="btn sm drv" href="https://drive.google.com/file/d/${esc(v.driveId)}/view" target="_blank" rel="noopener">Drive</a>` : ""}</span></div></div>`).join("")}</div>
       ${malas.length ? `<div class="aviso">Ojo, el control automático vio algo en ${malas.length === vs.length ? "las dos opciones" : "una opción"}: ${esc(malas.map(v=>(v.problemas||[])[0]).filter(Boolean).join(" · "))}</div>` : ""}
       ${d.historial?.length > 1 ? `<div class="hist">${d.historial.map(esc).join("<br>")}</div>` : ""}
       <div class="acciones"><button class="btn no sm desc">Descartar</button><button class="btn sm pedir">Pedir un cambio</button>
@@ -335,7 +338,7 @@ function vRevisar(lista){
   $("#vista").querySelectorAll(".rev").forEach(c => {
     const id = c.dataset.id, s = sel[id];
     c.querySelector(".refimg").onclick = () => zoom(items[id].ref.img);
-    c.querySelectorAll(".var").forEach(v => v.onclick = e => { if (e.target.closest(".zoom")) return; const i = +v.dataset.i; s.has(i) ? s.delete(i) : s.add(i); pintar(); });
+    c.querySelectorAll(".var").forEach(v => v.onclick = e => { if (e.target.closest(".zoom,.drv")) return; const i = +v.dataset.i; s.has(i) ? s.delete(i) : s.add(i); pintar(); });
     c.querySelectorAll(".zoom").forEach(b => b.onclick = () => zoom(b.dataset.src));
     c.querySelector(".aprobar").onclick = () => marcar(id, {estado:"aprobada", aprobadas:[...s].sort(), aprobadaEn:new Date().toISOString()}, "Aprobada: va a tu carpeta de Drive");
     c.querySelector(".desc").onclick = () => { if (confirm("¿Descartar esta pieza?")) marcar(id, {estado:"descartada", descartadaEn:"revisar"}, "Descartada"); };
@@ -354,7 +357,7 @@ function vListas(lista){
       <div class="body"><div class="pills">${d.estado === "lista" ? `<span class="pill ok">En tu Drive · ${fFecha((d.entregado||"").split("/").pop())}</span>` : `<span class="pill warn">Copiándose a Drive</span>`}
         ${d.maqueta ? `<span class="pill warn">Maqueta</span>` : ""}</div>
         <h3>${esc(d.formato)}</h3>${d.archivos?.[k] ? `<p class="m">${esc(d.archivos[k])}</p>` : ""}${origen(d)}
-        <a href="${esc(v.url)}" target="_blank" rel="noopener" style="font-size:12.5px">Abrir la imagen</a></div></div>`)).join("")}</div>`
+        <div style="display:flex;gap:6px;margin-top:4px"><a class="btn sm" href="${esc(v.url)}" target="_blank" rel="noopener">Ver</a>${(d.drive?.[k] || (v.driveId && `https://drive.google.com/file/d/${v.driveId}/view`)) ? `<a class="btn sm drv" href="${esc(d.drive?.[k] || `https://drive.google.com/file/d/${v.driveId}/view`)}" target="_blank" rel="noopener">Drive</a>` : ""}</div></div></div>`)).join("")}</div>`
     : `<div class="vacio">Todavía no aprobaste ninguna.</div>`;
   $("#vista").querySelectorAll("[data-z]").forEach(i => i.parentElement.onclick = () => zoom(i.dataset.z));
 }
