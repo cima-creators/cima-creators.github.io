@@ -128,6 +128,7 @@ summary{cursor:pointer;font-weight:600;font-size:13px}
 #plan textarea:focus{outline:none;border-color:var(--acc)}
 #plan .ayuda{font-size:12px;color:var(--mut)}
 #login .btn{width:100%}
+.acciones.ver .btn.sm{flex:1}
 .cambio textarea{width:100%;border:1px solid var(--line);border-radius:14px;padding:10px 12px;font-size:13px;background:var(--soft);color:var(--txt);resize:vertical;margin-bottom:6px}
 .cambio textarea:focus{outline:none;border-color:var(--acc)}
 .acciones .btn.sm[data-acc="mas"]{border:0;background:none;color:var(--acc)}
@@ -348,6 +349,10 @@ function tarjeta(d){
         ${prod ? `<div class="vid" style="aspect-ratio:16/9"><video src="${esc(d.video)}" preload="none" controls playsinline></video><span class="tag">Referencia</span></div>` : ""}
         ${d.estado === "nueva" || d.estado === "descartada" ? "" : desarmado(d)}
       </div>
+      ${prod ? `<div class="acciones ver">
+        <a class="btn sm" href="${esc(d.finalSubs || d.final)}" target="_blank" rel="noopener">Ver</a>
+        ${d.driveLink ? `<a class="btn sm" href="${esc(d.driveLink)}" target="_blank" rel="noopener">Drive</a>` : `<span class="btn sm" style="opacity:.5">Drive…</span>`}
+      </div>` : ""}
       ${caja}
       <div class="acciones">${botones}</div>
     </div>
