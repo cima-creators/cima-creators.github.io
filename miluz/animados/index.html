@@ -118,6 +118,8 @@ summary{cursor:pointer;font-weight:600;font-size:13px}
 #login h1{font-size:23px}
 #login input{width:100%;margin:16px 0 10px;padding:12px 14px;border:1px solid var(--line);border-radius:14px;font-size:15px;background:var(--soft);color:var(--txt)}
 #login .btn{width:100%}
+.cambio textarea{width:100%;border:1px solid var(--line);border-radius:14px;padding:10px 12px;font-size:13px;background:var(--soft);color:var(--txt);resize:vertical;margin-bottom:6px}
+.cambio textarea:focus{outline:none;border-color:var(--acc)}
 .acciones .btn.sm[data-acc="mas"]{border:0;background:none;color:var(--acc)}
 .err{color:var(--bad);font-size:12.5px;min-height:18px}
 .toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--txt);color:#fff;padding:11px 18px;border-radius:99px;font-size:13px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:9}
@@ -157,7 +159,7 @@ summary{cursor:pointer;font-weight:600;font-size:13px}
     <div class="kpis">
       <button class="kpi on" data-v="hoy"><span class="l">Para elegir</span><span class="v" id="kHoy">–</span><span class="h" id="kHoyH"></span></button>
       <button class="kpi alerta" data-v="elegidas"><span class="l">En producción</span><span class="v" id="kEleg">–</span><span class="h">hasta 15 videos por día</span></button>
-      <button class="kpi ok" data-v="hechos"><span class="l">Producidos</span><span class="v" id="kHechos">–</span><span class="h">listos para subir a Meta</span></button>
+      <button class="kpi ok" data-v="hechos"><span class="l">Producidos</span><span class="v" id="kHechos">–</span><span class="h">aprobar o pedir cambios</span></button>
       <button class="kpi mal" data-v="todas"><span class="l">Descartadas</span><span class="v" id="kDesc">–</span><span class="h">se pueden recuperar</span></button>
     </div>
   </div>
@@ -186,9 +188,9 @@ summary{cursor:pointer;font-weight:600;font-size:13px}
 <div class="toast" id="toast"></div>
 
 <script type="module">
-const CLAVES = {"luz-2026":"Luz","cima-2026":"Nacho","vane-2026":"Vane","abril-2026":"Abril"};
+const CLAVES = {"luz-2026":"Luz","miluz-2026":"Luz","cima-2026":"Nacho","vane-2026":"Vane","abril-2026":"Abril"};
 const FMT = {A1:"Canción narrada",A2:"El problema habla",A3:"Experimento A vs B",A4:"Storytime con mentor",A5:"Experto + anatomía",A6:"X días en Y segundos",otro:"Otro formato"};
-const EN_CURSO = ["elegida","lista","produciendo","fallo"];
+const EN_CURSO = ["elegida","lista","produciendo","fallo","cambiar"];
 const META = 10;
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -240,7 +242,7 @@ function pintar(){
   hoy = fechas[0] || "";
   const nuevas = docs.filter(d => d.estado === "nueva");
   const curso = docs.filter(d => EN_CURSO.includes(d.estado));
-  const hechos = docs.filter(d => d.estado === "producido");
+  const hechos = docs.filter(d => d.estado === "producido" || d.estado === "aprobado");
   const descartadas = docs.filter(d => d.estado === "descartada");
   const deHoy = docs.filter(d => d.fecha === hoy).length;
   const elegidasTot = curso.length + hechos.length;
@@ -286,6 +288,8 @@ function estadoProd(d){
   if (d.estado === "elegida") return `<div class="aviso w">Desarmando la referencia…</div>`;
   if (d.estado === "lista") return `<div class="aviso w">${d.turno === "mañana" ? "En fila: se produce mañana (tope de 15 por día)" : "En fila para producir"}</div>`;
   if (d.estado === "produciendo") return `<div class="aviso w">Produciendo el video de Mi Luz… (alrededor de una hora)</div>`;
+  if (d.estado === "cambiar") return `<div class="aviso w">Haciendo el cambio: ${esc(d.cambioNota || "")}</div>`;
+  if (d.estado === "aprobado") return `<div class="aviso ok">${d.enDrive ? "✓ En Drive · " + esc(d.enDrive) : "✓ Aprobado · pasando a Drive…"}</div>`;
   if (d.estado === "fallo") return `<div class="aviso mal">No salió: ${esc(d.falloMotivo || "se reintenta")}</div>`;
   return "";
 }
@@ -293,7 +297,7 @@ function estadoProd(d){
 function tarjeta(d){
   const f = d.formato || "otro";
   const fuente = (d.fuente || "").replace("GetHookd · ", "");
-  const prod = d.estado === "producido";
+  const prod = d.estado === "producido" || d.estado === "aprobado";
   const s = d.senal || 1;
   let botones = "";
   const mas = `<button class="btn sm" data-acc="mas" data-id="${esc(d.id)}">Más</button>`;
@@ -301,7 +305,10 @@ function tarjeta(d){
   if (d.estado === "elegida" || d.estado === "lista") botones = `${mas}<button class="btn sm" data-acc="soltar" data-id="${esc(d.id)}">Cancelar</button>`;
   if (d.estado === "descartada") botones = `${mas}<button class="btn sm" data-acc="volver" data-id="${esc(d.id)}">Recuperar</button>`;
   if (d.estado === "produciendo" || d.estado === "fallo") botones = mas;
-  if (prod) botones = `${mas}<a class="btn sm ok" href="${esc(d.final)}" target="_blank" rel="noopener" download>Bajar</a>${d.finalSubs ? `<a class="btn sm" href="${esc(d.finalSubs)}" target="_blank" rel="noopener" download>Con subs</a>` : ""}`;
+  if (d.estado === "producido") botones = `${mas}<button class="btn sm" data-acc="cambiar" data-id="${esc(d.id)}">Cambiar</button><button class="btn sm dark" data-acc="aprobar" data-id="${esc(d.id)}">Aprobar</button>`;
+  if (d.estado === "aprobado") botones = `${mas}<a class="btn sm ok" href="${esc(d.final)}" target="_blank" rel="noopener" download>Bajar</a>`;
+  const caja = d.estado === "producido" ? `<div class="cambio" hidden><textarea placeholder="¿Qué cambiamos? Ej: al principio, cuando dice las semanas, mostrá la uña pintándose" rows="3"></textarea><div class="acciones"><button class="btn sm" data-acc="nocambio" data-id="${esc(d.id)}">Cancelar</button><button class="btn sm dark" data-acc="enviarcambio" data-id="${esc(d.id)}">Enviar cambio</button></div></div>` : "";
+  const bajar = prod ? `<div class="links"><a href="${esc(d.final)}" target="_blank" rel="noopener" download>Bajar sin subtítulos</a>${d.finalSubs ? ` · <a href="${esc(d.finalSubs)}" target="_blank" rel="noopener" download>con subtítulos</a>` : ""}</div>` : "";
   const nueva = d.fecha === hoy && d.estado === "nueva";
   return `<article class="item ${d.estado === "descartada" ? "fuera" : ""}" data-card="${esc(d.id)}">
     <div class="chead"><div class="av">${esc((d.marca || "?").charAt(0).toUpperCase())}</div>
@@ -316,12 +323,14 @@ function tarjeta(d){
       <div class="idea-c clamp2">${esc(d.idea || d.hook || "")}</div>
       ${estadoProd(d)}
       <div class="extra">
+        ${bajar}
         <div class="unas"><h4>Para uñas</h4><div class="txt">${esc(d.bajada || "")}</div></div>
         ${d.producto ? `<div class="links">Vende: ${esc(d.producto)}</div>` : ""}
         <div class="links">${esc(fuente)} · desde ${esc(d.inicio || "?")}${d.pais ? " · " + esc(d.pais) : ""} · <a href="${esc(d.link)}" target="_blank" rel="noopener">ver anuncio</a></div>
         ${prod ? `<div class="vid" style="aspect-ratio:16/9"><video src="${esc(d.video)}" preload="none" controls playsinline></video><span class="tag">Referencia</span></div>` : ""}
         ${d.estado === "nueva" || d.estado === "descartada" ? "" : desarmado(d)}
       </div>
+      ${caja}
       <div class="acciones">${botones}</div>
     </div>
   </article>`;
@@ -330,6 +339,21 @@ function tarjeta(d){
 async function accion(id, acc){
   if (acc === "mas") { const c = document.querySelector(`[data-card="${CSS.escape(id)}"]`); c.classList.toggle("abierta");
     c.querySelector('[data-acc="mas"]').textContent = c.classList.contains("abierta") ? "Menos" : "Más"; return; }
+  const card = document.querySelector(`[data-card="${CSS.escape(id)}"]`);
+  if (acc === "cambiar") { card.querySelector(".cambio").hidden = false; card.querySelector("textarea").focus(); return; }
+  if (acc === "nocambio") { card.querySelector(".cambio").hidden = true; return; }
+  if (acc === "enviarcambio") {
+    const nota = card.querySelector("textarea").value.trim();
+    if (!nota) { toast("Escribí qué cambiamos"); return; }
+    try { await fs.updateDoc(fs.doc(fs.db, "animados_luz", id), {estado: "cambiar", cambioNota: nota, cambioEn: new Date().toISOString(), cambio: quien}); toast("Enviado: se rehace con tu cambio"); }
+    catch (e) { toast("No se pudo guardar: " + e.code); }
+    return;
+  }
+  if (acc === "aprobar") {
+    try { await fs.updateDoc(fs.doc(fs.db, "animados_luz", id), {estado: "aprobado", aprobadoEn: new Date().toISOString(), aprobo: quien}); toast("Aprobado: va al Drive del día"); }
+    catch (e) { toast("No se pudo guardar: " + e.code); }
+    return;
+  }
   const estado = {elegir:"elegida", soltar:"nueva", descartar:"descartada", volver:"nueva"}[acc];
   const extra = acc === "elegir" ? {eligio: quien, eligioEn: new Date().toISOString()} : {};
   try { await fs.updateDoc(fs.doc(fs.db, "animados_luz", id), {estado, ...extra}); toast({elegir:"Elegida: se produce sola ✓", descartar:"Descartada", volver:"Recuperada", soltar:"Cancelada"}[acc]); }
