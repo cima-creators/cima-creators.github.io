@@ -47,11 +47,25 @@ h1{font-size:30px;font-weight:700;letter-spacing:-.03em;line-height:1.1}
 .kpi .l{font-size:10.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--mut)}
 .kpi .v{font-size:30px;font-weight:700;letter-spacing:-.035em;margin-top:auto;padding-top:8px;line-height:1}
 .kpi.alerta .v{color:var(--warn)} .kpi.mal .v{color:var(--bad)}
-.item{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px;margin-bottom:12px;display:grid;grid-template-columns:minmax(0,300px) minmax(0,1fr);gap:22px}
-@media (max-width:760px){.item{grid-template-columns:minmax(0,1fr)}}
-.vid{aspect-ratio:9/16;width:100%;border-radius:16px;overflow:hidden;background:#1d1916;position:relative}
-.vid iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
-.vid .ph{position:absolute;inset:0;display:grid;place-items:center;color:#b5a79f;font-size:13px;text-align:center;padding:20px}
+.grilla{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px;margin-bottom:8px}
+.item{background:var(--card);border:1px solid var(--line);border-radius:20px;overflow:hidden;display:flex;flex-direction:column}
+.cab{display:flex;align-items:center;gap:10px;padding:12px 14px}
+.cab .av{width:34px;height:34px;border-radius:50%;background:var(--txt);color:#fff;display:grid;place-items:center;font-weight:700;font-size:13px;flex-shrink:0}
+.cab .t{min-width:0;flex:1}
+.cab .t b{display:block;font-size:13.5px;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cab .t small{display:flex;align-items:center;gap:6px;color:var(--mut);font-size:11.5px}
+.cab .t small i{width:7px;height:7px;border-radius:50%;background:var(--warn);display:inline-block}
+.cab .t small i.ok{background:var(--ok)} .cab .t small i.mal{background:var(--bad)}
+.cab a{color:var(--mut);font-size:15px;text-decoration:none}
+.vid{height:300px;background:var(--soft);position:relative;overflow:hidden;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.vid img{height:100%;width:auto;max-width:100%;object-fit:contain;display:block}
+.vid .play{position:absolute;left:50%;top:50%;width:54px;height:54px;margin:-27px 0 0 -27px;border-radius:50%;background:rgba(38,33,30,.82);display:grid;place-items:center}
+.vid .play:after{content:"";border-left:17px solid #fff;border-top:11px solid transparent;border-bottom:11px solid transparent;margin-left:4px}
+.vid .tag{position:absolute;left:10px;bottom:10px;background:rgba(38,33,30,.78);color:#fff;font-size:11px;font-weight:600;padding:3px 9px;border-radius:99px}
+.vid .marco{position:relative;height:100%;aspect-ratio:9/16;overflow:hidden;background:#1d1916}
+.vid .marco iframe{position:absolute;top:0;left:-6%;width:112%;height:100%;border:0}
+.vid.img .marco{aspect-ratio:4/5}
+.vid .ph{color:var(--mut2);font-size:12.5px;text-align:center;padding:20px}
 .meta{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:8px}
 .pill{display:inline-block;font-size:11.5px;font-weight:500;padding:4px 11px;border-radius:99px;background:var(--soft);color:var(--mut)}
 .pill.m{background:var(--txt);color:#fff}
@@ -71,24 +85,32 @@ h3{margin:4px 0 8px;font-size:10.5px;font-weight:600;color:var(--mut);text-trans
 .nota{width:100%;border:1px solid var(--line);border-radius:14px;padding:11px 13px;font-size:13.5px;background:var(--card);color:var(--txt);resize:vertical}
 .nota:focus{outline:none;border-color:var(--line2)}
 .chk{display:flex;gap:7px;align-items:center;font-size:12.5px;color:var(--mut);margin-top:9px}
-.acciones{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;align-items:center}
+.acciones{display:grid;grid-template-columns:1fr 1fr auto;gap:6px;margin-top:auto;padding-top:6px}
+.acciones .btn{padding:9px 10px;min-height:38px;font-size:12.5px;border-radius:12px}
+.editor{display:none;flex-direction:column;gap:6px}
+.editor.on{display:flex}
+.editor .texto{font-size:13px;padding:9px 11px}
+.editor .nota{font-size:12.5px;padding:9px 11px}
 .ayuda{font-size:12px;color:var(--mut2);margin-top:8px}
-.err{background:var(--bad-bg);color:var(--bad);border-radius:14px;padding:11px 13px;font-size:12.5px;white-space:pre-wrap;margin-bottom:12px}
-.hist{font-size:12.5px;color:var(--mut);margin-top:12px;background:var(--soft);border-radius:14px;padding:10px 13px}
+.err{background:var(--bad-bg);color:var(--bad);border-radius:12px;padding:8px 10px;font-size:11.5px;white-space:pre-wrap;max-height:90px;overflow:auto}
+.hist{font-size:11.5px;color:var(--mut);background:var(--soft);border-radius:12px;padding:7px 10px}
 .vacio{text-align:center;color:var(--mut);padding:60px 20px;background:var(--card);border:1px dashed var(--line2);border-radius:var(--r)}
 #login{max-width:360px;margin:14vh auto;background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:28px}
 #login h1{font-size:23px}
 #login input{width:100%;margin:16px 0 10px;padding:12px 14px;border:1px solid var(--line);border-radius:14px;font-size:15px;background:var(--soft);color:var(--txt)}
 .toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--txt);color:#fff;padding:11px 18px;border-radius:99px;font-size:13px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:9}
 .toast.on{opacity:1}
-.vid.img{aspect-ratio:4/5}
-.dato{font-size:13px;margin:2px 0 10px;color:var(--txt)}
+.cuerpo{padding:10px 14px 14px;display:flex;flex-direction:column;gap:8px;flex:1}
+.pills{display:flex;flex-wrap:wrap;gap:5px}
+.cambio-t{font-size:13.5px;font-weight:600;line-height:1.3}
+.txt{font-size:12.5px;color:var(--mut);line-height:1.45;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.dato{font-size:12px;color:var(--mut)}
 .dato b{font-size:10.5px;font-weight:600;color:var(--mut);text-transform:uppercase;letter-spacing:.12em;display:block;margin-bottom:2px}
 .texto{width:100%;border:1px solid var(--line);border-radius:14px;padding:11px 13px;font-size:15px;font-weight:600;background:var(--card);color:var(--txt)}
 .texto:focus{outline:none;border-color:var(--line2);background:var(--soft)}
-.grupo{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin:22px 0 10px}
+.grupo{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:24px 0 12px}
 .grupo h2{font-size:17px;font-weight:700;letter-spacing:-.02em}
-.grupo span{color:var(--mut);font-size:12.5px}
+.grupo a{color:var(--mut);font-size:12.5px}
 .pill.roas{background:var(--ok-bg);color:var(--ok);font-weight:600}
 </style>
 </head>
@@ -188,10 +210,15 @@ function pintar(){
   let html = "", grupo = "";
   for(const [id,it] of lista){
     const g = (it.fecha||"")+"|"+it.marca+"|"+it.clave;
-    if(g!==grupo){ grupo = g; const m = it.metricas||{};
-      html += `<div class="grupo"><h2>${esc(it.adNombre||it.codigo||it.adId)}</h2><span>${esc(it.marcaNombre)} · ganó el ${fdia(it.fecha)} · ROAS ${Number(m.roas||0).toFixed(2)} · ${num(m.compras)} compras · gasto ${num(m.gasto)} ${esc(it.moneda||"")}${it.permalink?` · <a href="${esc(it.permalink.startsWith("/")?"https://www.facebook.com"+it.permalink:it.permalink)}" target="_blank" rel="noopener">ver el original</a>`:""}</span></div>`; }
+    if(g!==grupo){ if(grupo) html += "</div>"; grupo = g; const m = it.metricas||{};
+      const link = it.permalink ? (it.permalink.startsWith("/")?"https://www.facebook.com"+it.permalink:it.permalink) : "";
+      html += `<div class="grupo"><h2>${esc(it.adNombre||it.codigo||it.adId)}</h2>
+        <span class="pill roas">ROAS ${Number(m.roas||0).toFixed(2)}</span><span class="pill">${num(m.compras)} compras</span>
+        <span class="pill">Gasto ${num(m.gasto)} ${esc(it.moneda||"")}</span><span class="pill">Facturó ${num(m.facturacion)} ${esc(it.moneda||"")}</span>
+        <span class="pill">Ganó el ${fdia(it.fecha)}</span>${link?`<a href="${esc(link)}" target="_blank" rel="noopener">ver el original ↗</a>`:""}</div><div class="grilla">`; }
     html += tarjeta(id,it);
   }
+  if(grupo) html += "</div>";
   $("#lista").innerHTML = html;
   lista.forEach(([id]) => conectar(id));
 }
@@ -199,34 +226,39 @@ document.addEventListener("focusout", () => setTimeout(() => { if(pendiente && !
 
 function tarjeta(id,it){
   const esImg = /\.(png|jpe?g|webp)$/i.test(it.archivo||"") || it.tipo==="estatico";
-  const vid = it.driveId
-    ? `<iframe src="https://drive.google.com/file/d/${esc(it.driveId)}/preview" allow="autoplay" loading="lazy"></iframe>`
-    : `<div class="ph">${it.estado==="revisar"?"Se está terminando de subir a Drive…":it.estado==="error"?"No salió":"Generándose…"}</div>`;
   const editable = it.estado==="revisar";
   const m = it.metricas||{};
+  const media = it.driveId
+    ? `<img src="https://drive.google.com/thumbnail?id=${esc(it.driveId)}&sz=w600" alt="" loading="lazy" onerror="this.style.display='none'">${esImg?"":`<span class="play"></span>`}<span class="tag">${esc(TIPO[it.tipo]||it.tipo)}</span>`
+    : `<div class="ph">${it.estado==="error"?"No salió":it.estado==="revisar"?"Subiendo a Drive…":"Generándose…"}</div>`;
+  const punto = it.estado==="subido"||it.estado==="aprobado" ? "ok" : it.estado==="error"||it.estado==="rechazado" ? "mal" : "";
   return `<div class="item" id="it-${esc(id)}">
-    <div class="vid ${esImg?"img":""}">${vid}</div>
-    <div>
-      <div class="meta"><span class="pill m">V${esc(it.n)}${it.version>1?` · versión ${esc(it.version)}`:""}</span><span class="pill">${esc(TIPO[it.tipo]||it.tipo)}</span>${it.codigo?`<span class="pill">${esc(it.codigo)}</span>`:""}<span class="pill roas">ROAS ${Number(m.roas||0).toFixed(2)}</span><span class="pill e-${esc(it.estado)}">${esc((ESTADOS.find(e=>e[0]===it.estado)||[,it.estado])[1])}</span></div>
-      ${it.driveId?`<div class="links"><a href="https://drive.google.com/file/d/${esc(it.driveId)}/view" target="_blank" rel="noopener">Abrir en Drive</a>${it.archivo?` · ${esc(it.archivo)}`:""}</div>`:""}
+    <div class="cab"><div class="av">V${esc(it.n)}</div>
+      <div class="t"><b>${esc(it.codigo||it.adNombre||"Variante")}${it.version>1?` · v${esc(it.version)}`:""}</b>
+        <small><i class="${punto}"></i>${esc((ESTADOS.find(e=>e[0]===it.estado)||[,it.estado])[1])} · ${esc(TIPO[it.tipo]||it.tipo)}</small></div>
+      ${it.driveId?`<a href="https://drive.google.com/file/d/${esc(it.driveId)}/view" target="_blank" rel="noopener" title="Abrir en Drive">↗</a>`:""}</div>
+    <div class="vid ${esImg?"img":""}" data-drive="${esc(it.driveId||"")}">${media}</div>
+    <div class="cuerpo">
+      <div class="pills"><span class="pill roas">ROAS ${Number(m.roas||0).toFixed(2)}</span><span class="pill">${num(m.compras)} compras</span><span class="pill">V${esc(it.n)}</span></div>
+      <div class="cambio-t">${esc(it.cambio)}</div>
+      <div class="txt">"${esc(it.texto)}"</div>
+      ${it.voz?`<div class="dato">Voz: "${esc(it.voz)}"</div>`:""}
+      ${it.ganoCon?`<div class="dato">Ganó con: "${esc(it.ganoCon)}"</div>`:""}
       ${it.error?`<div class="err">${esc(it.error)}</div>`:""}
-      ${it.qa?`<div class="err">La revisión automática marcó: ${esc(it.qa)}</div>`:""}
-      <div class="dato"><b>Qué cambia</b>${esc(it.cambio)}</div>
-      ${it.ganoCon?`<div class="dato"><b>Hook con el que ganó</b>"${esc(it.ganoCon)}"</div>`:""}
-      ${it.voz?`<div class="dato"><b>Voz nueva</b>"${esc(it.voz)}"</div>`:""}
-      <h3>${it.tipo==="animado"?"Verso del hook":"Texto nuevo"}${editable?" · tocalo para cambiarlo":""}</h3>
-      ${editable?`<input class="texto" value="${esc(it.texto)}" data-orig="${esc(it.texto)}">`:`<div class="dato">"${esc(it.texto)}"</div>`}
+      ${it.qa?`<div class="err">Revisión automática: ${esc(it.qa)}</div>`:""}
+      ${(it.notas||[]).length?`<div class="hist">Correcciones: ${(it.notas||[]).map(n=>esc(String(n).replace(/^Rehacé SOLO[^)]*\), con el mismo tipo de cambio\. ?/,""))).join(" · ")}</div>`:""}
       ${editable?`
-      <h3 style="margin-top:16px">Qué hay que cambiar</h3>
-      <textarea class="nota" rows="3" placeholder="Ej.: el texto tapa la uña, bajalo · usá otra toma para arrancar · la voz suena apurada"></textarea>
+      <div class="editor">
+        <input class="texto" value="${esc(it.texto)}" data-orig="${esc(it.texto)}" title="${it.tipo==="animado"?"Verso del hook":"Texto nuevo"}">
+        <textarea class="nota" rows="2" placeholder="Qué cambiar: el texto tapa la uña · otra toma para arrancar…"></textarea>
+        <button class="btn dark corregir" disabled>Mandar corrección</button>
+      </div>
       <div class="acciones">
         <button class="btn ok aprobar">Aprobar</button>
-        <button class="btn dark corregir" disabled>Mandar corrección</button>
-        <button class="btn no rechazar">Descartar</button>
-      </div>
-      <p class="ayuda">Aprobada pasa sola a la carpeta de Drive de la marca. Las correcciones vuelven en ~30 min (los animados, ~1 h).</p>`:""}
-      ${it.estado==="error"?`<div class="acciones"><button class="btn reintentar">Volver a intentar</button></div>`:""}
-      ${(it.notas||[]).length?`<div class="hist">Correcciones pedidas: ${(it.notas||[]).map(esc).join(" · ")}</div>`:""}
+        <button class="btn abrir-ed">Corregir</button>
+        <button class="btn no rechazar" title="Descartar">✕</button>
+      </div>`:""}
+      ${it.estado==="error"?`<div class="acciones" style="grid-template-columns:1fr"><button class="btn reintentar">Volver a intentar</button></div>`:""}
     </div></div>`;
 }
 
@@ -236,6 +268,10 @@ function conectar(id){
   const hayCambios = () => (tx && tx.value.trim()!==tx.dataset.orig) || (nt && nt.value.trim());
   nt && nt.addEventListener("input", () => { nt.classList.toggle("cambio", !!nt.value.trim()); corr.disabled = !hayCambios(); });
   tx && tx.addEventListener("input", () => { tx.classList.toggle("cambio", tx.value.trim()!==tx.dataset.orig); corr.disabled = !hayCambios(); });
+  el.querySelector(".abrir-ed")?.addEventListener("click", () => { el.querySelector(".editor").classList.toggle("on"); tx?.focus(); });
+  const vd = el.querySelector(".vid");
+  vd.addEventListener("click", () => { const d = vd.dataset.drive; if(!d || vd.querySelector("iframe")) return;
+    vd.innerHTML = `<div class="marco"><iframe src="https://drive.google.com/file/d/${d}/preview" allow="autoplay"></iframe></div>`; });
   const ref = fb.doc(fb.db,"variantes_cola",id);
   const marcar = async (datos,msg) => { try { await fb.updateDoc(ref,{...datos,revisadoPor:quien,actualizado:new Date().toISOString()}); toast(msg);
       el.querySelectorAll(".cambio").forEach(i=>i.classList.remove("cambio")); document.activeElement?.blur(); pintar(); } catch(e){ toast("No se pudo guardar: "+e.message); } };
