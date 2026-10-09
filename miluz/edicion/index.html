@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<title>Edición del día · CIMA</title>
+<title>Edición del día · Mi Luz</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -85,7 +85,7 @@ h3{margin:4px 0 8px;font-size:10.5px;font-weight:600;color:var(--mut);text-trans
 </head>
 <body>
 <div id="login">
-  <h1>Edición del día</h1>
+  <h1>Edición del día · Mi Luz</h1>
   <p class="sub">Entrá con tu clave.</p>
   <input id="clave" type="password" placeholder="Clave" autocomplete="current-password">
   <button class="btn dark" id="entrar" style="width:100%">Entrar</button>
@@ -93,32 +93,32 @@ h3{margin:4px 0 8px;font-size:10.5px;font-weight:600;color:var(--mut);text-trans
 </div>
 <div class="wrap" id="app" hidden>
   <header>
-    <div><h1>Edición del día</h1><div class="sub" id="resumen">Cargando…</div></div>
+    <div><h1>Edición del día · Mi Luz</h1><div class="sub" id="resumen">Cargando…</div></div>
     <button class="btn" id="salir">Salir</button>
   </header>
-  <div class="marcas" id="marcas"></div>
+  <div class="marcas" id="marcas" style="display:none"></div>
   <div class="top"><div class="hero" id="hero"></div><div class="kpis" id="tabs"></div></div>
   <div id="lista"></div>
 </div>
 <div class="toast" id="toast"></div>
 <script type="module">
-const CLAVES = {"vane-2026":"Vane","cima-2026":"Nacho","abril-2026":"Abril"};
+const CLAVES = {"miluz-2026":"Luz","cima-2026":"Nacho"};
 const $ = s => document.querySelector(s);
 const ESTADOS = [["revisar","Para revisar"],["procesando","Editándose"],["corregir","Corrigiéndose"],["subido","Aprobados"],["rechazado","Rechazados"],["error","Con error"]];
 let quien = null, items = {}, filtro = "revisar", fb = null;
-let marcaF = new URLSearchParams(location.search).get("marca") || (()=>{ try { return localStorage.getItem("revision_marca") } catch(e){ return null } })() || "todas";
-try { quien = CLAVES[localStorage.getItem("revision_clave")] || null; } catch(e) {}
+let marcaF = "miluz"; const _x = new URLSearchParams(location.search).get("marca") || (()=>{ try { return localStorage.getItem("miluz_edicion_marca") } catch(e){ return null } })() || "todas";
+try { quien = CLAVES[localStorage.getItem("miluz_edicion_clave")] || null; } catch(e) {}
 function toast(t){ const el=$("#toast"); el.textContent=t; el.classList.add("on"); setTimeout(()=>el.classList.remove("on"),2200); }
 function esc(s){ return String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
 function entrar(){
   const k = $("#clave").value.trim();
   if(!CLAVES[k]){ $("#login-e").textContent = "Esa clave no es. Probá de nuevo."; return; }
-  try { localStorage.setItem("revision_clave", k); } catch(e) {}
+  try { localStorage.setItem("miluz_edicion_clave", k); } catch(e) {}
   quien = CLAVES[k]; arrancar();
 }
 $("#entrar").addEventListener("click", entrar);
 $("#clave").addEventListener("keydown", e => { if(e.key==="Enter") entrar(); });
-$("#salir").addEventListener("click", () => { try { localStorage.removeItem("revision_clave"); } catch(e) {} location.reload(); });
+$("#salir").addEventListener("click", () => { try { localStorage.removeItem("miluz_edicion_clave"); } catch(e) {} location.reload(); });
 
 async function arrancar(){
   $("#login").hidden = true; $("#app").hidden = false;
@@ -137,7 +137,7 @@ async function arrancar(){
 }
 
 function pintar(){
-  const todos = Object.entries(items).filter(([,it]) => it.marca !== "miluz");   // Mi Luz se revisa en /miluz/edicion (Luz)
+  const todos = Object.entries(items).filter(([,it]) => it.marca === "miluz");
   const marcas = [...new Set(todos.map(([,it])=>it.marca))].sort(); const nom = m => (todos.find(([,it])=>it.marca===m)||[,{}])[1].marcaNombre||m;
   const deMarca = todos.filter(([,it]) => marcaF==="todas" || it.marca===marcaF);
   const cuenta = e => deMarca.filter(([,it])=>it.estado===e).length;
@@ -161,7 +161,7 @@ function pintar(){
   const porRevisar = m => todos.filter(([,it]) => (m==="todas"||it.marca===m) && it.estado==="revisar").length;
   $("#marcas").innerHTML = ["todas",...marcas].map(m=>`<button class="mt ${m===marcaF?"on":""}" data-m="${m}">${m==="todas"?"Todas las marcas":esc(nom(m))}${porRevisar(m)?`<b>${porRevisar(m)}</b>`:""}</button>`).join("");
   document.querySelectorAll("[data-e]").forEach(b=>b.onclick=()=>{filtro=b.dataset.e;pintar();});
-  document.querySelectorAll("[data-m]").forEach(b=>b.onclick=()=>{marcaF=b.dataset.m; try{localStorage.setItem("revision_marca",marcaF)}catch(e){} pintar();});
+  document.querySelectorAll("[data-m]").forEach(b=>b.onclick=()=>{marcaF=b.dataset.m; try{localStorage.setItem("miluz_edicion_marca",marcaF)}catch(e){} pintar();});
   const lista = deMarca.filter(([,it])=>it.estado===filtro).sort((a,b)=>(a[1].fechaCrudo||"").localeCompare(b[1].fechaCrudo||""));
   if(!lista.length){ $("#lista").innerHTML = `<div class="vacio">${filtro==="revisar"?"No hay videos para revisar. Los de hoy aparecen solos cuando terminan de editarse.":"Nada por acá."}</div>`; return; }
   // si está escribiendo una corrección, no le borramos lo que tipeó: se repinta cuando suelta
