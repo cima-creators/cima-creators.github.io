@@ -113,6 +113,13 @@ h3{margin:4px 0 8px;font-size:10.5px;font-weight:600;color:var(--mut);text-trans
 .grupo{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:24px 0 12px}
 .grupo h2{font-size:17px;font-weight:700;letter-spacing:-.02em}
 .grupo a{color:var(--mut);font-size:12.5px}
+.item.guion .cuerpo{gap:10px}
+@media (min-width:760px){.item.guion{grid-column:span 2}}
+.hk{font-size:13px;font-weight:600;margin-top:4px}.hk small{display:block;font-weight:400;color:var(--mut);font-size:11.5px}
+.iv{margin:4px 0 0 16px;font-size:12.5px;color:var(--txt)}
+details summary{cursor:pointer;font-size:12.5px;font-weight:600;color:var(--acc)}
+.tg{width:100%;border-collapse:collapse;font-size:11.5px;margin-top:6px}.tg th,.tg td{border:1px solid var(--line);padding:5px;vertical-align:top;text-align:left}
+.tg th:nth-child(1),.tg td:nth-child(1){width:14%}.tg th:nth-child(2),.tg td:nth-child(2){width:42%}
 .pill.roas{background:var(--ok-bg);color:var(--ok);font-weight:600}
 .stats{display:grid;grid-template-columns:1fr 1fr;gap:6px}
 .st{background:var(--soft);border-radius:12px;padding:7px 10px 8px}
@@ -304,7 +311,7 @@ function pintarEstado(v){
       html += `<div class="grupo"><h2>En cola</h2><span class="pill">la Mac los toma en la próxima vuelta (cada 30 min)</span></div><div class="grilla">` + ps.map(x => {
         const img = x.mini ? (/^https?:/.test(x.mini) ? x.mini : `https://drive.google.com/thumbnail?id=${esc(x.mini)}&sz=w600`) : "";
         return `<div class="item"><div class="cab"><div class="av">${esc(x.p.n||4)}</div><div class="t"><b>${esc(x.a.nombre||x.ad)}</b><small><i></i>${x.p.estado==="procesando"?"Generando ahora":"En cola"} · pidió ${esc(x.p.quien||"")}</small></div></div>
-          <div class="vid">${img?`<img src="${esc(img)}" alt="" loading="lazy">`:`<div class="ph">Sin miniatura</div>`}<span class="tag">${x.p.estado==="procesando"?"Generando…":`${esc(x.p.n||4)} variantes en cola`}</span></div>
+          <div class="vid">${img?`<img src="${esc(img)}" alt="" loading="lazy">`:`<div class="ph">Sin miniatura</div>`}<span class="tag">${x.p.estado==="procesando"?(x.p.tipo==="guiones"?"Escribiendo…":"Generando…"):`${esc(x.p.n||4)} ${x.p.tipo==="guiones"?"guiones":"variantes"} en cola`}</span></div>
           <div class="cuerpo"><div class="sub2">Pedido ${x.p.cuando?new Date(x.p.cuando).toLocaleString("es-AR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}):""}. Cuando estén listas pasan a "Para aprobar".</div>
           ${x.p.estado==="pedido"?`<div class="acciones" style="grid-template-columns:1fr"><button class="btn no cancelar-it" data-m="${esc(x.m)}" data-ad="${esc(x.ad)}">Cancelar</button></div>`:""}</div></div>`;
       }).join("") + `</div>`;
@@ -417,20 +424,16 @@ function botonGuiones(x){
   const p = ((semana[x.m]||{}).pedidos||{})[x.a.id] || {};
   const att = `data-m="${esc(x.m)}" data-ad="${esc(x.a.id)}"`;
   const cuantas = `<div class="cuantas" data-cuantas="${esc(x.a.id)}"><span>¿Cuántos?</span>${[3,5,9].map(k=>`<button class="btn dark pedir-g" ${att} data-n="${k}">${k}</button>`).join("")}</div>`;
-  const ya = p.estado==="guiones" ? `<div class="sub2">✓ ${esc(p.n)} guiones pedidos el ${p.cuando?new Date(p.cuando).toLocaleDateString("es-AR",{day:"2-digit",month:"2-digit"}):""} · están en el tablero</div>` : "";
-  return `${ya}<div class="acciones" style="grid-template-columns:1fr"><button class="btn ok iterar" ${att}>${p.estado==="guiones"?"Pedir más guiones":"Pedir guiones nuevos"}</button></div>${cuantas}`;
+  const gs = Object.values(items).filter(it=>it.adId===x.a.id && it.tipo==="guion" && it.estado!=="rechazado");
+  const rev = gs.filter(it=>it.estado==="revisar").length;
+  if(p.tipo==="guiones" && p.estado==="pedido") return `<div class="acciones" style="grid-template-columns:1fr auto"><button class="btn dark" disabled>${esc(p.n)} guiones en cola · ~30 min</button><button class="btn no cancelar-it" ${att} title="Cancelar">✕</button></div>`;
+  if(p.tipo==="guiones" && p.estado==="procesando") return `<div class="acciones" style="grid-template-columns:1fr"><button class="btn dark" disabled>Escribiendo guiones…</button></div>`;
+  if(gs.length) return `<div class="acciones" style="grid-template-columns:1fr 1fr"><button class="btn ok ver-var" data-ad="${esc(x.a.id)}">${rev?`${rev} para revisar`:`Guiones (${gs.length})`}</button><button class="btn iterar" ${att}>Pedir más</button></div>${cuantas}`;
+  return `<div class="acciones" style="grid-template-columns:1fr"><button class="btn ok iterar" ${att}>Pedir guiones nuevos</button></div>${cuantas}`;
 }
 async function pedirGuiones(m, ad, n){
-  const doc0 = semana[m]||{}; const a = (doc0.anuncios||[]).find(x=>x.id===ad)||{};
-  const w = ventana(a, doc0.hasta);
-  const link = a.permalink ? (a.permalink.startsWith("/")?"https://www.facebook.com"+a.permalink:a.permalink) : "";
-  try {
-    // tarea corta en el tablero (regla: marca al inicio + 2 a 6 palabras), con el anuncio de link
-    await fb.addDoc(fb.collection(fb.db,"tablero_tareas"), {titulo:`Mi Luz · ${n} guiones desde ${String(a.nombre||"un ganador").slice(0,40)}`,
-      quien:"nacho", marca:"Mi Luz", bloque:"hoy", orden:999, hecho:false, ahora:false, creado:new Date().toISOString(),
-      nota:`ROAS ${w.roas.toFixed(2)} · ${w.c} ventas`, link, linkTexto:"ver el anuncio", chat:"Variantes (pedido de "+quien+")"});
-    await fb.updateDoc(fb.doc(fb.db,"variantes_semana",m), {[`pedidos.${ad}`]: {estado:"guiones", tipo:"guiones", quien, n, cuando:new Date().toISOString()}});
-    toast(`Listo: ${n} guiones pedidos, quedó en el tablero`);
+  try { await fb.updateDoc(fb.doc(fb.db,"variantes_semana",m), {[`pedidos.${ad}`]: {estado:"pedido", tipo:"guiones", quien, n, cuando:new Date().toISOString()}});
+    toast(`Listo: ${n} guiones en cola. Salen en ~30 min en «Para aprobar»`);
   } catch(e){ toast("No se pudo guardar: "+e.message); }
 }
 function botonIterar(x, nvar, nrev){
@@ -502,7 +505,36 @@ function pintarVariantes(){
 }
 document.addEventListener("focusout", () => setTimeout(() => { if(pendiente && !document.querySelector("#lista .cambio, #gest .cambio")) { pendiente = false; pintar(); } }, 200));
 
+function tablaGuion(g){
+  const fila = (n,f) => `<tr><td>${esc(n)}</td><td>${esc(f.dice||"")}</td><td>${esc(f.pantalla||"")}</td><td>${esc(f.filma||"")}</td></tr>`;
+  return `<table class="tg"><tr><th>#</th><th>Lo que dice</th><th>Texto en pantalla</th><th>Qué se filma</th></tr>
+    ${(g.hooks||[]).slice(0,1).map(h=>fila("HOOK 0-3s",h)).join("")}${(g.filas||[]).map(f=>fila(`${f.n||""} · ${f.etapa||""}`,f)).join("")}${g.cta?fila("CTA",g.cta):""}</table>`;
+}
+function tarjetaGuion(id,it){
+  const g = it.guion||{}; const editable = it.estado==="revisar"; const m = it.metricas||{};
+  const punto = it.estado==="subido" ? "ok" : it.estado==="error" ? "mal" : "";
+  return `<div class="item guion" id="it-${esc(id)}">
+    <div class="cab"><div class="av">G${esc(it.n)}</div><div class="t"><b>${esc(it.codigo||"Guion")}${it.version>1?` · v${esc(it.version)}`:""}</b>
+      <small><i class="${punto}"></i>${esc((ESTADOS.find(e=>e[0]===it.estado)||[,it.estado])[1])} · Guion ${esc(g.formato||"")} · ${esc(g.duracion_s||"")}s</small></div></div>
+    <div class="cuerpo">
+      <div class="cambio-t">${esc(g.titulo||it.cambio)}</div>
+      <div class="dato"><b>3 hooks</b>${(g.hooks||[]).map((h,i)=>`<div class="hk">${i+1}. "${esc(h.dice)}"<small>${esc(h.filma||"")}</small></div>`).join("")}</div>
+      <div class="dato"><b>Ideas para lo visual</b><ul class="iv">${(g.ideas_visuales||[]).map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>
+      <details><summary>Ver el guion completo</summary>${tablaGuion(g)}<div class="dato" style="margin-top:6px"><b>Caption</b>${esc(g.caption||"")}</div>
+        <button class="btn copiar" style="margin-top:6px">Copiar guion</button></details>
+      ${it.ganoCon?`<div class="dato">Ganó con: "${esc(it.ganoCon)}"</div>`:""}
+      ${it.qa?`<div class="err">Verificador del SOP: ${esc(it.qa)}</div>`:""}
+      ${it.error?`<div class="err">${esc(it.error)}</div>`:""}
+      ${(it.notas||[]).length?`<div class="hist">Correcciones: ${(it.notas||[]).map(esc).join(" · ")}</div>`:""}
+      ${editable?`<div class="editor"><input class="texto" value="${esc(it.texto)}" data-orig="${esc(it.texto)}" title="Hook 1">
+        <textarea class="nota" rows="2" placeholder="Qué cambiar: más corto, otro testigo, el hook 2 no va…"></textarea>
+        <button class="btn dark corregir" disabled>Mandar corrección</button></div>
+      <div class="acciones"><button class="btn ok aprobar">Aprobar</button><button class="btn abrir-ed">Corregir</button><button class="btn no rechazar" title="Descartar">✕</button></div>`:""}
+      ${it.estado==="error"?`<div class="acciones" style="grid-template-columns:1fr"><button class="btn reintentar">Volver a intentar</button></div>`:""}
+    </div></div>`;
+}
 function tarjeta(id,it){
+  if(it.tipo==="guion") return tarjetaGuion(id,it);
   const esImg = /\.(png|jpe?g|webp)$/i.test(it.archivo||"") || it.tipo==="estatico";
   const editable = it.estado==="revisar";
   const m = it.metricas||{};
@@ -550,8 +582,9 @@ function conectar(id){
   nt && nt.addEventListener("input", () => { nt.classList.toggle("cambio", !!nt.value.trim()); corr.disabled = !hayCambios(); });
   tx && tx.addEventListener("input", () => { tx.classList.toggle("cambio", tx.value.trim()!==tx.dataset.orig); corr.disabled = !hayCambios(); });
   el.querySelector(".abrir-ed")?.addEventListener("click", () => { el.querySelector(".editor").classList.toggle("on"); tx?.focus(); });
+  el.querySelector(".copiar")?.addEventListener("click", async () => { try { await navigator.clipboard.writeText(items[id].guionMd||""); toast("Guion copiado"); } catch(e){ toast("No se pudo copiar"); } });
   const vd = el.querySelector(".vid");
-  vd.addEventListener("click", () => { const d = vd.dataset.drive; if(!d || vd.querySelector("iframe")) return;
+  vd && vd.addEventListener("click", () => { const d = vd.dataset.drive; if(!d || vd.querySelector("iframe")) return;
     vd.innerHTML = `<div class="marco"><iframe src="https://drive.google.com/file/d/${d}/preview" allow="autoplay"></iframe></div>`; });
   const ref = fb.doc(fb.db,"variantes_cola",id);
   const marcar = async (datos,msg) => { try { await fb.updateDoc(ref,{...datos,revisadoPor:quien,actualizado:new Date().toISOString()}); toast(msg);
