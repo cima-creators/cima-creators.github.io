@@ -79,13 +79,24 @@ textarea{width:100%;border:1px solid var(--line);border-radius:14px;padding:10px
 textarea:focus{outline:none;border-color:var(--line2)}
 details summary{cursor:pointer;color:var(--mut);font-size:12.5px;font-weight:500}
 /* revisar */
-.rev{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px;margin-bottom:12px}
+.revgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,560px),1fr));gap:12px;align-items:start}
+.rev{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px}
 .rev-top{display:flex;gap:12px;align-items:flex-start;margin-bottom:12px}
-.rev-top img{width:64px;height:80px;object-fit:cover;border-radius:10px;background:var(--soft);cursor:zoom-in;flex-shrink:0}
-.vars{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:10px}
+.rev-top img{width:48px;height:60px;object-fit:cover;border-radius:10px;background:var(--soft);cursor:zoom-in;flex-shrink:0}
+.vars{display:grid;grid-template-columns:repeat(3,minmax(0,170px));gap:8px}
+@media (max-width:520px){.vars{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .var{border:2px solid var(--line);border-radius:16px;overflow:hidden;cursor:pointer;position:relative;background:var(--soft)}
 .var.on{border-color:var(--ok)}
-.var img{width:100%;height:auto;display:block}
+.var img{width:100%;aspect-ratio:4/5;object-fit:contain;display:block;background:var(--soft)}
+.var .pie{padding:6px 7px!important;font-size:11px!important;flex-wrap:wrap;gap:4px!important}
+.var .pie .btn{min-height:28px;padding:3px 9px;font-size:11.5px}
+.var .chk{width:24px!important;height:24px!important;right:7px!important;top:7px!important;font-size:12px}
+.rev .ang{padding:6px 8px 2px}
+.rev .ang b{font-size:11px}
+.rev .ang span{font-size:11px}
+.rev .ang small{font-size:10px}
+.rev h3{font-size:14.5px!important}
+.rev .rev-top .sub{font-size:12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .var .chk{position:absolute;right:10px;top:10px;width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.92);border:2px solid var(--line2);display:grid;place-items:center;font-weight:700;color:var(--ok)}
 .var.on .chk{background:var(--ok);border-color:var(--ok);color:#fff}
 .var .pie{padding:8px 10px;font-size:12px;color:var(--mut);display:flex;justify-content:space-between;gap:8px;align-items:center;background:var(--card)}
@@ -143,6 +154,8 @@ a.btn{display:inline-flex;align-items:center;justify-content:center;text-decorat
 #subir .drop{display:flex;align-items:center;justify-content:center;min-height:130px;border:2px dashed var(--line2);border-radius:16px;background:var(--soft);cursor:pointer;color:var(--mut);font-size:13.5px;overflow:hidden}
 #subir .drop img{max-height:260px;max-width:100%;display:block}
 .campo{width:100%;border:1px solid var(--line);border-radius:14px;padding:11px 12px;font-size:14px;background:var(--soft);color:var(--txt)}
+.rev .aviso{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:11.5px;padding:6px 9px}
+.rev .acciones .btn{min-height:36px;font-size:12.5px;padding:6px 10px}
 </style>
 </head>
 <body>
@@ -382,7 +395,7 @@ function vProceso(lista, hechasHoy){
 const sel = {};   // variantes marcadas por pieza
 function vRevisar(lista){
   lista.sort((a,b) => String(a.actualizado).localeCompare(String(b.actualizado)));
-  $("#vista").innerHTML = lista.length ? lista.map(d => {
+  $("#vista").innerHTML = lista.length ? `<div class="revgrid">` + lista.map(d => {
     const vs = d.variantes || [];
     sel[d.id] ??= new Set(vs.length === 1 ? [0] : []);
     const malas = vs.filter(v => !v.ok);
@@ -392,7 +405,7 @@ function vRevisar(lista){
         <h3 style="font-size:16px;margin-top:6px">${esc(d.formato)}</h3><p class="sub" style="margin-top:2px">${esc(d.idea)}</p></div></div>
       <div class="vars">${vs.map((v,i) => `<div class="var ${sel[d.id].has(i)?"on":""}" data-i="${i}"><img loading="lazy" src="${esc(v.url)}" alt=""><span class="chk">✓</span>
         ${v.angulo ? `<div class="ang"><b>${esc(v.angulo)}</b>${v.fraseVoc ? `<span>«${esc(v.fraseVoc)}»</span>` : ""}${v.cuantasVoc ? `<small>${esc(v.cuantasVoc)} personas lo dicen</small>` : ""}</div>` : ""}
-        <div class="pie"><span>Opción ${i+1}</span><span style="display:flex;gap:6px"><button class="btn sm zoom" data-src="${esc(v.url)}">Ver</button>${v.driveId ? `<a class="btn sm drv" href="https://drive.google.com/file/d/${esc(v.driveId)}/view" target="_blank" rel="noopener">Drive</a>` : ""}</span></div></div>`).join("")}</div>
+        <div class="pie"><span>${i+1}</span><span style="display:flex;gap:4px"><button class="btn sm zoom" data-src="${esc(v.url)}">Ver</button>${v.driveId ? `<a class="btn sm drv" href="https://drive.google.com/file/d/${esc(v.driveId)}/view" target="_blank" rel="noopener">Drive</a>` : ""}</span></div></div>`).join("")}</div>
       ${malas.length ? `<div class="aviso">Ojo, el control automático vio algo en ${malas.length === vs.length ? "las dos opciones" : "una opción"}: ${esc(malas.map(v=>(v.problemas||[])[0]).filter(Boolean).join(" · "))}</div>` : ""}
       ${d.historial?.length > 1 ? `<div class="hist">${d.historial.map(esc).join("<br>")}</div>` : ""}
       <div class="acciones"><button class="btn no sm desc">Descartar</button><button class="btn sm pedir">Pedir un cambio</button>
@@ -400,7 +413,7 @@ function vRevisar(lista){
       <div class="cambio"><textarea placeholder="¿Qué cambiamos? Ej: el título más grande, sacar la mano, fondo bordó"></textarea>
         ${vs.length > 1 ? `<label class="sub" style="margin:0">Sobre la <select class="base">${vs.map((v,i)=>`<option value="${i}">opción ${i+1}</option>`).join("")}</select></label>` : ""}
         <button class="btn acc enviar">Mandar el cambio</button></div>
-    </div>`; }).join("") : `<div class="vacio">No hay nada para revisar. Cuando una pieza esté lista aparece acá.</div>`;
+    </div>`; }).join("") + `</div>` : `<div class="vacio">No hay nada para revisar. Cuando una pieza esté lista aparece acá.</div>`;
   $("#vista").querySelectorAll(".rev").forEach(c => {
     const id = c.dataset.id, s = sel[id];
     c.querySelector(".refimg").onclick = () => zoom(items[id].ref.img);
