@@ -356,10 +356,10 @@ function vRevisar(lista){
 
 function vListas(lista){
   lista.sort((a,b) => String(b.entregadoEn || b.aprobadaEn).localeCompare(String(a.entregadoEn || a.aprobadaEn)));
-  $("#vista").innerHTML = lista.length ? `<p class="sub" style="margin:0 0 14px">Las aprobadas se guardan solas en tu Drive: <b>Mi Luz · Estáticos › Diario › fecha</b>. El nombre del archivo es el código que va en el nombre del anuncio en Meta.</p>
+  $("#vista").innerHTML = lista.length ? `<p class="sub" style="margin:0 0 14px">Las aprobadas se guardan solas en tu Drive: <b>Mi Luz · Bots › ✅ Listos para subir › fecha › Estáticos</b>. El nombre del archivo es el código que va en el nombre del anuncio en Meta.</p>
     <div class="grid">${lista.flatMap(d => (d.aprobadas || [0]).map(i => d.variantes?.[i]).filter(Boolean).map((v,k) => `
       <div class="card"><div class="img"><img loading="lazy" src="${esc(v.url)}" alt="" data-z="${esc(v.url)}"><span class="tag">${esc(d.codigo)}</span></div>
-      <div class="body"><div class="pills">${d.estado === "lista" ? `<span class="pill ok">En tu Drive · ${fFecha((d.entregado||"").split("/").pop())}</span>` : `<span class="pill warn">Copiándose a Drive</span>`}
+      <div class="body"><div class="pills">${d.estado === "lista" ? `<span class="pill ok">En tu Drive · ${fFecha(((d.entregado||"").match(/\d{4}-\d{2}-\d{2}/)||[""])[0])}</span>` : `<span class="pill warn">Copiándose a Drive</span>`}
         ${d.maqueta ? `<span class="pill warn">Maqueta</span>` : ""}</div>
         <h3>${esc(d.formato)}</h3>${d.archivos?.[k] ? `<p class="m">${esc(d.archivos[k])}</p>` : ""}${origen(d)}
         <div style="display:flex;gap:6px;margin-top:4px"><a class="btn sm" href="${esc(v.url)}" target="_blank" rel="noopener">Ver</a>${(d.drive?.[k] || (v.driveId && `https://drive.google.com/file/d/${v.driveId}/view`)) ? `<a class="btn sm drv" href="${esc(d.drive?.[k] || `https://drive.google.com/file/d/${v.driveId}/view`)}" target="_blank" rel="noopener">Drive</a>` : ""}</div></div></div>`)).join("")}</div>`
