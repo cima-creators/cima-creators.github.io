@@ -151,6 +151,8 @@ a.btn{display:inline-flex;align-items:center;justify-content:center;text-decorat
 #iterar .sx{background:var(--card);border-radius:var(--r);max-width:520px;width:100%;max-height:92vh;overflow:auto;padding:20px}
 #iterar .tipo{display:flex;flex-direction:column;gap:8px;margin-bottom:12px;font-size:13.5px}
 #iterar .tipo small{color:var(--mut)}
+.adj{display:flex;align-items:center;gap:10px;margin-top:8px;padding:8px 10px;border:1px dashed var(--line2);border-radius:12px;cursor:pointer;font-size:12.5px;color:var(--mut);background:var(--soft)}
+.adj img{width:44px;height:55px;object-fit:cover;border-radius:8px}
 #subir{position:fixed;inset:0;background:rgba(10,8,8,.6);display:none;align-items:center;justify-content:center;z-index:16;padding:16px}
 #subir.on{display:flex}
 #subir .sx{background:var(--card);border-radius:var(--r);max-width:520px;width:100%;max-height:92vh;overflow:auto;padding:20px}
@@ -188,6 +190,7 @@ a.btn{display:inline-flex;align-items:center;justify-content:center;text-decorat
     <label><input type="radio" name="itTipo" value="mismo" checked> <b>Más de lo mismo</b> <small>— 3 opciones nuevas con el mismo diseño y otros dolores de las clientas</small></label>
     <label><input type="radio" name="itTipo" value="otra"> <b>Quiero otra cosa</b> <small>— escribí qué cambiar</small></label></div>
   <textarea id="itPedido" placeholder="Ej: lo mismo pero con fondo bordó y una mano más grande; que hable de la menopausia"></textarea>
+  <div id="itAdj"></div>
   <p id="itErr" class="sub" style="color:var(--bad);margin:8px 0 0"></p>
   <div class="acciones" style="margin-top:12px"><button class="btn" id="itNo">Cancelar</button><button class="btn acc" id="itSi">Iterar</button></div>
 </div></div>
@@ -261,6 +264,20 @@ function aJpg(file){   // cualquier foto del celu (heic, webp, png) → JPG de h
     c.getContext("2d").drawImage(img, 0, 0, c.width, c.height); c.toBlob(b => b ? ok(b) : mal(new Error("no se pudo leer la imagen")), "image/jpeg", .88); };
     img.onerror = () => mal(new Error("no se pudo leer la imagen (probá con una captura)")); img.src = URL.createObjectURL(file); });
 }
+async function subirImagen(file, pref = "up"){   // → link público (la regla deja crear pero no leer: sale de downloadTokens)
+  const ts = Date.now().toString(36), ruta = `animados_luz/luz/${hoy()}/est-${pref}-${ts}.jpg`, B = "cleargy-creators.firebasestorage.app";
+  const resp = await fetch(`https://firebasestorage.googleapis.com/v0/b/${B}/o?name=${encodeURIComponent(ruta)}`, {method: "POST",
+    headers: {"Authorization": "Firebase " + await fb.auth.currentUser.getIdToken(), "Content-Type": "image/jpeg"}, body: await aJpg(file)});
+  if (!resp.ok) throw new Error("Storage " + resp.status);
+  const meta = await resp.json();
+  return `https://firebasestorage.googleapis.com/v0/b/${B}/o/${encodeURIComponent(ruta)}?alt=media&token=${meta.downloadTokens}`;
+}
+const ADJ = (id) => `<label class="adj"><input type="file" accept="image/*" hidden id="${id}"><span>📎 Agregar una imagen (opcional)</span><img alt="" hidden></label>`;
+function engancharAdj(input){
+  input.onchange = () => { const f = input.files[0], lab = input.closest(".adj"); if (!f) return;
+    lab.querySelector("img").src = URL.createObjectURL(f); lab.querySelector("img").hidden = false; lab.querySelector("span").textContent = "📎 " + f.name + " · tocá para cambiarla"; };
+}
+
 $("#subirSi").onclick = async () => {
   const link = $("#link").value.trim(), pedido = $("#pedido").value.trim(), propia = document.querySelector('input[name="tipo"]:checked').value === "propia";
   if (!archivoSubido && !/^https?:\/\//.test(link)) { $("#subirErr").textContent = "Subí una imagen o pegá un link."; return; }
@@ -293,7 +310,8 @@ let itSel = null;
 function abrirIterar(ds){
   itSel = ds; const d = items[ds.id];
   $("#itImg").src = ds.url; $("#itCod").textContent = `${d.codigo || ""} · ${d.formato || ""}`;
-  $("#itPedido").value = ""; $("#itErr").textContent = ""; document.querySelector('input[name="itTipo"][value="mismo"]').checked = true;
+  $("#itPedido").value = ""; $("#itErr").textContent = ""; $("#itAdj").innerHTML = ADJ("itFile"); engancharAdj($("#itFile"));
+  $("#itFile").addEventListener("change", () => document.querySelector('input[name="itTipo"][value="otra"]').checked = true); document.querySelector('input[name="itTipo"][value="mismo"]').checked = true;
   $("#iterar").classList.add("on");
 }
 $("#itNo").onclick = () => $("#iterar").classList.remove("on");
@@ -301,13 +319,15 @@ $("#iterar").onclick = e => { if (e.target.id === "iterar") $("#iterar").classLi
 $("#itPedido").oninput = () => { if ($("#itPedido").value.trim()) document.querySelector('input[name="itTipo"][value="otra"]').checked = true; };
 $("#itSi").onclick = async () => {
   const tipo = document.querySelector('input[name="itTipo"]:checked').value, pedido = $("#itPedido").value.trim();
-  if (tipo === "otra" && !pedido) { $("#itErr").textContent = "Escribí qué querés cambiar."; return; }
+  const archivoIt = $("#itFile")?.files[0];
+  if (tipo === "otra" && !pedido && !archivoIt) { $("#itErr").textContent = "Escribí qué querés cambiar o agregá una imagen."; return; }
   const b = $("#itSi"); b.disabled = true;
   try {
     const d = items[itSel.id], ts = Date.now().toString(36);
+    const imgPedido = archivoIt ? await subirImagen(archivoIt, "pedido") : "";
     await fb.setDoc(fb.doc(fb.db, "estaticos", `${d.id}_it${ts}`), {marca: MARCA, fecha: hoy(), estado: "elegida", iteraDe: d.id,
       elegidaEn: new Date().toISOString(), creado: new Date().toISOString(), notaElegir: tipo === "otra" ? pedido : "", version: 0, variantes: [],
-      por: quien, formato: d.formato || "", idea: tipo === "otra" ? pedido : `Más de lo mismo: ${d.codigo}`, porque: d.porque || "",
+      por: quien, imgPedido, formato: d.formato || "", idea: tipo === "otra" ? (pedido || "Con la imagen que adjuntaste") : `Más de lo mismo: ${d.codigo}`, porque: d.porque || "",
       prompt: itSel.prompt || d.prompt || "", usa: d.usa || ["fenix"], nivel: d.nivel || 3, maqueta: !!d.maqueta,
       ref: {id: "it" + ts, m: NOMBRES[MARCA] || MARCA, img: itSel.url, link: "", nicho: "iteracion", d: 0, dup: 0, senal: 0, t: d.codigo || ""},
       refOriginal: d.ref || {}});
@@ -451,7 +471,7 @@ function vRevisar(lista){
       ${d.historial?.length > 1 ? `<div class="hist">${d.historial.map(esc).join("<br>")}</div>` : ""}
       <div class="acciones"><button class="btn no sm desc">Descartar</button><button class="btn sm pedir">Pedir un cambio</button>
         <button class="btn ok aprobar" ${sel[d.id].size?"":"disabled"}>Aprobar ${sel[d.id].size > 1 ? `las ${sel[d.id].size}` : "la marcada"}</button></div>
-      <div class="cambio"><textarea placeholder="¿Qué cambiamos? Ej: el título más grande, sacar la mano, fondo bordó"></textarea>
+      <div class="cambio"><textarea placeholder="¿Qué cambiamos? Ej: el título más grande, sacar la mano, fondo bordó"></textarea>${ADJ("cf-" + d.id)}
         ${vs.length > 1 ? `<label class="sub" style="margin:0">Sobre la <select class="base">${vs.map((v,i)=>`<option value="${i}">opción ${i+1}</option>`).join("")}</select></label>` : ""}
         <button class="btn acc enviar">Mandar el cambio</button></div>
     </div>`; }).join("") + `</div>` : `<div class="vacio">No hay nada para revisar. Cuando una pieza esté lista aparece acá.</div>`;
@@ -463,9 +483,14 @@ function vRevisar(lista){
     c.querySelector(".aprobar").onclick = () => marcar(id, {estado:"aprobada", aprobadas:[...s].sort(), aprobadaEn:new Date().toISOString()}, "Aprobada: va a tu carpeta de Drive");
     c.querySelector(".desc").onclick = () => { if (confirm("¿Descartar esta pieza?")) marcar(id, {estado:"descartada", descartadaEn:"revisar"}, "Descartada"); };
     c.querySelector(".pedir").onclick = () => c.querySelector(".cambio").classList.toggle("on");
-    c.querySelector(".enviar").onclick = () => { const t = c.querySelector(".cambio textarea").value.trim(); if (!t) return toast("Escribí qué cambiar");
+    const adj = c.querySelector(".cambio input[type=file]"); if (adj) engancharAdj(adj);
+    c.querySelector(".enviar").onclick = async () => { const t = c.querySelector(".cambio textarea").value.trim(), f = adj?.files[0];
+      if (!t && !f) return toast("Escribí qué cambiar o agregá una imagen");
       const base = c.querySelector(".base") ? +c.querySelector(".base").value : 0;
-      marcar(id, {estado:"modificar", notaModificar:t, base}, "Cambio pedido: en un rato vuelve a Revisar"); };
+      const bt = c.querySelector(".enviar"); bt.disabled = true; bt.textContent = f ? "Subiendo la imagen…" : "Mandando…";
+      try { const imgModificar = f ? await subirImagen(f, "cambio") : "";
+        await marcar(id, {estado:"modificar", notaModificar: t || "Hacelo como la imagen que adjunté", imgModificar, base}, "Cambio pedido: en un rato vuelve a Revisar");
+      } catch (e) { toast("No se pudo subir la imagen: " + e.message); bt.disabled = false; bt.textContent = "Mandar el cambio"; } };
   });
 }
 
