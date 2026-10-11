@@ -127,7 +127,7 @@ h3{margin:4px 0 8px;font-size:10.5px;font-weight:600;color:var(--mut);text-trans
 <script type="module">
 const CLAVES = {"miluz-2026":"Luz","cima-2026":"Nacho"};
 const $ = s => document.querySelector(s);
-const SOLAPAS = [["video","Videos"],["guion","Guiones"],["hook","Hooks"],["banco","Banco de tomas"]];
+const SOLAPAS = [["video","Videos"],["guion","Guiones"],["pedido","Pedir variantes"],["hook","Hooks"],["banco","Banco de tomas"]];
 const ESTADOS = {
   video: [["revisar","Para revisar"],["corregir","Corrigiéndose"],["subido","Listos para subir"],["descartado","Descartados"],["error","Con error"]],
   guion: [["propuesto","Para aprobar"],["armando","Armándose"],["armado","Ya armados"],["corregir","Corrigiéndose"],["descartado","Descartados"]],
@@ -146,13 +146,13 @@ $("#salir").addEventListener("click", () => { try{localStorage.removeItem("miluz
 
 async function arrancar(){
   $("#login").hidden=true; $("#app").hidden=false;
-  const [{initializeApp},{getFirestore,collection,doc,onSnapshot,updateDoc},{getAuth,signInAnonymously}] = await Promise.all([
+  const [{initializeApp},{getFirestore,collection,doc,onSnapshot,updateDoc,setDoc},{getAuth,signInAnonymously}] = await Promise.all([
     import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js"),
     import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js"),
     import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js")]);
   const app = initializeApp({apiKey:"AIzaSyCTv4DiRCpbCpGYP6E86TPHlkPvaAZTN3g",authDomain:"cleargy-creators.firebaseapp.com",projectId:"cleargy-creators",storageBucket:"cleargy-creators.firebasestorage.app",messagingSenderId:"313543582398",appId:"1:313543582398:web:99fe78991adeea2e7cb4ef"});
   await signInAnonymously(getAuth(app));
-  const db = getFirestore(app); fb={db,doc,updateDoc};
+  const db = getFirestore(app); fb={db,doc,updateDoc,setDoc};
   onSnapshot(collection(db,"broll_luz"), snap => {
     snap.docChanges().forEach(c => { if(c.type==="removed") delete items[c.doc.id]; else items[c.doc.id]=c.doc.data(); });
     pintar();
@@ -170,6 +170,7 @@ function pintar(){
   document.querySelectorAll("[data-s]").forEach(b=>b.onclick=()=>{solapa=b.dataset.s; try{localStorage.setItem("miluz_broll_solapa",solapa)}catch(e){} pintar();});
   heroYtabs(pend);
   if(solapa==="banco") return pintarBanco();
+  if(solapa==="pedido") return pintarPedidos();
   const lista = de(solapa).filter(([,it])=>it.estado===filtro[solapa]).sort((a,b)=>String(a[1].codigo||a[1].n||"").localeCompare(String(b[1].codigo||b[1].n||""),undefined,{numeric:true}));
   if(!lista.length){ $("#lista").innerHTML = `<div class="vacio">Nada por acá.</div>`; return; }
   $("#lista").innerHTML = lista.map(([id,it]) => solapa==="video"?tVideo(id,it):solapa==="guion"?tGuion(id,it):tHook(id,it)).join("");
@@ -189,6 +190,8 @@ function heroYtabs(pend){
       <h3>${total ? `${total} ${total===1?"cosa espera":"cosas esperan"} tu decisión` : "Nada esperando"}</h3>
       <p>${pend.video?`<b>${pend.video} ${pend.video===1?"video":"videos"}</b> para ver. `:""}${pend.guion?`${pend.guion} ${pend.guion===1?"guion":"guiones"} para aprobar antes de armarlos. `:""}${pend.hook?`${pend.hook} hooks para aprobar.`:""}
       Lo aprobado va solo a «✅ Listos para subir».</p></div>`;
+  if(solapa==="pedido"){ const ps=de("pedido"); const c=e=>ps.filter(([,i])=>i.estado===e).length;
+    $("#tabs").innerHTML = `<div class="kpi"><span class="l">En cola</span><span class="v">${c("pedido")+c("procesando")}</span></div><div class="kpi"><span class="l">Listos</span><span class="v">${c("listo")}</span></div><div class="kpi ${c("error")?"mal":""}"><span class="l">Con error</span><span class="v">${c("error")}</span></div>`; return; }
   if(solapa==="banco"){ const b=(items.banco||{}).creadoras||{}; const n=Object.keys(b).filter(k=>!b[k].general).length;
     $("#tabs").innerHTML = `<div class="kpi"><span class="l">Creadoras con banco</span><span class="v">${n}</span></div><div class="kpi"><span class="l">Tomas en total</span><span class="v">${Object.values(b).reduce((s,x)=>s+(x.total||0),0)}</span></div><div class="kpi"><span class="l">Con historia</span><span class="v">${Object.values(b).filter(x=>x.historia).length}</span></div>`; return; }
   $("#tabs").innerHTML = ESTADOS[solapa].map(([e,t]) => { const c=de(solapa).filter(([,i])=>i.estado===e).length;
@@ -239,6 +242,32 @@ function pintarBanco(){
       ${Object.entries(c.etapas||{}).map(([e,n])=>`<div class="bar"><span>${ETQ[e]||e}</span><i><b style="width:${Math.round(n/mx*100)}%"></b></i><span>${n}</span></div>`).join("")}
       ${c.general?`<div class="okc">Uñas dañadas de otras personas: solo para frases generales.</div>`:(c.faltan||[]).length?`<div class="falta"><b>Falta grabar:</b><ul>${c.faltan.map(f=>`<li>${esc(f)}</li>`).join("")}</ul></div>`:`<div class="okc">Banco completo ✅</div>`}
     </div>`; }).join("") + `</div><p class="ayuda" style="margin-top:14px">Los códigos (P04, K01…) son de la lista de tomas que tienen las creadoras.</p>`;
+}
+
+function pintarPedidos(){
+  const b=(items.banco||{}).creadoras||{};
+  const cr=Object.keys(b).filter(k=>!b[k].general && (b[k].caras||0)>=4).sort();
+  const ps=de("pedido").sort((x,y)=>String(y[1].creado||"").localeCompare(String(x[1].creado||"")));
+  const est={pedido:"En cola",procesando:"Armando las variantes…",listo:"Listo · están en Guiones",error:"Con error"};
+  $("#lista").innerHTML = `<div class="cr" style="margin-bottom:14px">
+    <h3>Cargá un video y te saco variantes</h3>
+    <p class="sub" style="margin-bottom:10px">Pegá el link: Drive (con acceso "cualquiera con el link"), Instagram, TikTok o la Biblioteca de Anuncios. El bot lo desarma y arma variantes con el mismo hook y la misma estructura, con las tomas de la creadora que elijas. Te aparecen en <b>Guiones</b> para aprobar antes de gastar en voz.</p>
+    <input id="p-link" class="nota" placeholder="https://drive.google.com/file/d/… o el link del reel" style="margin-bottom:8px">
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+      <select id="p-cant" class="btn">${[1,2,3].map(n=>`<option value="${n}">${n} ${n===1?"variante":"variantes"}</option>`).join("")}</select>
+      <select id="p-cr" class="btn">${(cr.length?cr:["vane"]).map(k=>`<option value="${esc(k)}" ${k==="vane"?"selected":""}>con tomas de ${esc(k)}</option>`).join("")}</select>
+      <button class="btn dark" id="p-ok">Pedir variantes</button>
+    </div>
+    <textarea id="p-nota" class="nota" rows="2" placeholder="Opcional: qué querés distinto (ej.: más corto, otro hook, para mujeres de 50)" style="margin-top:8px"></textarea>
+  </div>` + (ps.length ? ps.map(([id,it])=>`<div class="hook"><div><div style="font-weight:600;font-size:13.5px;padding:2px 8px;word-break:break-all">${esc(it.link)}</div>
+      <div class="src">${esc(it.cantidad)} · ${esc(it.creadora)} · ${esc((it.creado||"").slice(0,16).replace("T"," "))}${it.nota?" · "+esc(it.nota):""}${(it.guiones||[]).length?" · "+it.guiones.map(esc).join(", "):""}${it.error?" · "+esc(it.error):""}</div></div>
+      <span class="pill ${it.estado==="listo"?"e-aprobado":it.estado==="error"?"e-error":"e-revisar"}">${esc(est[it.estado]||it.estado)}</span></div>`).join("") : "");
+  $("#p-ok").onclick = async () => {
+    const link=$("#p-link").value.trim(); if(!/^https?:\/\//.test(link)){ toast("Pegá un link"); return; }
+    const id="pedido_"+Date.now();
+    try { await fb.setDoc(fb.doc(fb.db,"broll_luz",id),{tipo:"pedido",estado:"pedido",link,cantidad:+$("#p-cant").value,creadora:$("#p-cr").value,nota:$("#p-nota").value.trim(),pedidoPor:quien,creado:new Date().toISOString()});
+      toast("Pedido: en ~15 min te aparecen en Guiones"); $("#p-link").value=""; $("#p-nota").value=""; } catch(e){ toast("No se pudo: "+e.message); }
+  };
 }
 
 function conectar(id,it){
