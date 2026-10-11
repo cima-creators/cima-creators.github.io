@@ -127,6 +127,19 @@ summary{cursor:pointer;font-weight:600;font-size:13px}
 #plan textarea{width:100%;min-height:210px;border:1px solid var(--line);border-radius:14px;padding:12px 14px;font-size:13.5px;line-height:1.55;background:var(--soft);color:var(--txt);resize:vertical}
 #plan textarea:focus{outline:none;border-color:var(--acc)}
 #plan .ayuda{font-size:12px;color:var(--mut)}
+.ang{border:1px solid var(--line);border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:8px}
+.ang.on{border-color:var(--acc);box-shadow:0 0 0 1px var(--acc)}
+.ang .cab{display:flex;gap:10px;align-items:flex-start;cursor:pointer}
+.ang .cab input{margin-top:3px;accent-color:var(--acc);width:17px;height:17px;flex-shrink:0}
+.ang .cab b{font-size:14.5px}
+.ang .tag2{display:inline-block;font-size:11px;font-weight:600;padding:2px 9px;border-radius:99px;background:var(--acc-bg);color:var(--acc);margin-top:3px}
+.ang .tag2.nuevo{background:var(--warn-bg);color:var(--warn)}
+.ang .fr{font-size:12.5px;color:var(--mut)}
+.ang textarea{min-height:150px!important}
+.ang:not(.on) textarea{display:none}
+.ang input.nom{width:100%;border:1px solid var(--line);border-radius:12px;padding:8px 10px;font:inherit;font-size:13.5px;background:var(--soft)}
+.mas-angs{display:flex;gap:8px;flex-wrap:wrap}
+.mas-angs select{flex:1;min-width:200px}
 #login .btn{width:100%}
 .acciones.ver .btn.sm{flex:1}
 .cambio textarea{width:100%;border:1px solid var(--line);border-radius:14px;padding:10px 12px;font-size:13px;background:var(--soft);color:var(--txt);resize:vertical;margin-bottom:6px}
@@ -197,11 +210,15 @@ summary{cursor:pointer;font-weight:600;font-size:13px}
   <div class="grid" id="grid"></div>
 </div>
 <div id="plan" role="dialog" aria-modal="true" aria-labelledby="planT"><div class="box">
-  <h2 id="planT">Así lo haría para Mi Luz</h2>
+  <h2 id="planT">¿Con qué ángulos lo hacemos?</h2>
   <div class="ref"><img id="planImg" alt=""><div><b id="planMarca"></b><p id="planIdea"></p></div></div>
-  <textarea id="planTxt"></textarea>
-  <div class="ayuda">Cambiá lo que quieras: agregá, sacá o escribí otra idea. El video se hace <b>exactamente</b> con esto; lo que no esté acá no se agrega.</div>
-  <div class="acciones"><button class="btn" id="planNo">Cancelar</button><button class="btn dark" id="planSi">Producir con este plan</button></div>
+  <div class="ayuda">Tildá 1, 2 o 3: cada ángulo sale como un video aparte. El plan de cada uno se puede editar; el video se hace <b>exactamente</b> con eso.</div>
+  <div id="angs"></div>
+  <div class="mas-angs">
+    <select id="vocExtra"><option value="">+ Sumar un dolor del VOC para variar…</option></select>
+    <button class="btn sm" id="angPropio">+ Escribir otro ángulo</button>
+  </div>
+  <div class="acciones"><button class="btn" id="planNo">Cancelar</button><button class="btn dark" id="planSi">Producir</button></div>
 </div></div>
 <div class="toast" id="toast"></div>
 
@@ -230,14 +247,14 @@ if (quien) arrancar();
 async function arrancar(){
   $("#login").hidden = true; $("#app").hidden = false;
   marcarVista();
-  const [{initializeApp},{getFirestore,collection,doc,onSnapshot,updateDoc},{getAuth,signInAnonymously}] = await Promise.all([
+  const [{initializeApp},{getFirestore,collection,doc,onSnapshot,updateDoc,setDoc},{getAuth,signInAnonymously}] = await Promise.all([
     import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js"),
     import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js"),
     import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js")]);
   const app = initializeApp({apiKey:"AIzaSyCTv4DiRCpbCpGYP6E86TPHlkPvaAZTN3g",authDomain:"cleargy-creators.firebaseapp.com",projectId:"cleargy-creators",storageBucket:"cleargy-creators.firebasestorage.app",messagingSenderId:"313543582398",appId:"1:313543582398:web:99fe78991adeea2e7cb4ef"});
   await signInAnonymously(getAuth(app));
   const db = getFirestore(app);
-  fs = {db, doc, updateDoc};
+  fs = {db, doc, updateDoc, setDoc};
   onSnapshot(collection(db, "animados_luz"), snap => {
     docs = snap.docs.map(d => ({id: d.id, ...d.data()})).filter(d => /^\d{4}-/.test(d.fecha || ""))
       .filter(d => d.estado !== "nueva" || (d.duracion || 0) >= 40);   // Nacho, 9/10: mínimo 40 s
@@ -336,7 +353,7 @@ function tarjeta(d){
       <span class="tag ${nueva ? "nueva" : ""}">${nueva ? "Nueva · " : ""}${esc(d.duracion || "?")} s</span>
       <span class="tag r">${esc(d.fuente?.startsWith("TrendTrack") ? "TrendTrack" : "GetHookd")}</span></div>`}
     <div class="cuerpo">
-      <div class="meta"><span class="pill" style="background:var(--acc-bg);color:var(--acc)">${"★".repeat(s)}${"☆".repeat(5-s)}</span><span class="pill">${esc(d.dup)} dup.</span>${d.estilo ? `<span class="pill">${esc(d.estilo)}</span>` : ""}${d.mixto ? `<span class="pill" style="background:var(--warn-bg);color:var(--warn)" title="${esc(d.mixto)}">Tomas reales</span>` : ""}</div>
+      <div class="meta"><span class="pill" style="background:var(--acc-bg);color:var(--acc)">${"★".repeat(s)}${"☆".repeat(5-s)}</span><span class="pill">${esc(d.dup)} dup.</span>${d.estilo ? `<span class="pill">${esc(d.estilo)}</span>` : ""}${d.mixto ? `<span class="pill" style="background:var(--warn-bg);color:var(--warn)" title="${esc(d.mixto)}">Tomas reales</span>` : ""}${d.anguloElegido ? `<span class="pill" style="background:var(--acc-bg);color:var(--acc)">${esc(d.anguloElegido)}</span>` : ""}</div>
       <div class="fmt clamp1">${esc(f === "otro" ? "Otro formato" : f + " · " + FMT[f])}</div>
       <div class="idea-c clamp2">${esc(d.idea || d.hook || "")}</div>
       ${estadoProd(d)}
@@ -385,7 +402,46 @@ async function accion(id, acc){
   catch (e) { toast("No se pudo guardar: " + e.code); }
 }
 
-let planId = null;
+let planId = null, vocExtra = [];
+fetch("voc-extra.json").then(r => r.json()).then(x => {
+  vocExtra = x;
+  $("#vocExtra").innerHTML = '<option value="">+ Sumar un dolor del VOC para variar…</option>' +
+    x.map((v, i) => `<option value="${i}">${esc(v.dolor)} · ${v.cuantas} personas</option>`).join("");
+}).catch(() => {});
+
+function planTexto(d, a){
+  const f = d.formato || "otro";
+  return [
+    `Ángulo: ${a.nombre || ""}`,
+    a.frase ? `Palabras de la clienta: «${a.frase}»${a.cuantas ? ` (lo dicen ${a.cuantas} personas)` : ""}` : `Palabras de la clienta: `,
+    ``,
+    `Idea para Mi Luz: ${a.bajada !== undefined ? a.bajada : (d.bajada || "")}`,
+    ``,
+    `Formato: ${f === "otro" ? "el mismo de la referencia" : FMT[f]}, con la misma estructura y el mismo ritmo que la referencia.`,
+    `Personaje: mujer de 45-64 (la que compra), siempre la misma en todo el video.`,
+    `Producto: Tratamiento Fénix (foto real del frasco). Cuando se habla del tratamiento, se ve la uña pintándose.`,
+    ``,
+    `Qué NO va: `,
+  ].join("\n");
+}
+function bloqueAng(d, a, on, propio){
+  const el = document.createElement("div");
+  el.className = "ang" + (on ? " on" : "");
+  el.dataset.nombre = a.nombre || "";
+  el.innerHTML = `<label class="cab"><input type="checkbox" ${on ? "checked" : ""}><div>
+      ${propio ? `<input class="nom" placeholder="Nombre del ángulo (ej: me da vergüenza mostrar las manos)">` : `<b>${esc(a.nombre)}</b>`}
+      ${a.tag ? `<div><span class="tag2 ${a.validado === false ? "nuevo" : ""}">${esc(a.tag)}</span></div>` : ""}
+      ${a.frase ? `<div class="fr">«${esc(a.frase)}»${a.cuantas ? ` · ${esc(a.cuantas)} personas` : ""}</div>` : ""}
+    </div></label><textarea>${esc(propio ? planTexto(d, {nombre: "", bajada: ""}) : planTexto(d, a))}</textarea>`;
+  const cb = el.querySelector("input[type=checkbox]");
+  cb.onchange = () => el.classList.toggle("on", cb.checked);
+  if (propio) el.querySelector(".nom").oninput = e => {
+    el.dataset.nombre = e.target.value;
+    const t = el.querySelector("textarea"); t.value = t.value.replace(/^Ángulo:.*$/m, "Ángulo: " + e.target.value);
+  };
+  $("#angs").appendChild(el);
+  return el;
+}
 function abrirPlan(id){
   const d = docs.find(x => x.id === id); if (!d) return;
   planId = id;
@@ -393,31 +449,39 @@ function abrirPlan(id){
   $("#planImg").src = d.thumb || "";
   $("#planMarca").textContent = `${d.marca} · ${f === "otro" ? "Otro formato" : f + " · " + FMT[f]}`;
   $("#planIdea").textContent = "Referencia: " + (d.idea || d.hook || "");
-  $("#planTxt").value = d.plan || [
-    `Formato: ${f === "otro" ? "el mismo de la referencia" : FMT[f]}, con la misma estructura y el mismo ritmo que la referencia.`,
-    ``,
-    `Idea para Mi Luz: ${d.bajada || ""}`,
-    ``,
-    `Palabras de la clienta: «${d.fraseVoc || ""}»${d.cuantasVoc ? ` (lo dicen ${d.cuantasVoc} personas · ${d.anguloVoc})` : ""}`,
-    ``,
-    `Personaje: mujer de 45-64 (la que compra), siempre la misma en todo el video.`,
-    `Producto: Tratamiento Fénix (foto real del frasco). Cuando se habla del tratamiento, se ve la uña pintándose.`,
-    ``,
-    `Qué NO va: `,
-  ].join("\n");
+  $("#angs").innerHTML = "";
+  const angs = (d.angulos && d.angulos.length) ? d.angulos
+    : [{nombre: "Mis uñas no crecen", tag: "Ganador de la cuenta", frase: d.fraseVoc, cuantas: d.cuantasVoc, bajada: d.bajada}];
+  angs.forEach((a, i) => bloqueAng(d, a, i === 0));
+  $("#vocExtra").value = "";
   $("#plan").classList.add("on");
-  $("#planTxt").focus();
 }
+$("#vocExtra").onchange = e => {
+  const v = vocExtra[+e.target.value]; if (!v) return;
+  const d = docs.find(x => x.id === planId);
+  bloqueAng(d, {nombre: v.dolor, tag: "Del VOC · " + v.angulo, validado: false, frase: v.frases[0], cuantas: v.cuantas, bajada: ""}, true);
+  e.target.value = "";
+};
+$("#angPropio").onclick = () => { const d = docs.find(x => x.id === planId); bloqueAng(d, {}, true, true).querySelector(".nom").focus(); };
 function cerrarPlan(){ $("#plan").classList.remove("on"); planId = null; }
 $("#planNo").onclick = cerrarPlan;
 $("#plan").addEventListener("click", e => { if (e.target.id === "plan") cerrarPlan(); });
 document.addEventListener("keydown", e => { if (e.key === "Escape" && planId) cerrarPlan(); });
+const slug = t => (t || "propio").toLowerCase().normalize("NFD").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 30) || "propio";
 $("#planSi").onclick = async () => {
-  const plan = $("#planTxt").value.trim(), id = planId;
-  if (!plan) { toast("El plan no puede quedar vacío"); return; }
+  const id = planId, d = docs.find(x => x.id === id);
+  const elegidos = [...document.querySelectorAll("#angs .ang.on")].map(el => ({nombre: el.dataset.nombre, plan: el.querySelector("textarea").value.trim()}));
+  if (!elegidos.length) { toast("Tildá al menos un ángulo"); return; }
+  if (elegidos.some(x => !x.plan)) { toast("Hay un plan vacío"); return; }
+  const marca = {eligio: quien, eligioEn: new Date().toISOString()};
   try {
-    await fs.updateDoc(fs.doc(fs.db, "animados_luz", id), {estado: "elegida", plan, eligio: quien, eligioEn: new Date().toISOString()});
-    cerrarPlan(); toast("Elegida: se produce con tu plan ✓");
+    await fs.updateDoc(fs.doc(fs.db, "animados_luz", id), {estado: "elegida", plan: elegidos[0].plan, anguloElegido: elegidos[0].nombre, ...marca});
+    const base = {...d}; delete base.id;
+    for (const [k, x] of elegidos.slice(1).entries()) {
+      await fs.setDoc(fs.doc(fs.db, "animados_luz", `${id}__${slug(x.nombre)}-${k + 2}`),
+        {...base, estado: "elegida", plan: x.plan, anguloElegido: x.nombre, origen: id, ...marca});
+    }
+    cerrarPlan(); toast(elegidos.length > 1 ? `Elegida en ${elegidos.length} ángulos: salen ${elegidos.length} videos ✓` : "Elegida: se produce con tu plan ✓");
   } catch (e) { toast("No se pudo guardar: " + e.code); }
 };
 </script>
