@@ -160,6 +160,14 @@ details summary{cursor:pointer;font-size:12.5px;font-weight:600;color:var(--acc)
 .cuantas.on{display:grid}
 .cuantas span{font-size:12px;color:var(--mut);font-weight:600;margin-right:2px}
 body.modal{overflow:hidden}
+#vit{position:fixed;inset:0;background:rgba(38,33,30,.45);z-index:30;display:flex;align-items:center;justify-content:center;padding:16px}
+#vit .panel{max-width:440px;width:100%;background:var(--bg);border-radius:22px;padding:20px;position:relative}
+#vit h3{font-size:18px;margin:0 40px 4px 0}
+#vit .op{border:1px solid var(--line);border-radius:16px;padding:12px;margin-top:12px;background:var(--card)}
+#vit .op b{display:block;font-size:14px}
+#vit .op small{display:block;color:var(--mut);font-size:12px;margin:2px 0 10px}
+#vit .op .ns{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+#vit .cerrar{position:absolute;right:14px;top:14px}
 .filtros{background:var(--soft);border:1px solid var(--line);border-radius:20px;padding:12px 14px;margin-bottom:14px;display:flex;flex-direction:column;gap:10px}
 .aplicados{display:flex;align-items:center;gap:7px;flex-wrap:wrap;font-size:13px;font-weight:600}
 .aplicados .ap{display:inline-flex;align-items:center;gap:6px;background:var(--txt);color:#fff;border-radius:99px;padding:5px 7px 5px 13px;font-weight:500;font-size:12.5px}
@@ -225,6 +233,10 @@ body.modal{overflow:hidden}
   <div class="marcas" id="marcas"></div>
   <div id="vest" hidden><div class="aplicados" id="estFiltro" style="margin-bottom:12px"></div><div id="gest"></div></div>
   <div id="vsem" hidden><div id="manualBox"></div><div class="filtros" id="filtros"></div><div class="resumen-sem" id="rsem"></div><div class="grilla" id="gsem"></div></div>
+  <div id="vit" hidden><div class="panel"><button class="btn cerrar" id="cerrarVit">✕</button><h3>¿Cómo lo iterás?</h3><div class="sub2" id="vitAd"></div>
+    <div class="op"><b>Mismo formato</b><small id="vitFmt">Variantes del mismo anuncio. Van a «Para aprobar» de esta parte.</small><div class="ns"></div></div>
+    <div class="op"><b>Guiones founder (Luz)</b><small>Mismo ángulo, guion para que lo grabe Luz. Primero los hooks en «UGC · Founder › Hooks para aprobar».</small><div class="ns"></div></div>
+  </div></div>
   <div id="vvar" hidden><div class="panel"><button class="btn cerrar" id="cerrarVar">✕ Cerrar</button><h2 class="tt" id="ttVar">Variantes</h2><div class="top"><div class="hero" id="hero"></div><div class="kpis" id="tabs"></div></div>
   <div id="lista"></div></div></div>
 </div>
@@ -292,7 +304,9 @@ const num = n => Number(n||0).toLocaleString("es-AR",{maximumFractionDigits:0});
 function guardarF(){ try { localStorage.setItem("variantes_filtros", JSON.stringify(F)); } catch(e) {} }
 function abrirVariantes(ad){ soloAd = ad || null; filtro = "revisar"; $("#vvar").hidden = false; document.body.classList.add("modal"); pintar(); }
 function cerrarVariantes(){ $("#vvar").hidden = true; document.body.classList.remove("modal"); soloAd = null; pintar(); }
-document.addEventListener("keydown", e => { if(e.key==="Escape" && !$("#vvar").hidden) cerrarVariantes(); });
+document.addEventListener("keydown", e => { if(e.key==="Escape" && !$("#vit").hidden) { cerrarIterar(); return; } if(e.key==="Escape" && !$("#vvar").hidden) cerrarVariantes(); });
+$("#cerrarVit").addEventListener("click", cerrarIterar);
+$("#vit").addEventListener("click", e => { if(e.target.id==="vit") cerrarIterar(); });
 // Pestañas (Nacho 9/10): Ganadores → elegís · En proceso → lo que se está haciendo · Para aprobar · Aprobados
 // Dos partes (Nacho 10/10): 1 = variantes de B-roll, animados y estáticos · 2 = UGC y founder, todo lo de guiones
 const PARTES = [["p2","UGC · Founder · guiones variantes"],["p1","B-roll · Animado · Estático"]];   // foco: UGC y founder (Nacho 10/10)
@@ -585,7 +599,7 @@ function pintarSemana(){
   const conVar = {}, porRev = {};
   Object.values(items).filter(it=>it.estado!=="rechazado").forEach(it=>{ conVar[it.adId]=(conVar[it.adId]||0)+1; if(it.estado==="revisar") porRev[it.adId]=(porRev[it.adId]||0)+1; });
   $("#gsem").innerHTML = filas.map((x,i)=>tarjetaSemana(x,i,conVar[x.a.id]||0,porRev[x.a.id]||0)).join("");
-  document.querySelectorAll("#gsem .iterar").forEach(b=>b.onclick=()=>{ const c=document.querySelector(`[data-cuantas="${b.dataset.ad}"]`); c.classList.toggle("on"); });
+  document.querySelectorAll("#gsem .iterar").forEach(b=>b.onclick=()=>abrirIterar(b.dataset.m, b.dataset.ad, b.dataset.tipo, b.dataset.nombre));
   document.querySelectorAll("#gsem .iterar-b").forEach(b=>b.onclick=()=>{ document.querySelector(`[data-cuantasb="${b.dataset.ad}"]`).classList.toggle("on"); });
   document.querySelectorAll("#gsem .pedir-b").forEach(b=>b.onclick=async()=>{ try { await fb.updateDoc(fb.doc(fb.db,"variantes_semana",b.dataset.m), {[`pedidos.${b.dataset.ad}`]: {estado:"pedido", tipo:"broll", quien, n:+b.dataset.n, cuando:new Date().toISOString()}}); toast("Listo: los hooks salen en ~5 min en «Para aprobar»"); } catch(e){ toast("No se pudo: "+e.message); } });
   document.querySelectorAll("#gsem .iterar-g").forEach(b=>b.onclick=()=>{ document.querySelector(`[data-cuantasg="${b.dataset.ad}"]`).classList.toggle("on"); });
@@ -647,12 +661,30 @@ function botonIterar(x, nvar, nrev){
   if(F.vista==="ugcf") return botonGuiones(x);
   if(!x.tipo) return `<div class="acciones" style="grid-template-columns:1fr"><button class="btn" disabled>Viendo qué tipo de anuncio es…</button></div>`;
   const p = ((semana[x.m]||{}).pedidos||{})[x.a.id] || {};
-  const att = `data-m="${esc(x.m)}" data-ad="${esc(x.a.id)}"`;
+  const att = `data-m="${esc(x.m)}" data-ad="${esc(x.a.id)}" data-tipo="${esc(x.tipo||"")}" data-nombre="${esc(x.a.nombre||x.a.id)}"`;
+  if(p.tipo==="founder" && (p.estado==="pedido"||p.estado==="procesando")) return `<div class="acciones" style="grid-template-columns:1fr"><button class="btn dark" disabled>Guiones founder: ${p.estado==="pedido"?"hooks en cola":"escribiendo hooks…"}</button></div>`;
   if(p.estado==="pedido") return `<div class="acciones" style="grid-template-columns:1fr auto"><button class="btn dark" disabled>${p.n||4} en cola · salen en ~30 min</button><button class="btn no cancelar-it" ${att} title="Cancelar">✕</button></div>`;
   if(p.estado==="procesando") return `<div class="acciones" style="grid-template-columns:1fr"><button class="btn dark" disabled>Generando variantes…</button></div>`;
   const cuantas = `<div class="cuantas" data-cuantas="${esc(x.a.id)}"><span>¿Cuántas?</span>${[3,5,9].map(k=>`<button class="btn dark pedir" ${att} data-n="${k}">${k}</button>`).join("")}</div>`;
   if(nvar) return `<div class="acciones" style="grid-template-columns:1fr 1fr"><button class="btn ok ver-var" data-ad="${esc(x.a.id)}">${nrev?`${nrev} para revisar`:`Variantes (${nvar})`}</button><button class="btn iterar" ${att}>Iterar de nuevo</button></div>${cuantas}`;
   return `<div class="acciones" style="grid-template-columns:1fr"><button class="btn ok iterar" ${att}>Iterar este</button></div>${cuantas}`;
+}
+// Nacho 11/10: al tocar Iterar se elige: mismo formato (variantes) o guiones founder
+function abrirIterar(m, ad, tipo, nombre){
+  const v = $("#vit"); v.hidden = false; document.body.classList.add("modal");
+  $("#vitAd").textContent = nombre || ad;
+  $("#vitFmt").textContent = `Variantes ${({estatico:"de la imagen", animado:"del animado", broll:"del B-roll"})[tipo]||"del anuncio"}, en el mismo formato. Van a «Para aprobar» de esta parte.`;
+  const [nsF, nsG] = v.querySelectorAll(".ns");
+  nsF.innerHTML = [3,5,9].map(k=>`<button class="btn dark" data-k="${k}">${k}</button>`).join("");
+  nsG.innerHTML = [3,5,9].map(k=>`<button class="btn ok" data-k="${k}">${k} hooks</button>`).join("");
+  nsF.querySelectorAll("button").forEach(b=>b.onclick=()=>{ cerrarIterar(); pedirIterar(m, ad, "pedido", +b.dataset.k); });
+  nsG.querySelectorAll("button").forEach(b=>b.onclick=()=>{ cerrarIterar(); pedirFounder(m, ad, +b.dataset.k); });
+}
+function cerrarIterar(){ $("#vit").hidden = true; if($("#vvar").hidden) document.body.classList.remove("modal"); }
+async function pedirFounder(m, ad, n){
+  try { await fb.updateDoc(fb.doc(fb.db,"variantes_semana",m), {[`pedidos.${ad}`]: {estado:"pedido", tipo:"founder", quien, n, cuando:new Date().toISOString()}});
+    toast(`Listo: ${n} hooks founder en cola. Salen en ~30 min en «UGC · Founder › Hooks para aprobar»`);
+  } catch(e){ toast("No se pudo guardar: "+e.message); }
 }
 async function pedirIterar(m, ad, estado, n){
   try { await fb.updateDoc(fb.doc(fb.db,"variantes_semana",m), {[`pedidos.${ad}`]: {estado, quien, n:n||4, cuando:new Date().toISOString()}});
