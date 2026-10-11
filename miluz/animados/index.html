@@ -412,7 +412,7 @@ fetch("voc-extra.json").then(r => r.json()).then(x => {
 function planTexto(d, a){
   const f = d.formato || "otro";
   return [
-    `Ángulo: ${a.nombre || ""}`,
+    `Ángulo: ${a.nombre || ""}${a.enfoque ? " · sub-ángulo: " + a.enfoque : ""}`,
     a.frase ? `Palabras de la clienta: «${a.frase}»${a.cuantas ? ` (lo dicen ${a.cuantas} personas)` : ""}` : `Palabras de la clienta: `,
     ``,
     `Idea para Mi Luz: ${a.bajada !== undefined ? a.bajada : (d.bajada || "")}`,
@@ -429,7 +429,7 @@ function bloqueAng(d, a, on, propio){
   el.className = "ang" + (on ? " on" : "");
   el.dataset.nombre = a.nombre || "";
   el.innerHTML = `<label class="cab"><input type="checkbox" ${on ? "checked" : ""}><div>
-      ${propio ? `<input class="nom" placeholder="Nombre del ángulo (ej: me da vergüenza mostrar las manos)">` : `<b>${esc(a.nombre)}</b>`}
+      ${propio ? `<input class="nom" placeholder="Nombre del ángulo (ej: me da vergüenza mostrar las manos)">` : `<b>${esc(a.nombre)}</b>${a.enfoque ? ` <span class="fr">· ${esc(a.enfoque)}</span>` : ""}`}
       ${a.tag ? `<div><span class="tag2 ${a.validado === false ? "nuevo" : ""}">${esc(a.tag)}</span></div>` : ""}
       ${a.frase ? `<div class="fr">«${esc(a.frase)}»${a.cuantas ? ` · ${esc(a.cuantas)} personas` : ""}</div>` : ""}
     </div></label><textarea>${esc(propio ? planTexto(d, {nombre: "", bajada: ""}) : planTexto(d, a))}</textarea>`;
