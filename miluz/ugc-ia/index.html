@@ -1,0 +1,364 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#7A2335">
+<title>UGC con IA · Mi Luz</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',-apple-system,BlinkMacSystemFont,sans-serif}
+:root{--bg:#FAF7F4;--card:#FFFFFF;--soft:#F6F0EC;--line:#EFE6E1;--line2:#E0D2CB;--txt:#2A1F1F;--mut:#8A7B76;--mut2:#B7A8A2;
+  --acc:#7A2335;--acc-bg:#F6E3E6;--ok:#3F8F6B;--ok-bg:#E7F2EC;--warn:#A8742A;--warn-bg:#F7EEDD;--bad:#B5523A;--bad-bg:#F8E7DF;--r:20px}
+body{background:var(--bg);color:var(--txt);min-height:100vh;-webkit-font-smoothing:antialiased;font-size:14px;line-height:1.5}
+button,select,textarea{font:inherit;color:inherit}
+a{color:inherit}
+.wrap{max-width:1240px;margin:0 auto;padding:28px 22px 60px}
+@media (max-width:600px){.wrap{padding:20px 16px 60px}}
+header{margin-bottom:22px}
+h1{font-size:30px;font-weight:700;letter-spacing:-.03em;line-height:1.1}
+.sub{color:var(--mut);font-size:13px;margin-top:6px;max-width:78ch}
+.btn{display:inline-flex;align-items:center;justify-content:center;background:var(--card);color:var(--txt);border:1px solid var(--line);padding:10px 17px;border-radius:14px;font-weight:600;font-size:13px;cursor:pointer;min-height:42px;text-decoration:none}
+.btn:hover{border-color:var(--line2)}
+.btn.dark{background:var(--acc);color:#fff;border-color:var(--acc)}
+.btn.ok{background:var(--ok);color:#fff;border-color:var(--ok)}
+.btn.no{color:var(--bad)}
+.btn.sm{min-height:36px;padding:7px 10px;font-size:12.5px}
+.top{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,2fr);gap:11px;margin-bottom:18px}
+@media (max-width:900px){.top{grid-template-columns:minmax(0,1fr)}}
+.hero{border-radius:26px;padding:22px 24px;color:#fff;position:relative;overflow:hidden;background:linear-gradient(135deg,#9A3A4D 0%,#5E1A29 64%);display:flex;align-items:center;gap:20px;min-height:170px}
+.hero .blob{position:absolute;width:230px;height:230px;border-radius:50%;background:rgba(255,255,255,.06);right:-80px;bottom:-100px}
+.hero .big{position:relative;font-size:54px;font-weight:700;letter-spacing:-.04em;line-height:1;min-width:84px;text-align:center}
+.hero-msg{position:relative;min-width:0}
+.hero-msg .ey{font-size:10.5px;font-weight:600;letter-spacing:.13em;text-transform:uppercase;opacity:.6}
+.hero-msg h3{font-size:19px;font-weight:700;line-height:1.2;letter-spacing:-.025em;margin:6px 0 7px}
+.hero-msg p{font-size:12.5px;line-height:1.55;opacity:.85}
+.kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px}
+@media (max-width:700px){.kpis{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:14px 15px;min-height:84px;display:flex;flex-direction:column;cursor:pointer;text-align:left}
+.kpi:hover{border-color:var(--line2)}
+.kpi.on{border-color:var(--acc);box-shadow:0 0 0 1px var(--acc)}
+.kpi .l{font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--mut)}
+.kpi .v{font-size:28px;font-weight:700;letter-spacing:-.035em;margin-top:auto;padding-top:8px;line-height:1}
+.kpi.ok .v{color:var(--ok)} .kpi.alerta .v{color:var(--warn)} .kpi.toca .v{color:var(--acc)} .kpi.mal .v{color:var(--bad)}
+.barra{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between;margin-bottom:18px}
+.marcas{display:flex;gap:4px;background:var(--soft);border:1px solid var(--line);border-radius:16px;padding:4px;max-width:100%;overflow-x:auto}
+.mt{border:0;background:transparent;color:var(--mut);font-weight:600;font-size:13px;padding:8px 13px;border-radius:12px;cursor:pointer;white-space:nowrap}
+.mt.on{background:var(--card);color:var(--acc);box-shadow:0 1px 4px rgba(38,33,30,.08)}
+.mt small{font-weight:500;opacity:.7;margin-left:3px}
+select{border:1px solid var(--line);background:var(--card);border-radius:14px;padding:9px 13px;font-size:13px;font-weight:500;min-height:42px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,260px),1fr));gap:12px;align-items:start}
+.item{background:var(--card);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;display:flex;flex-direction:column}
+.item.fuera{opacity:.55}
+.chead{display:flex;align-items:center;gap:10px;padding:12px 14px 10px}
+.av{width:36px;height:36px;border-radius:50%;background:var(--acc-bg);color:var(--acc);display:grid;place-items:center;font-weight:700;font-size:15px;flex-shrink:0}
+.who{min-width:0;flex:1}
+.who b{display:block;font-size:14.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.who small{display:block;color:var(--mut);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vid{aspect-ratio:4/5;width:100%;overflow:hidden;background:#1d1916;position:relative;border-bottom:1px solid var(--line)}
+.vid video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#1d1916}
+.vid .tag{position:absolute;top:10px;left:10px;font-size:11px;font-weight:600;padding:4px 10px;border-radius:99px;background:rgba(38,33,30,.72);color:#fff}
+.vid .tag.r{left:auto;right:10px}
+.vid .tag.nueva{background:var(--acc)}
+.vid .tag.hecho{background:var(--ok)}
+.vid.final{border-bottom:3px solid var(--ok)}
+.cuerpo{padding:12px 14px 14px;display:flex;flex-direction:column;gap:8px;flex:1}
+.meta{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.pill{display:inline-block;font-size:11.5px;font-weight:500;padding:4px 11px;border-radius:99px;background:var(--soft);color:var(--mut);white-space:nowrap}
+.pill.a{background:var(--acc-bg);color:var(--acc)}
+.pill.v{background:var(--ok-bg);color:var(--ok)}
+.hook{font-size:14.5px;font-weight:600;letter-spacing:-.01em;line-height:1.35}
+.orig{font-size:12px;color:var(--mut);font-style:italic}
+.unas{background:var(--acc-bg);border-radius:14px;padding:10px 12px}
+.unas h4,h4{font-size:10.5px;font-weight:600;color:var(--mut);text-transform:uppercase;letter-spacing:.12em;margin-bottom:3px}
+.unas h4{color:var(--acc)}
+.txt{font-size:13px;line-height:1.5}
+.links{font-size:12px;color:var(--mut)}
+.links a{color:var(--txt);font-weight:500}
+.extra{display:none;flex-direction:column;gap:9px}
+.item.abierta .extra{display:flex}
+.acciones{display:flex;gap:8px;margin-top:auto;padding-top:2px}
+.acciones .btn{flex:1}
+.acciones .btn.chico{flex:0 0 auto}
+.acciones [data-acc="mas"]{flex:0 0 auto;border:0;background:none;color:var(--acc)}
+.aviso{font-size:12.5px;font-weight:500;border-radius:14px;padding:10px 12px}
+.aviso.w{background:var(--warn-bg);color:var(--warn)}
+.aviso.ok{background:var(--ok-bg);color:var(--ok)}
+.aviso.mal{background:var(--bad-bg);color:var(--bad)}
+details{background:var(--soft);border-radius:14px;padding:10px 12px}
+summary{cursor:pointer;font-weight:600;font-size:13px}
+.guion{width:100%;border-collapse:collapse;font-size:12px;margin-top:8px}
+.guion td{border-top:1px solid var(--line);padding:6px 6px;vertical-align:top}
+.guion td:first-child{white-space:nowrap;color:var(--acc);font-weight:600;font-size:10.5px;text-transform:uppercase;letter-spacing:.04em;width:1%}
+.cambio textarea{width:100%;border:1px solid var(--line);border-radius:14px;padding:10px 12px;font-size:13px;background:var(--soft);resize:vertical;margin-bottom:6px}
+.vacio{text-align:center;color:var(--mut);padding:60px 20px;background:var(--card);border:1px dashed var(--line2);border-radius:var(--r);grid-column:1/-1}
+#login{max-width:360px;margin:14vh auto;background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:28px}
+#login h1{font-size:23px}
+#login input{width:100%;margin:16px 0 10px;padding:12px 14px;border:1px solid var(--line);border-radius:14px;font-size:15px;background:var(--soft)}
+#login .btn{width:100%}
+.err{color:var(--bad);font-size:12.5px;min-height:18px}
+#modal{position:fixed;inset:0;background:rgba(42,31,31,.55);display:none;align-items:center;justify-content:center;padding:16px;z-index:20}
+#modal.on{display:flex}
+#modal .box{background:var(--card);border-radius:var(--r);max-width:540px;width:100%;max-height:92vh;overflow:auto;padding:20px;display:flex;flex-direction:column;gap:12px}
+#modal h2{font-size:19px;font-weight:700;letter-spacing:-.02em}
+#modal .ref{display:flex;gap:12px;align-items:flex-start}
+#modal .ref img{width:72px;height:90px;object-fit:cover;border-radius:12px;background:var(--soft);flex-shrink:0}
+#modal .ref p{font-size:12.5px;color:var(--mut)}
+.ang{border:1px solid var(--line);border-radius:16px;padding:12px;display:flex;gap:10px;align-items:flex-start;cursor:pointer}
+.ang.on{border-color:var(--acc);box-shadow:0 0 0 1px var(--acc)}
+.ang input{margin-top:4px;accent-color:var(--acc);width:17px;height:17px;flex-shrink:0}
+.ang b{font-size:14.5px}
+.ang span{display:inline-block;font-size:11px;font-weight:600;padding:2px 9px;border-radius:99px;background:var(--acc-bg);color:var(--acc);margin-top:3px}
+.ang span.nuevo{background:var(--warn-bg);color:var(--warn)}
+#modal textarea{width:100%;min-height:80px;border:1px solid var(--line);border-radius:14px;padding:10px 12px;font-size:13px;background:var(--soft);resize:vertical}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--txt);color:#fff;padding:11px 18px;border-radius:99px;font-size:13px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:30}
+.toast.on{opacity:1}
+</style>
+</head>
+<body>
+<div id="login">
+  <h1>UGC con IA · Mi Luz</h1>
+  <p class="sub">Videos UGC que funcionan en marcas top, clonados con una actriz hecha con IA.</p>
+  <input id="clave" type="password" placeholder="Clave" autocomplete="current-password">
+  <div class="err" id="gerr"></div>
+  <button class="btn dark" id="entrar">Entrar</button>
+</div>
+
+<div class="wrap" id="app" hidden>
+  <header>
+    <h1>UGC con IA</h1>
+    <p class="sub">Videos de creadoras hablando a cámara de las 20 marcas top, con 40 segundos o más y 30 días o más al aire. Tocá <b>Elegir</b> en los que te sirvan: se escribe el guion de Mi Luz con la misma estructura, una actriz hecha con IA (mujer de 45 a 64) lo graba con el Fénix real y te llega a <b>Revisar</b>. Al aprobarlo va a tu Drive y a la edición de crudos.</p>
+  </header>
+
+  <div class="top">
+    <div class="hero"><div class="blob"></div>
+      <div class="big" id="nHero">0</div>
+      <div class="hero-msg"><div class="ey" id="ey">Hoy</div><h3 id="heroT">Cargando…</h3><p id="heroP"></p></div>
+    </div>
+    <div class="kpis">
+      <button class="kpi on" data-v="elegir"><span class="l">Para elegir</span><span class="v" id="k1">–</span></button>
+      <button class="kpi alerta" data-v="curso"><span class="l">En curso</span><span class="v" id="k2">–</span></button>
+      <button class="kpi toca" data-v="revisar"><span class="l">Revisar</span><span class="v" id="k3">–</span></button>
+      <button class="kpi ok" data-v="listos"><span class="l">Listos</span><span class="v" id="k4">–</span></button>
+      <button class="kpi mal" data-v="descartadas"><span class="l">Descartados</span><span class="v" id="k5">–</span></button>
+    </div>
+  </div>
+
+  <div class="barra">
+    <div class="marcas" id="filtros"></div>
+    <select id="orden" aria-label="Ordenar">
+      <option value="nuevas">Nuevas primero</option>
+      <option value="dias">Más días al aire</option>
+      <option value="dup">Más duplicados</option>
+      <option value="marca">Marca con más anuncios</option>
+    </select>
+  </div>
+  <div class="grid" id="grid"></div>
+</div>
+
+<div id="modal" role="dialog" aria-modal="true" aria-labelledby="mT"><div class="box">
+  <h2 id="mT">¿Con qué ángulo lo hacemos?</h2>
+  <div class="ref"><img id="mImg" alt=""><div><b id="mMarca"></b><p id="mHook"></p></div></div>
+  <div id="angs"></div>
+  <div><h4>Algo que quieras pedir (opcional)</h4>
+    <textarea id="mNota" placeholder="Ej: que la actriz tenga unos 55 años y grabe en la cocina; que diga que trabaja en una oficina"></textarea></div>
+  <div class="acciones"><button class="btn" id="mNo">Cancelar</button><button class="btn dark" id="mSi">Clonar</button></div>
+</div></div>
+<div class="toast" id="toast"></div>
+
+<script type="module">
+const CLAVES = {"miluz-2026":"Luz","luz-2026":"Luz","cima-2026":"Nacho"};
+const ANG = {
+  crecen: {n:"Mis uñas no crecen", t:"Ganador de la cuenta"},
+  parten: {n:"Se me parten con cualquier cosa", t:"Validado"},
+  menopausia: {n:"La menopausia me cambió las uñas", t:"Nuevo · 74 clientas lo dicen", nuevo:true}};
+const GRUPO = {nueva:"elegir", elegida:"curso", clonando:"curso", cambiar:"curso", fallo:"curso", revisar:"revisar", aprobado:"listos", descartada:"descartadas"};
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+let quien = null, docs = [], vista = "elegir", marca = "", orden = "nuevas", fs = null, abierto = null;
+try { quien = sessionStorage.getItem("ugcia_quien"); vista = localStorage.getItem("ugcia_vista") || "elegir"; } catch (e) {}
+const toast = t => { const el = $("#toast"); el.textContent = t; el.classList.add("on"); setTimeout(() => el.classList.remove("on"), 2000); };
+
+$("#entrar").onclick = entrar;
+$("#clave").addEventListener("keydown", e => { if (e.key === "Enter") entrar(); });
+function entrar(){
+  const n = CLAVES[$("#clave").value.trim().toLowerCase()];
+  if (!n) { $("#gerr").textContent = "Clave incorrecta"; return; }
+  quien = n; try { sessionStorage.setItem("ugcia_quien", n); } catch (e) {}
+  arrancar();
+}
+if (quien) arrancar();
+
+async function arrancar(){
+  $("#login").hidden = true; $("#app").hidden = false;
+  marcarVista();
+  const [{initializeApp},{getFirestore,collection,doc,onSnapshot,updateDoc},{getAuth,signInAnonymously}] = await Promise.all([
+    import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js"),
+    import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js"),
+    import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js")]);
+  const app = initializeApp({apiKey:"AIzaSyCTv4DiRCpbCpGYP6E86TPHlkPvaAZTN3g",authDomain:"cleargy-creators.firebaseapp.com",projectId:"cleargy-creators",storageBucket:"cleargy-creators.firebasestorage.app",messagingSenderId:"313543582398",appId:"1:313543582398:web:99fe78991adeea2e7cb4ef"});
+  await signInAnonymously(getAuth(app));
+  const db = getFirestore(app);
+  fs = {db, doc, updateDoc};
+  onSnapshot(collection(db, "ugcia_luz"), snap => {
+    docs = snap.docs.map(d => ({id: d.id, ...d.data()})).filter(d => d.fecha);
+    pintar();
+  }, err => { $("#grid").innerHTML = `<div class="vacio">No se pudo cargar (${esc(err.code)}). Recargá la página.</div>`; });
+}
+
+function marcarVista(){ document.querySelectorAll(".kpi").forEach(b => b.classList.toggle("on", b.dataset.v === vista)); }
+document.querySelectorAll(".kpi").forEach(b => b.onclick = () => {
+  vista = b.dataset.v; try { localStorage.setItem("ugcia_vista", vista); } catch (e) {}
+  marcarVista(); pintar();
+});
+$("#orden").onchange = e => { orden = e.target.value; pintar(); };
+const fmtN = n => n >= 1000 ? (n/1000).toFixed(n >= 10000 ? 0 : 1).replace(".", ",") + " mil" : String(n ?? "–");
+const cuando = t => t ? new Date(t).toLocaleString("es-AR", {day:"numeric", month:"short", hour:"2-digit", minute:"2-digit"}) : "";
+
+function pintar(){
+  const g = k => docs.filter(d => GRUPO[d.estado] === k);
+  const n = {elegir: g("elegir"), curso: g("curso"), revisar: g("revisar"), listos: g("listos"), descartadas: g("descartadas")};
+  $("#k1").textContent = n.elegir.length; $("#k2").textContent = n.curso.length; $("#k3").textContent = n.revisar.length;
+  $("#k4").textContent = n.listos.length; $("#k5").textContent = n.descartadas.length;
+  const hoy = new Date().toISOString().slice(0, 10);
+  const nuevasHoy = n.elegir.filter(d => d.fecha === hoy).length;
+  $("#ey").textContent = new Date().toLocaleDateString("es-AR", {weekday:"long", day:"numeric", month:"long"});
+  if (n.revisar.length) { $("#nHero").textContent = n.revisar.length; $("#heroT").textContent = n.revisar.length === 1 ? "1 clon para revisar" : `${n.revisar.length} clones para revisar`;
+    $("#heroP").textContent = "Miralo, y aprobalo o pedí un cambio. Aprobado va a tu Drive y a la edición."; }
+  else { $("#nHero").textContent = n.elegir.length; $("#heroT").textContent = `${n.elegir.length} videos para elegir`;
+    $("#heroP").textContent = (nuevasHoy ? `${nuevasHoy} nuevos hoy. ` : "") + (n.curso.length ? `${n.curso.length} clonándose (cada uno tarda unos 20-40 minutos).` : "Todos los días se suman 20 nuevos."); }
+
+  let lista = n[vista];
+  const porMarca = {};
+  lista.forEach(d => porMarca[d.marca] = (porMarca[d.marca] || 0) + 1);
+  if (marca && !porMarca[marca]) marca = "";
+  $("#filtros").innerHTML = `<button class="mt ${marca ? "" : "on"}" data-m="">Todas<small>${lista.length}</small></button>` +
+    Object.keys(porMarca).sort().map(m => `<button class="mt ${m === marca ? "on" : ""}" data-m="${esc(m)}">${esc(m)}<small>${porMarca[m]}</small></button>`).join("");
+  $("#filtros").querySelectorAll(".mt").forEach(b => b.onclick = () => { marca = b.dataset.m; pintar(); });
+  if (marca) lista = lista.filter(d => d.marca === marca);
+  const k = {nuevas: d => d.creado || d.fecha || "", dias: d => d.dias || 0, dup: d => d.dup || 0, marca: d => d.marcaAds || 0}[orden];
+  const t = d => d.revisarEn || d.aprobadoEn || d.clonandoDesde || d.eligioEn || d.creado || "";
+  lista.sort((a, b) => vista !== "elegir" ? t(b).localeCompare(t(a))
+    : orden === "nuevas" ? (k(b).localeCompare(k(a)) || (a.orden || 0) - (b.orden || 0)) : k(b) - k(a));
+  if (!lista.length) {
+    $("#grid").innerHTML = `<div class="vacio">${{elegir:"No hay videos para elegir con este filtro.", curso:"No hay nada clonándose. Tocá <b>Elegir</b> en Para elegir.", revisar:"No hay clones para revisar.", listos:"Todavía no aprobaste ninguno.", descartadas:"No descartaste ninguno."}[vista]}</div>`;
+    return;
+  }
+  $("#grid").innerHTML = lista.map(tarjeta).join("");
+  $("#grid").querySelectorAll("[data-acc]").forEach(b => b.onclick = () => accion(b.dataset.id, b.dataset.acc));
+}
+
+function estado(d){
+  if (d.estado === "elegida") return `<div class="aviso w">${d.turno === "mañana" ? "En fila: se clona mañana (tope por día)" : "En fila para clonar"}</div>`;
+  if (d.estado === "clonando") return `<div class="aviso w">Clonando… ${esc(d.paso || "")}</div>`;
+  if (d.estado === "cambiar") return `<div class="aviso w">Haciendo el cambio: ${esc(d.cambioNota || "")}${d.paso ? " · " + esc(d.paso) : ""}</div>`;
+  if (d.estado === "fallo") return `<div class="aviso mal">No salió: ${esc(d.falloMotivo || "")}</div>`;
+  if (d.estado === "aprobado") return `<div class="aviso ok">${d.enDrive ? "✓ En tu Drive · " + esc(d.enDrive) : "✓ Aprobado · pasando a Drive…"}${d.editado ? " · editado ✓" : d.enDrive ? " · en la cola de edición" : ""}</div>`;
+  return "";
+}
+
+function guion(d){
+  if (!(d.guion || []).length) return "";
+  return `<details><summary>Guion de Mi Luz${d.actriz ? " · actriz: " + esc(d.actriz) : ""}</summary>
+    <table class="guion">${d.guion.map(l => `<tr><td>${esc(l.etapa)}</td><td>${esc(l.dice)}</td></tr>`).join("")}</table>
+    ${d.fundamento ? `<div class="links" style="margin-top:6px">Fundamento: ${esc(d.fundamento)}</div>` : ""}</details>`;
+}
+
+function tarjeta(d){
+  const clon = ["revisar","aprobado"].includes(d.estado) && d.final;
+  const ang = d.angulo || d.anguloSug;
+  const vivo = d.activo ? "sigue prendido" : "ya terminó";
+  let bot = "";
+  const mas = `<button class="btn sm" data-acc="mas" data-id="${esc(d.id)}">Más</button>`;
+  if (d.estado === "nueva") bot = `${mas}<button class="btn sm no" data-acc="descartar" data-id="${esc(d.id)}">Descartar</button><button class="btn sm dark" data-acc="elegir" data-id="${esc(d.id)}">Elegir</button>`;
+  else if (d.estado === "elegida") bot = `${mas}<button class="btn sm" data-acc="soltar" data-id="${esc(d.id)}">Cancelar</button>`;
+  else if (d.estado === "descartada") bot = `${mas}<button class="btn sm" data-acc="volver" data-id="${esc(d.id)}">Recuperar</button>`;
+  else if (d.estado === "fallo") bot = `${mas}<button class="btn sm" data-acc="reintentar" data-id="${esc(d.id)}">Reintentar</button>`;
+  else if (d.estado === "revisar") bot = `${mas}<button class="btn sm no chico" data-acc="descartarclon" data-id="${esc(d.id)}">Descartar</button><button class="btn sm" data-acc="cambiar" data-id="${esc(d.id)}">Pedir cambio</button><button class="btn sm dark" data-acc="aprobar" data-id="${esc(d.id)}">Aprobar</button>`;
+  else if (d.estado === "aprobado") bot = `${mas}${d.driveUrl ? `<a class="btn sm ok" href="${esc(d.driveUrl)}" target="_blank" rel="noopener">Ver en Drive</a>` : `<span class="btn sm">Pasando a Drive…</span>`}`;
+  else bot = mas;
+  const caja = d.estado === "revisar" ? `<div class="cambio" hidden><textarea rows="3" placeholder="¿Qué cambiamos? Ej: en el hook que diga 'se me doblan como papel'; que no muestre las uñas al final"></textarea><div class="acciones"><button class="btn sm" data-acc="nocambio" data-id="${esc(d.id)}">Cancelar</button><button class="btn sm dark" data-acc="enviarcambio" data-id="${esc(d.id)}">Enviar cambio</button></div></div>` : "";
+  const nueva = d.estado === "nueva" && d.fecha === new Date().toISOString().slice(0, 10);
+  return `<article class="item ${["descartada"].includes(d.estado) ? "fuera" : ""}" data-card="${esc(d.id)}">
+    <div class="chead"><div class="av">${esc((d.marca || "?").charAt(0).toUpperCase())}</div>
+      <div class="who"><b>${esc(d.marca)}${d.codigo && clon ? " → " + esc(d.codigo) : ""}</b><small>${esc(d.dias)} días al aire (${vivo}) · ${fmtN(d.marcaAds)} anuncios activos</small></div></div>
+    ${clon ? `<div class="vid final"><video src="${esc(d.final)}" preload="metadata" controls playsinline></video><span class="tag hecho">Clon · ${esc(d.duracionClon || "?")} s</span></div>`
+      : `<div class="vid"><video src="${esc(d.video)}" poster="${esc(d.thumb)}" preload="none" controls playsinline></video>
+      <span class="tag ${nueva ? "nueva" : ""}">${nueva ? "Nuevo · " : ""}${esc(d.duracion || "?")} s</span><span class="tag r">${esc(d.fuente || "")}</span></div>`}
+    <div class="cuerpo">
+      <div class="meta"><span class="pill">${esc(d.dup)} duplicados</span><span class="pill">${esc(d.dias)} días</span>${d.formato ? `<span class="pill">${esc(d.formato)}</span>` : ""}${d.estado !== "nueva" && ang && ANG[ang] ? `<span class="pill a">${esc(ANG[ang].n)}</span>` : ""}</div>
+      <div class="hook">«${esc(d.hook || "")}»</div>
+      ${d.hookTextual && d.idioma !== "es" ? `<div class="orig">${esc(d.hookTextual)}</div>` : ""}
+      <div class="unas"><h4>Cómo se baja a Mi Luz</h4><div class="txt">${esc(d.bajada || "")}</div></div>
+      ${estado(d)}
+      <div class="extra">
+        ${clon ? `<div class="vid" style="aspect-ratio:4/5"><video src="${esc(d.video)}" preload="none" controls playsinline></video><span class="tag">Referencia · ${esc(d.marca)}</span></div>` : ""}
+        ${d.idea ? `<div><h4>La idea</h4><div class="txt">${esc(d.idea)}</div></div>` : ""}
+        ${d.estructura ? `<div><h4>Estructura</h4><div class="txt">${esc(d.estructura)}</div></div>` : ""}
+        ${guion(d)}
+        ${d.hoja ? `<div class="links"><a href="${esc(d.hoja)}" target="_blank" rel="noopener">Ver los planos (original | clon)</a></div>` : ""}
+        <div class="links">${esc(d.marcaNombre || d.marca)} · ${esc(d.producto || "")} · desde ${esc(d.inicio || "?")}${d.pais ? " · " + esc(d.pais) : ""} · <a href="${esc(d.link)}" target="_blank" rel="noopener">ver anuncio</a></div>
+        ${d.nota ? `<div class="links">Pedido al elegir: ${esc(d.nota)}</div>` : ""}
+        ${d.costo ? `<div class="links">Costo del clon: USD ${esc(d.costo)}${d.minutos ? ` · ${esc(d.minutos)} min` : ""}${d.revisarEn ? " · " + cuando(d.revisarEn) : ""}</div>` : ""}
+      </div>
+      ${clon ? `<div class="acciones"><a class="btn sm" href="${esc(d.final)}" target="_blank" rel="noopener">Ver</a>
+        ${d.driveLink ? `<a class="btn sm" href="${esc(d.driveLink)}" target="_blank" rel="noopener">Drive</a>` : `<span class="btn sm" style="opacity:.5">Drive…</span>`}
+        ${d.editado && d.editado.link ? `<a class="btn sm ok" href="${esc(d.editado.link)}" target="_blank" rel="noopener">Editado</a>` : ""}</div>` : ""}
+      ${caja}
+      <div class="acciones">${bot}</div>
+    </div>
+  </article>`;
+}
+
+async function guardar(id, datos, msg){
+  try { await fs.updateDoc(fs.doc(fs.db, "ugcia_luz", id), datos); toast(msg); }
+  catch (e) { toast("No se pudo guardar: " + e.code); }
+}
+async function accion(id, acc){
+  const card = document.querySelector(`[data-card="${CSS.escape(id)}"]`);
+  if (acc === "mas") { card.classList.toggle("abierta"); card.querySelector('[data-acc="mas"]').textContent = card.classList.contains("abierta") ? "Menos" : "Más"; return; }
+  if (acc === "elegir") return abrir(id);
+  if (acc === "cambiar") { card.querySelector(".cambio").hidden = false; card.querySelector(".cambio textarea").focus(); return; }
+  if (acc === "nocambio") { card.querySelector(".cambio").hidden = true; return; }
+  const ahora = new Date().toISOString();
+  if (acc === "enviarcambio") {
+    const nota = card.querySelector(".cambio textarea").value.trim();
+    if (!nota) return toast("Escribí qué cambiamos");
+    return guardar(id, {estado: "cambiar", cambioNota: nota, cambioEn: ahora, cambio: quien}, "Enviado: se rehace con tu cambio");
+  }
+  if (acc === "aprobar") return guardar(id, {estado: "aprobado", aprobadoEn: ahora, aprobo: quien}, "Aprobado: va a tu Drive y a la edición");
+  if (acc === "descartarclon") return guardar(id, {estado: "descartada", descartoClon: true, descartadoEn: ahora}, "Clon descartado");
+  if (acc === "reintentar") return guardar(id, {estado: "elegida", falloMotivo: "", turno: ""}, "Se vuelve a intentar");
+  const est = {descartar: "descartada", volver: "nueva", soltar: "nueva"}[acc];
+  return guardar(id, {estado: est}, {descartar: "Descartado", volver: "Recuperado", soltar: "Cancelado"}[acc]);
+}
+
+function abrir(id){
+  const d = docs.find(x => x.id === id); if (!d) return;
+  abierto = id;
+  $("#mImg").src = d.thumb || "";
+  $("#mMarca").textContent = `${d.marca} · ${d.duracion} s · ${d.dias} días`;
+  $("#mHook").textContent = "«" + (d.hook || "") + "»";
+  const sug = d.anguloSug || "parten";
+  $("#angs").innerHTML = Object.entries(ANG).map(([k, a]) => `<label class="ang ${k === sug ? "on" : ""}"><input type="radio" name="ang" value="${k}" ${k === sug ? "checked" : ""}>
+    <div><b>${esc(a.n)}</b>${k === sug ? ' <small style="color:var(--mut)">· el que mejor calza</small>' : ""}<div><span class="${a.nuevo ? "nuevo" : ""}">${esc(a.t)}</span></div></div></label>`).join("");
+  $("#angs").querySelectorAll("input").forEach(i => i.onchange = () => $("#angs").querySelectorAll(".ang").forEach(l => l.classList.toggle("on", l.contains(i) && i.checked)));
+  $("#mNota").value = "";
+  $("#modal").classList.add("on");
+}
+const cerrar = () => { $("#modal").classList.remove("on"); abierto = null; };
+$("#mNo").onclick = cerrar;
+$("#modal").addEventListener("click", e => { if (e.target.id === "modal") cerrar(); });
+document.addEventListener("keydown", e => { if (e.key === "Escape" && abierto) cerrar(); });
+$("#mSi").onclick = async () => {
+  const ang = ($("#angs input:checked") || {}).value;
+  if (!ang) return toast("Elegí un ángulo");
+  const id = abierto; cerrar();
+  await guardar(id, {estado: "elegida", angulo: ang, nota: $("#mNota").value.trim(), eligio: quien, eligioEn: new Date().toISOString()}, "Elegido: se clona solo ✓");
+};
+</script>
+</body>
+</html>
