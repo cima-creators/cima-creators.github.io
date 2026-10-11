@@ -114,7 +114,7 @@ const $ = s => document.querySelector(s);
 const CLAVES = {"miluz-2026":"Luz","luz-2026":"Luz","cima-2026":"Nacho","vane-2026":"Vane","abril-2026":"Abril"};
 const URL_BASE = "https://cima-creators.github.io";
 let quien = null;
-const datos = {est: [], ani: [], edi: [], var: [], gan: [], sem: null};
+const datos = {est: [], ani: [], edi: [], var: [], gan: [], bro: [], sem: null};
 try { quien = CLAVES[localStorage.getItem("sistemas_miluz_clave") || ""] || null; } catch (e) {}
 function entrar() {
   const c = $("#clave").value.trim().toLowerCase(), n = CLAVES[c];
@@ -157,6 +157,7 @@ async function arrancar() {
   escuchar("ani", collection(db, "animados_luz"), d => t(d, "producidoEn", "aprobadoEn", "produciendoDesde", "listaEn", "eligioEn", "creado"));
   escuchar("edi", query(collection(db, "edicion_cola"), where("marca", "==", "miluz")), d => t(d, "actualizado", "creado"));
   escuchar("var", query(collection(db, "variantes_cola"), where("marca", "==", "miluz")), d => t(d, "actualizado", "creado"));
+  escuchar("bro", collection(db, "broll_luz"), d => t(d, "actualizado", "creado"));
   escuchar("gan", query(collection(db, "variantes_ganadores"), where("marca", "==", "miluz")), d => t(d, "procesado", "recibido") || d.fecha || "");
   onSnapshot(doc(db, "variantes_semana", "miluz"), x => { datos.sem = x.exists() ? x.data() : null; pintar(); }, e => console.warn("sem", e));
 }
@@ -168,7 +169,8 @@ function estado(ultimaVez, horas, apagado) {
 }
 
 function pintar() {
-  const {est, ani, edi, var: va, gan} = datos;
+  const {est, ani, edi, var: va, gan, bro} = datos;
+  const bt = (tipo, ...es) => bro.filter(d => d.tipo === tipo && es.includes(d.estado)).length;
   const sa = datos.sem && datos.sem.anuncios;
   const ganadores = Array.isArray(sa) ? sa.length : (sa && typeof sa === "object" ? Object.keys(sa).length : 0);
   const bots = [
@@ -184,9 +186,12 @@ function pintar() {
      que: "Edita los crudos de tus creadoras con el estilo de la marca: cortes, subtítulos, b-roll y música.",
      nums: [[edi.length, "crudos"], [cuenta(edi, "revisar"), "revisar", true], [cuenta(edi, "procesando", "corregir"), "en curso"], [cuenta(edi, "subido", "aprobado"), "listos"]],
      ult: ultimo(edi), horas: 30, apagado: edi.length ? "" : "Arranca cuando suban crudos"},
-    {ico: "🎙️", nom: "B-roll + voz en off", cuando: "Todos los días a las 7", url: "",
-     que: "Arma historias reales con las tomas de tus creadoras y una voz en off. Se entregan en tu Drive.",
-     nums: [["–", "historias"], ["–", "revisar"], ["–", "en curso"], ["–", "listos"]], ult: "", horas: 30, apagado: "Se entrega en tu Drive"},
+    {ico: "🎙️", nom: "B-roll + voz en off", cuando: "Todos los días a las 7", url: "/miluz/broll",
+     que: "Arma historias reales con las tomas de tus creadoras y una voz en off. Aprobás hooks, guiones y videos.",
+     nums: [[bt("hook", "propuesto") + bt("guion", "propuesto"), "elegir", true], [bt("video", "revisar"), "revisar", true],
+            [bt("guion", "aprobado", "armando", "corregir") + bt("video", "corregir") + bt("pedido", "pedido", "procesando"), "en curso"],
+            [bt("video", "subido", "aprobado"), "listos"]],
+     ult: ultimo(bro.filter(d => d.tipo !== "banco")), horas: 30},
     {ico: "🚀", nom: "Variantes de ganadores", cuando: "Lee tus ventas a la 1 am", url: "/variantes",
      que: "Cada noche lee lo que vendió en la semana (10+ ventas y ROAS 1,8+). Vos elegís cuál iterar y cuántas (3 · 5 · 9) y te llegan para aprobar.",
      nums: [[ganadores, "elegir", true], [cuenta(va, "revisar"), "revisar", true], [cuenta(va, "procesando", "corregir"), "en curso"], [cuenta(va, "subido", "aprobado"), "listas"]],
@@ -221,12 +226,13 @@ function pintar() {
   $("#k5").textContent = cuenta(ani, "producido", "aprobado");
   $("#k6").textContent = cuenta(va, "subido", "aprobado");
 
-  const NOM = {est: "Estáticos", ani: "Animados", edi: "Edición", var: "Variantes"};
+  const NOM = {est: "Estáticos", ani: "Animados", edi: "Edición", var: "Variantes", bro: "B-roll"};
   const ESTADO = {elegida: "elegida", generando: "generándose", revisar: "para revisar", lista: "lista", aprobada: "aprobada",
     aprobado: "aprobado", producido: "producido", produciendo: "produciéndose", procesando: "procesándose", subido: "subida",
-    fallo: "no salió", error: "error", modificar: "con cambio", cambiar: "con cambio", rechazado: "descartada"};
+    fallo: "no salió", error: "error", modificar: "con cambio", cambiar: "con cambio", rechazado: "descartada",
+    corregir: "con cambio", armando: "armándose", armado: "armado"};
   const evs = [];
-  for (const k of ["est", "ani", "edi", "var"]) for (const d of datos[k]) if (d._t && ESTADO[d.estado])
+  for (const k of ["est", "ani", "edi", "var", "bro"]) for (const d of datos[k]) if (d._t && ESTADO[d.estado] && d.tipo !== "banco")
     evs.push({t: d._t, bot: NOM[k], txt: d.codigo || d.adNombre || d.formato || d.marca || d._id, est: ESTADO[d.estado]});
   evs.sort((a, b) => a.t < b.t ? 1 : -1);
   $("#feed").innerHTML = evs.slice(0, 12).map(e => `<div class="ev"><span class="t">${cuando(e.t)}</span>
