@@ -297,9 +297,9 @@ document.addEventListener("keydown", e => { if(e.key==="Escape" && !$("#vvar").h
 // Dos partes (Nacho 10/10): 1 = variantes de B-roll, animados y estáticos · 2 = UGC y founder, todo lo de guiones
 const PARTES = [["p2","UGC · Founder · guiones variantes"],["p1","B-roll · Animado · Estático"]];   // foco: UGC y founder (Nacho 10/10)
 const VISTAS_P = {p1:[["semana","Ganadores"],["aprobar","Para aprobar"],["proceso","En proceso"],["aprobados","Aprobados"]],
-                  p2:[["ugcf","Ganadores"],["g_hooks","Hooks para aprobar"],["g_ugc","Guiones UGC"],["g_founder","Guiones Founder"],["g_aprobados","Aprobados"]]};
+                  p2:[["ugcf","Ganadores"],["g_hooks","Hooks para aprobar"],["g_ugc","Guiones UGC"],["g_founder","Guiones Founder"],["g_broll","Guiones B-roll"],["g_aprobados","Aprobados"]]};
 const VISTAS = [...VISTAS_P.p1, ...VISTAS_P.p2];
-const ES_GUION = it => (it.tipo==="hooks" && it.modo!=="broll") || it.tipo==="guion";   // los de B-roll viven en la parte 1
+const ES_GUION = it => it.tipo==="hooks" || it.tipo==="guion" || it.tipo==="guion_broll";   // Nacho 11/10: TODO guion (también los de B-roll) va en la parte de UGC · Founder
 const ESTADOS_VISTA = {proceso:["procesando","corregir"], aprobar:["revisar","error"], aprobados:["subido","aprobado"]};
 function pedidosEnCurso(){
   const out = [];
@@ -310,14 +310,14 @@ function pedidosEnCurso(){
 function pintar(){
   const vivos = Object.values(items).filter(it => it.estado!=="rechazado");
   const G = {g_hooks:it=>it.tipo==="hooks" && it.estado==="revisar", g_ugc:it=>it.tipo==="guion" && it.version_g!=="founder" && it.estado==="revisar",
-             g_founder:it=>it.tipo==="guion" && it.version_g==="founder" && it.estado==="revisar", g_aprobados:()=>false};
+             g_founder:it=>it.tipo==="guion" && it.version_g==="founder" && it.estado==="revisar", g_broll:it=>it.tipo==="guion_broll" && it.estado==="revisar", g_aprobados:()=>false};
   const cuenta = v => v==="proceso" ? vivos.filter(it=>!ES_GUION(it) && ESTADOS_VISTA.proceso.includes(it.estado)).length + pedidosEnCurso().filter(x=>x.p.tipo!=="guiones").length
                     : (v==="semana" || v==="ugcf") ? 0
                     : G[v] ? vivos.filter(G[v]).length + (v==="g_hooks" ? pedidosEnCurso().filter(x=>x.p.tipo==="guiones").length : 0)
                     : vivos.filter(it=>!ES_GUION(it) && ESTADOS_VISTA[v].includes(it.estado)).length;
   F.parte = F.parte || "p2";
   if(!VISTAS_P[F.parte].some(x=>x[0]===F.vista)) F.vista = VISTAS_P[F.parte][0][0];
-  const totalParte = p => VISTAS_P[p].reduce((t,[v])=> t + (["aprobar","g_hooks","g_ugc","g_founder"].includes(v) ? cuenta(v) : 0), 0);
+  const totalParte = p => VISTAS_P[p].reduce((t,[v])=> t + (["aprobar","g_hooks","g_ugc","g_founder","g_broll"].includes(v) ? cuenta(v) : 0), 0);
   $("#partes").innerHTML = PARTES.map(([p,t]) => { const n = totalParte(p); return `<button class="pt ${F.parte===p?"on":""}" data-parte="${p}">${t}${n?`<b>${n}</b>`:""}</button>`; }).join("");
   document.querySelectorAll("[data-parte]").forEach(b=>b.onclick=()=>{ F.parte=b.dataset.parte; F.vista=VISTAS_P[F.parte][0][0]; soloAd=null; guardarF(); pintar(); window.scrollTo(0,0); });
   $("#vistas").hidden = false;
@@ -411,7 +411,8 @@ function pintarGuiones(){
   const SUBS = [["hooks","Hooks para aprobar", ([,it])=>it.tipo==="hooks" && it.estado!=="subido"],
     ["ugc","Guiones UGC", ([,it])=>it.tipo==="guion" && it.version_g!=="founder" && !["subido","aprobado"].includes(it.estado)],
     ["founder","Guiones Founder", ([,it])=>it.tipo==="guion" && it.version_g==="founder" && !["subido","aprobado"].includes(it.estado)],
-    ["aprobados","Aprobados", ([,it])=>it.tipo==="guion" && ["subido","aprobado"].includes(it.estado)]];
+    ["broll","Guiones B-roll", ([,it])=>it.tipo==="guion_broll" && !["subido","aprobado"].includes(it.estado)],
+    ["aprobados","Aprobados", ([,it])=>(it.tipo==="guion" || it.tipo==="guion_broll") && ["subido","aprobado"].includes(it.estado)]];
   F.gsub = F.gsub || "hooks";
   const filtro_ = (SUBS.find(x=>x[0]===F.gsub)||SUBS[0])[2];
   const nombreAd = soloAd ? ((vivos[0]||[,{}])[1].adNombre || soloAd) : "";
@@ -420,10 +421,10 @@ function pintarGuiones(){
   document.querySelectorAll("[data-gsub]").forEach(b=>b.onclick=()=>{ F.gsub=b.dataset.gsub; guardarF(); pintar(); });
   $("#quitarAd") && ($("#quitarAd").onclick = () => { soloAd = null; pintar(); });
   const lista = vivos.filter(filtro_).sort((a,b)=>(b[1].actualizado||"").localeCompare(a[1].actualizado||""));
-  const vacio = {hooks:"No hay hooks esperando. Tocá «Guiones» en un winner y en ~30 min aparecen acá.", ugc:"No hay guiones UGC para revisar.", founder:"No hay guiones founder para revisar.", aprobados:"Todavía no aprobaste guiones."}[F.gsub];
+  const vacio = {hooks:"No hay hooks esperando. Tocá «Guiones» en un winner y en ~30 min aparecen acá.", ugc:"No hay guiones UGC para revisar.", founder:"No hay guiones founder para revisar.", broll:"No hay guiones de B-roll para revisar.", aprobados:"Todavía no aprobaste guiones."}[F.gsub];
   const cola_ = F.gsub==="hooks" ? pedidosEnCurso().filter(x=>x.p.tipo==="guiones" && (!soloAd || x.ad===soloAd)) : [];
   const enCola = cola_.length ? `<div class="grupo"><h2>En cola</h2><span class="pill">salen en ~5 min</span></div><div class="grilla">${cola_.map(x=>`<div class="item"><div class="cab"><div class="av">H</div><div class="t"><b>${esc(x.a.nombre||x.ad)}</b><small><i></i>${x.p.estado==="procesando"?"Escribiendo hooks…":"Hooks en cola"} · pidió ${esc(x.p.quien||"")}</small></div></div></div>`).join("")}</div>` : "";
-  $("#gest").innerHTML = enCola + (lista.length ? `<div class="grilla">${lista.map(([id,it]) => it.tipo==="hooks" ? tarjetaHooks(id,it) : tarjetaGuion(id,it)).join("")}</div>` : (enCola ? "" : `<div class="vacio">${vacio}</div>`));
+  $("#gest").innerHTML = enCola + (lista.length ? `<div class="grilla">${lista.map(([id,it]) => tarjeta(id,it)).join("")}</div>` : (enCola ? "" : `<div class="vacio">${vacio}</div>`));
   lista.forEach(([id,it]) => it.tipo==="hooks" ? conectarHooks(id) : conectar(id));
 }
 
