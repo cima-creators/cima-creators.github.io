@@ -423,8 +423,8 @@ function pintarGuiones(){
   if(document.querySelector("#gest .editor.on") || (document.activeElement && document.activeElement.closest("#gest input[type=text], #gest textarea, #gest input.texto"))){ pendiente = true; return; }
   const vivos = Object.entries(items).filter(([,it]) => ES_GUION(it) && it.estado!=="rechazado" && (!soloAd || it.adId===soloAd));
   const SUBS = [["hooks","Hooks para aprobar", ([,it])=>it.tipo==="hooks" && it.estado!=="subido"],
-    ["ugc","Guiones UGC", ([,it])=>it.tipo==="guion" && it.version_g!=="founder" && !["subido","aprobado"].includes(it.estado)],
-    ["founder","Guiones Founder", ([,it])=>it.tipo==="guion" && it.version_g==="founder" && !["subido","aprobado"].includes(it.estado)],
+    ["ugc","Guiones UGC", ([,it])=>it.tipo==="guion" && it.version_g!=="founder"],   // Nacho 11/10: todos, los aprobados también (abajo)
+    ["founder","Guiones Founder", ([,it])=>it.tipo==="guion" && it.version_g==="founder"],
     ["broll","Guiones B-roll", ([,it])=>it.tipo==="guion_broll" && !["subido","aprobado"].includes(it.estado)],
     ["aprobados","Aprobados", ([,it])=>(it.tipo==="guion" || it.tipo==="guion_broll") && ["subido","aprobado"].includes(it.estado)]];
   F.gsub = F.gsub || "hooks";
@@ -434,7 +434,8 @@ function pintarGuiones(){
     <span class="sub2" style="margin-left:8px">Aprobados van a Drive: «Mi Luz · Guiones Winners – UGC» / «– Founder»</span>`;
   document.querySelectorAll("[data-gsub]").forEach(b=>b.onclick=()=>{ F.gsub=b.dataset.gsub; guardarF(); pintar(); });
   $("#quitarAd") && ($("#quitarAd").onclick = () => { soloAd = null; pintar(); });
-  const lista = vivos.filter(filtro_).sort((a,b)=>(b[1].actualizado||"").localeCompare(a[1].actualizado||""));
+  const hecho_ = it => ["subido","aprobado"].includes(it.estado) ? 1 : 0;   // primero lo que falta revisar, después lo aprobado
+  const lista = vivos.filter(filtro_).sort((a,b)=> hecho_(a[1])-hecho_(b[1]) || (b[1].n||0)-(a[1].n||0) || (b[1].actualizado||"").localeCompare(a[1].actualizado||""));
   const vacio = {hooks:"No hay hooks esperando. Tocá «Guiones» en un winner y en ~30 min aparecen acá.", ugc:"No hay guiones UGC para revisar.", founder:"No hay guiones founder para revisar.", broll:"No hay guiones de B-roll para revisar.", aprobados:"Todavía no aprobaste guiones."}[F.gsub];
   const cola_ = F.gsub==="hooks" ? pedidosEnCurso().filter(x=>x.p.tipo==="guiones" && (!soloAd || x.ad===soloAd)) : [];
   const enCola = cola_.length ? `<div class="grupo"><h2>En cola</h2><span class="pill">salen en ~5 min</span></div><div class="grilla">${cola_.map(x=>`<div class="item"><div class="cab"><div class="av">H</div><div class="t"><b>${esc(x.a.nombre||x.ad)}</b><small><i></i>${x.p.estado==="procesando"?"Escribiendo hooks…":"Hooks en cola"} · pidió ${esc(x.p.quien||"")}</small></div></div></div>`).join("")}</div>` : "";
