@@ -667,7 +667,7 @@ function tarjetaGuionMd(id,it){
       ${it.driveLink?`<span class="links-cab"><a class="drive" href="${esc(it.driveLink)}" target="_blank" rel="noopener">Drive</a></span>`:""}</div>
     <div class="cuerpo">
       <div class="cambio-t">${esc(it.cambio||"")}</div>
-      <div class="dato"><b>Hook</b>"${esc(h.hook||it.texto||"")}"</div>
+      <div class="dato"><b>${(it.hooks||[]).length>1?`${it.hooks.length} hooks para testear (un solo cuerpo)`:"Hook"}</b>${(it.hooks&&it.hooks.length?it.hooks:[h]).map((x,i)=>`<div class="hk">${(it.hooks||[]).length>1?(i+1)+". ":""}"${esc(x.hook||it.texto||"")}"</div>`).join("")}</div>
       <div class="dato"><b>Ángulo del winner</b>${esc(it.angulo||"")} · hook original: "${esc(it.ganoCon||"")}"</div>
       ${refWinner(it)}
       <details><summary>Ver el guion completo</summary><div class="md">${mdHtml(it.guionMd)}</div><button class="btn copiar" style="margin-top:6px">Copiar guion</button></details>
