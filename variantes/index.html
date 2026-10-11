@@ -285,7 +285,7 @@ function cerrarVariantes(){ $("#vvar").hidden = true; document.body.classList.re
 document.addEventListener("keydown", e => { if(e.key==="Escape" && !$("#vvar").hidden) cerrarVariantes(); });
 // Pestañas (Nacho 9/10): Ganadores → elegís · En proceso → lo que se está haciendo · Para aprobar · Aprobados
 // Dos partes (Nacho 10/10): 1 = variantes de B-roll, animados y estáticos · 2 = UGC y founder, todo lo de guiones
-const PARTES = [["p1","Parte 1 · B-roll · Animado · Estático"],["p2","Parte 2 · UGC · Founder"]];
+const PARTES = [["p2","UGC · Founder · guiones variantes"],["p1","B-roll · Animado · Estático"]];   // foco: UGC y founder (Nacho 10/10)
 const VISTAS_P = {p1:[["semana","Ganadores"],["aprobar","Para aprobar"],["proceso","En proceso"],["aprobados","Aprobados"]],
                   p2:[["ugcf","Ganadores"],["g_hooks","Hooks para aprobar"],["g_ugc","Guiones UGC"],["g_founder","Guiones Founder"],["g_aprobados","Aprobados"]]};
 const VISTAS = [...VISTAS_P.p1, ...VISTAS_P.p2];
@@ -305,7 +305,7 @@ function pintar(){
                     : (v==="semana" || v==="ugcf") ? 0
                     : G[v] ? vivos.filter(G[v]).length + (v==="g_hooks" ? pedidosEnCurso().filter(x=>x.p.tipo==="guiones").length : 0)
                     : vivos.filter(it=>!ES_GUION(it) && ESTADOS_VISTA[v].includes(it.estado)).length;
-  F.parte = F.parte || (VISTAS_P.p2.some(x=>x[0]===F.vista) ? "p2" : "p1");
+  F.parte = F.parte || "p2";
   if(!VISTAS_P[F.parte].some(x=>x[0]===F.vista)) F.vista = VISTAS_P[F.parte][0][0];
   const totalParte = p => VISTAS_P[p].reduce((t,[v])=> t + (["aprobar","g_hooks","g_ugc","g_founder"].includes(v) ? cuenta(v) : 0), 0);
   $("#partes").innerHTML = PARTES.map(([p,t]) => { const n = totalParte(p); return `<button class="pt ${F.parte===p?"on":""}" data-parte="${p}">${t}${n?`<b>${n}</b>`:""}</button>`; }).join("");
@@ -540,7 +540,7 @@ function tarjetaSemana(x, i, nvar, nrev){
       <div class="barras" title="Ventas por día">${dias.map(d=>`<i class="${d.f>=w.desde?"en":""}" style="height:${Math.max(4,Math.round(d.c/max*100))}%" data-f="${d.f}" data-c="${d.c}" data-g="${d.g}" data-v="${d.v}" data-i="${d.i||0}" data-l="${d.l||0}" data-p="${d.p3||0}" data-mon="${esc(x.mon)}"></i>`).join("")}</div>
       <div class="sub2">Facturó ${num(w.v)} ${esc(x.mon)} · pasá el mouse por las barras para ver cada día</div>
       ${botonIterar(x, nvar, nrev)}
-      ${F.vista==="semana" ? botonGuiones(x, true) : ""}
+
     </div></div>`;
 }
 
