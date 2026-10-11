@@ -515,8 +515,10 @@ function pintarManual(){
       let archivoUrl = "";
       if(file){
         const {getStorage, ref, uploadBytes, getDownloadURL} = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js");
-        const r = ref(getStorage(fb.app), `animados_luz/luz/manual/${Date.now()}-${file.name.replace(/[^\w.-]/g,"_")}`);
-        await uploadBytes(r, file, {contentType: file.type}); archivoUrl = await getDownloadURL(r);
+        const r = ref(getStorage(fb.app), `animados_luz/luz/manual/manual-${Date.now()}-${file.name.replace(/[^\w.-]/g,"_")}`);
+        try { await uploadBytes(r, file, {contentType: file.type}); }
+        catch(e){ await new Promise(z=>setTimeout(z,1500)); await uploadBytes(r, file, {contentType: file.type}); }   // la sesión a veces tarda
+        archivoUrl = await getDownloadURL(r);
       }
       const origen = $("#mOrigen").value.trim() || nomMarca, otra = !origen.toLowerCase().includes("luz");
       const tipo = $("#mTipo").value;
