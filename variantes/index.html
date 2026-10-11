@@ -352,6 +352,15 @@ function refWinner(it){
 }
 function tarjetaHooks(id,it){
   const editable = it.estado==="revisar"; const m = it.metricas||{};
+  if(it.estado==="aprobado" || it.estado==="procesando"){
+    // ya los aprobó: tarjeta chica que dice qué se está escribiendo y dónde van a aparecer
+    const el = it.elegidos||[]; const nu = el.filter(e=>e.v==="ugc").length, nf = el.filter(e=>e.v==="founder").length;
+    const hk = e => ((e.v==="ugc"?it.hooksUgc:it.hooksFounder)||[])[e.i]||{};
+    const hechos = Object.values(items).filter(x=>x.origen===id && x.tipo==="guion").length;
+    return `<div class="item" id="it-${esc(id)}"><div class="cab"><div class="av">✓</div><div class="t"><b>Hooks aprobados · ${esc(it.adNombre||"")}</b>
+      <small><i class="ok"></i>${it.estado==="aprobado"?"En cola":"Escribiendo"} ${el.length} guiones (${nu} UGC + ${nf} founder) · van saliendo en «Guiones UGC» y «Guiones Founder»${hechos?` · ${hechos} listos`:""}</small></div></div>
+      <div class="cuerpo">${el.map(e=>`<div class="hk">${e.v==="ugc"?"UGC":"Founder"} · "${esc(hk(e).hook||"")}"</div>`).join("")}${it.masHooks?`<div class="sub2">+ ${esc(it.masHooks)} hooks nuevos en camino</div>`:""}${refWinner(it)}</div></div>`;
+  }
   const lista = (v, hs) => hs.map((x,i)=>`<label class="hkop"><input type="checkbox" data-v="${v}" data-i="${i}" ${editable?"":"disabled"}><span>"${esc(x.hook)}"<small>Placa: ${esc(x.placa||"")} · sale de: ${esc(x.referencia||"")}</small></span></label>`).join("");
   return `<div class="item guion" id="it-${esc(id)}">
     <div class="cab"><div class="av">H</div><div class="t"><b>Hooks · ${esc(it.adNombre||it.codigo||"")}</b><small><i class="${it.estado==="error"?"mal":""}"></i>${esc((ESTADOS.find(e=>e[0]===it.estado)||[,it.estado])[1])} · winner ${esc(it.origenTipo||"")} · ROAS ${Number(m.roas||0).toFixed(2)} · ${num(m.compras)} ventas</small></div>
