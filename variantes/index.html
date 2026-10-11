@@ -22,6 +22,11 @@ h1{font-size:30px;font-weight:700;letter-spacing:-.03em;line-height:1.1}
 .btn.ok{background:var(--ok);color:#fff;border-color:var(--ok)}
 .btn.no{color:var(--bad)}
 .btn:disabled{opacity:.45;cursor:default}
+.mtop{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
+.mform{gap:12px}
+.mgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}
+.mgrid label,.mnota{display:flex;flex-direction:column;gap:4px;font-size:11.5px;font-weight:600;color:var(--mut)}
+.mgrid input,.mgrid select{border:1px solid var(--line);border-radius:12px;padding:9px 11px;font-size:13px;background:var(--card);color:var(--txt);font-weight:400}
 .partes{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
 @media (max-width:600px){.partes{grid-template-columns:1fr}}
 .pt{border:1px solid var(--line);background:var(--card);color:var(--mut);font-weight:700;font-size:14px;padding:13px 16px;border-radius:16px;cursor:pointer;text-align:left}
@@ -219,7 +224,7 @@ body.modal{overflow:hidden}
   <div class="marcas" id="vistas"></div>
   <div class="marcas" id="marcas"></div>
   <div id="vest" hidden><div class="aplicados" id="estFiltro" style="margin-bottom:12px"></div><div id="gest"></div></div>
-  <div id="vsem" hidden><div class="filtros" id="filtros"></div><div class="resumen-sem" id="rsem"></div><div class="grilla" id="gsem"></div></div>
+  <div id="vsem" hidden><div id="manualBox"></div><div class="filtros" id="filtros"></div><div class="resumen-sem" id="rsem"></div><div class="grilla" id="gsem"></div></div>
   <div id="vvar" hidden><div class="panel"><button class="btn cerrar" id="cerrarVar">✕ Cerrar</button><h2 class="tt" id="ttVar">Variantes</h2><div class="top"><div class="hero" id="hero"></div><div class="kpis" id="tabs"></div></div>
   <div id="lista"></div></div></div>
 </div>
@@ -237,7 +242,7 @@ const $ = s => document.querySelector(s);
 const ESTADOS = [["revisar","Para revisar"],["procesando","Generándose"],["corregir","Corrigiéndose"],["subido","Aprobadas"],["rechazado","Descartadas"],["error","Con error"]];
 const TIPO = {estatico:"Estático", video:"Video", animado:"Animado"};
 let quien = null, items = {}, filtro = "revisar", fb = null, pendiente = false, semana = {};
-let soloAd = null;
+let soloAd = null, manuales = {}, formAbierto = false, mForzar = false;
 const F = {vista:"semana", per:7, roas:1.8, ventas:10, orden:"ventas", tipo:"todos"};
 const TIPOS_SEM = {ugc:"UGC", founder:"Founder", broll:"B-roll", animado:"Animado", estatico:"Estático"};
 // Nacho 9/10: solo se cargan e iteran estáticos, animados y B-roll. UGC y founder necesitan otra grabación: no van acá.
@@ -266,7 +271,11 @@ async function arrancar(){
   const app = initializeApp({apiKey:"AIzaSyCTv4DiRCpbCpGYP6E86TPHlkPvaAZTN3g",authDomain:"cleargy-creators.firebaseapp.com",projectId:"cleargy-creators",storageBucket:"cleargy-creators.firebasestorage.app",messagingSenderId:"313543582398",appId:"1:313543582398:web:99fe78991adeea2e7cb4ef"});
   await signInAnonymously(getAuth(app));
   const db = getFirestore(app);
-  fb = {db, doc, updateDoc, addDoc, collection};
+  fb = {db, doc, updateDoc, addDoc, collection, app};
+  onSnapshot(collection(db,"variantes_manual"), snap => {
+    snap.docChanges().forEach(c => { if(c.type==="removed" || (soloMarca && c.doc.data().marca!==soloMarca)) delete manuales[c.doc.id]; else manuales[c.doc.id] = c.doc.data(); });
+    pintar();
+  }, err => console.warn(err));
   onSnapshot(collection(db,"variantes_semana"), snap => {
     snap.docChanges().forEach(c => { if(c.type==="removed" || (soloMarca && c.doc.id!==soloMarca)) delete semana[c.doc.id]; else semana[c.doc.id] = c.doc.data(); });
     pintar();
@@ -463,7 +472,64 @@ function ventana(a, hasta){
   const g = sum("g"), c = sum("c"), v = sum("v"), i = sum("i"), l = sum("l"), p3 = sum("p3");
   return {g, c, v, i, l, p3, roas: g? v/g : 0, cpa: c? g/c : 0, ctr: i? l/i*100 : null, hook: (i && p3)? p3/i*100 : null, desde};
 }
+// ---------------- Cargar un anuncio a mano (Nacho 10/10): link o archivo, de la marca o de otra → variantes o guiones
+const TIPOS_MAN = [["estatico","Estático (imagen)"],["animado","Animado"],["broll","B-roll / voz en off"],["ugc","UGC (creadora)"],["founder","Founder"]];
+function accionDe(tipo, otra){ return (tipo==="ugc"||tipo==="founder"||(otra && tipo!=="estatico")) ? "guiones" : "variantes"; }
+function pintarManual(){
+  // con el formulario abierto no se repinta (si no, los datos en vivo le borran lo que está escribiendo)
+  if(formAbierto && document.querySelector("#manualBox .mform") && !mForzar) return;
+  mForzar = false;
+  const marca = soloMarca || Object.keys(semana)[0] || "miluz";
+  const nomMarca = "Mi Luz";
+  const lista = Object.entries(manuales).filter(([,m])=>m.marca===marca).sort((a,b)=>(b[1].creado||"").localeCompare(a[1].creado||"")).slice(0,6);
+  const estado = m => ({pedido:"En cola · ~5 min", procesando:"Trabajando…", hecho: m.accion==="guiones"?"Listo · en «Hooks para aprobar»":"Listo · en «Para aprobar»", error:"No salió: "+(m.error||""), cancelado:"Cancelado"})[m.estado]||m.estado;
+  const form = formAbierto ? `<div class="filtros mform">
+      <div class="dato"><b>Cargar un anuncio para sacarle variantes o guiones</b><span class="sub2">De ${nomMarca} o de otra marca. Si es de otra marca: una imagen se rehace con el packaging de ${nomMarca}; un video se adapta en guiones (no se usa su video).</span></div>
+      <div class="mgrid">
+        <label>Link del anuncio<input id="mLink" placeholder="Instagram, Facebook, TikTok o link directo a la imagen"></label>
+        <label>O subí el archivo<input id="mFile" type="file" accept="video/*,image/png,image/jpeg"></label>
+        <label>Tipo<select id="mTipo">${TIPOS_MAN.map(([v,t])=>`<option value="${v}">${t}</option>`).join("")}</select></label>
+        <label>¿De qué marca es?<input id="mOrigen" value="${nomMarca}"></label>
+        <label>Nombre (opcional)<input id="mNombre" placeholder="Ej. MLZ-P-F05-N2-12 o «el de la lata»"></label>
+        <label>ROAS (opcional)<input id="mRoas" inputmode="decimal" placeholder="3,4"></label>
+        <label>Ventas (opcional)<input id="mVentas" inputmode="numeric" placeholder="120"></label>
+        <label>¿Cuántas?<select id="mN"><option>3</option><option selected>5</option><option>9</option></select></label>
+      </div>
+      <label class="mnota">Nota (qué querés, qué ángulo, qué no)<textarea id="mNota" class="nota" rows="2"></textarea></label>
+      <div class="sub2" id="mQue"></div>
+      <div class="acciones" style="grid-template-columns:1fr auto"><button class="btn ok" id="mEnviar">Cargar y generar</button><button class="btn" id="mCerrar">Cancelar</button></div>
+    </div>` : "";
+  $("#manualBox").innerHTML = `<div class="mtop"><button class="btn dark" id="mAbrir">+ Cargar un anuncio</button>
+    ${lista.map(([id,m])=>`<span class="pill ${m.estado==="hecho"?"roas":""}" title="${esc(m.link||"")}">${esc(m.nombre||m.origen||"Anuncio")} · ${esc((TIPOS_MAN.find(x=>x[0]===m.tipo)||[,m.tipo])[1])} · ${esc(estado(m))}</span>`).join("")}</div>${form}`;
+  $("#mAbrir").onclick = () => { formAbierto = !formAbierto; mForzar = true; pintar(); };
+  if(!formAbierto) return;
+  const que = () => { const otra = $("#mOrigen").value.trim().toLowerCase() && !$("#mOrigen").value.trim().toLowerCase().includes("luz");
+    $("#mQue").textContent = accionDe($("#mTipo").value, otra)==="guiones" ? "→ Va a proponer hooks (UGC + founder) para aprobar y después escribe los guiones." : "→ Va a sacar variantes y te llegan a «Para aprobar»."; };
+  ["mTipo","mOrigen"].forEach(i=>$("#"+i).addEventListener("input",que)); que();
+  $("#mCerrar").onclick = () => { formAbierto = false; mForzar = true; pintar(); };
+  $("#mEnviar").onclick = async () => {
+    const link = $("#mLink").value.trim(), file = $("#mFile").files[0];
+    if(!link && !file){ toast("Pegá un link o subí el archivo"); return; }
+    const b = $("#mEnviar"); b.disabled = true; b.textContent = file ? "Subiendo el archivo…" : "Cargando…";
+    try {
+      let archivoUrl = "";
+      if(file){
+        const {getStorage, ref, uploadBytes, getDownloadURL} = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js");
+        const r = ref(getStorage(fb.app), `animados_luz/luz/manual/${Date.now()}-${file.name.replace(/[^\w.-]/g,"_")}`);
+        await uploadBytes(r, file, {contentType: file.type}); archivoUrl = await getDownloadURL(r);
+      }
+      const origen = $("#mOrigen").value.trim() || nomMarca, otra = !origen.toLowerCase().includes("luz");
+      const tipo = $("#mTipo").value;
+      await fb.addDoc(fb.collection(fb.db,"variantes_manual"), {marca, link, archivoUrl, tipo, origen, nombre:$("#mNombre").value.trim(),
+        roas:parseFloat(($("#mRoas").value||"0").replace(",","."))||0, ventas:parseInt($("#mVentas").value||"0")||0, nota:$("#mNota").value.trim(),
+        n:+$("#mN").value, accion:accionDe(tipo, otra), estado:"pedido", quien, creado:new Date().toISOString()});
+      formAbierto = false; mForzar = true; toast("Cargado: en ~5 min arranca"); pintar();
+    } catch(e){ toast("No se pudo cargar: "+e.message); b.disabled = false; b.textContent = "Cargar y generar"; }
+  };
+}
+
 function pintarSemana(){
+  pintarManual();
   const marcas = Object.keys(semana).sort();
   $("#marcas").innerHTML = marcas.length>1 ? ["todas",...marcas].map(m=>`<button class="mt ${m===marcaF?"on":""}" data-m="${m}">${m==="todas"?"Todas las marcas":esc(m)}</button>`).join("") : "";
   document.querySelectorAll("[data-m]").forEach(b=>b.onclick=()=>{marcaF=b.dataset.m; try{localStorage.setItem("variantes_marca",marcaF)}catch(e){} pintar();});
