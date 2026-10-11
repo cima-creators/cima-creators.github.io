@@ -75,7 +75,7 @@ h2{font-size:12px;font-weight:600;letter-spacing:.13em;text-transform:uppercase;
 </head>
 <body>
 <div id="login"><div class="lg">
-  <h1>Sistemas Mi Luz</h1><p class="sub">Tus 5 bots de CIMA en una pantalla</p>
+  <h1>Sistemas Mi Luz</h1><p class="sub">Tus 6 bots de CIMA en una pantalla</p>
   <input id="clave" type="password" placeholder="Clave" autocomplete="current-password">
   <button class="btn dark" style="width:100%" id="entrar">Entrar</button>
   <div class="err" id="err"></div>
@@ -102,7 +102,7 @@ h2{font-size:12px;font-weight:600;letter-spacing:.13em;text-transform:uppercase;
     </div>
   </div>
 
-  <h2>Tus 5 bots</h2>
+  <h2>Tus 6 bots</h2>
   <div class="bots" id="bots"></div>
 
   <h2>Lo último que pasó</h2>
@@ -196,6 +196,9 @@ function pintar() {
      que: "Cada noche lee lo que vendió en la semana (10+ ventas y ROAS 1,8+). Vos elegís cuál iterar y cuántas (3 · 5 · 9) y te llegan para aprobar.",
      nums: [[ganadores, "elegir", true], [cuenta(va, "revisar"), "revisar", true], [cuenta(va, "procesando", "corregir"), "en curso"], [cuenta(va, "subido", "aprobado"), "listas"]],
      ult: [ultimo(va), ultimo(gan), (datos.sem && datos.sem.recibido) || ""].sort().pop(), horas: 30},
+    {ico: "🤖", nom: "UGC con IA", cuando: "Cuando lo pedís", url: "",
+     que: "Clona un video que funciona (un ganador tuyo o un hook viral) con un actor hecho con IA: misma estructura, otra cara y otra voz.",
+     nums: [["–", "elegir"], ["–", "revisar"], ["–", "en curso"], ["–", "listos"]], ult: "", horas: 30, apagado: "Se lo pedís a CIMA"},
   ];
   $("#bots").innerHTML = bots.map(b => {
     const [cl, tx] = estado(b.ult, b.horas, b.apagado);
