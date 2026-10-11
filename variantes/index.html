@@ -299,7 +299,7 @@ const PARTES = [["p2","UGC · Founder · guiones variantes"],["p1","B-roll · An
 const VISTAS_P = {p1:[["semana","Ganadores"],["aprobar","Para aprobar"],["proceso","En proceso"],["aprobados","Aprobados"]],
                   p2:[["ugcf","Ganadores"],["g_hooks","Hooks para aprobar"],["g_ugc","Guiones UGC"],["g_founder","Guiones Founder"],["g_aprobados","Aprobados"]]};
 const VISTAS = [...VISTAS_P.p1, ...VISTAS_P.p2];
-const ES_GUION = it => it.tipo==="hooks" || it.tipo==="guion";
+const ES_GUION = it => (it.tipo==="hooks" && it.modo!=="broll") || it.tipo==="guion";   // los de B-roll viven en la parte 1
 const ESTADOS_VISTA = {proceso:["procesando","corregir"], aprobar:["revisar","error"], aprobados:["subido","aprobado"]};
 function pedidosEnCurso(){
   const out = [];
@@ -373,14 +373,14 @@ function tarjetaHooks(id,it){
   }
   const lista = (v, hs) => hs.map((x,i)=>`<label class="hkop"><input type="checkbox" data-v="${v}" data-i="${i}" ${editable?"":"disabled"}><span>"${esc(x.hook)}"${x.voc&&x.voc.cita?`<small class="voc">VOC: «${esc(x.voc.cita)}»${x.voc.cantidad?` · <b>${esc(x.voc.cantidad)} citas</b>`:""}${x.voc.dolor?` · ${esc(x.voc.dolor)}`:""}</small>`:""}<small>Placa: ${esc(x.placa||"")} · sale de: ${esc(x.referencia||"")}</small></span></label>`).join("");
   return `<div class="item guion" id="it-${esc(id)}">
-    <div class="cab"><div class="av">H</div><div class="t"><b>Hooks · ${esc(it.adNombre||it.codigo||"")}</b><small><i class="${it.estado==="error"?"mal":""}"></i>${esc((ESTADOS.find(e=>e[0]===it.estado)||[,it.estado])[1])} · winner ${esc(it.origenTipo||"")} · ROAS ${Number(m.roas||0).toFixed(2)} · ${num(m.compras)} ventas</small></div>
+    <div class="cab"><div class="av">H</div><div class="t"><b>${it.modo==="broll"?"B-roll · hooks":"Hooks"} · ${esc(it.adNombre||it.codigo||"")}</b><small><i class="${it.estado==="error"?"mal":""}"></i>${esc((ESTADOS.find(e=>e[0]===it.estado)||[,it.estado])[1])} · winner ${esc(it.origenTipo||"")} · ROAS ${Number(m.roas||0).toFixed(2)} · ${num(m.compras)} ventas</small></div>
       ${it.permalink?`<span class="links-cab"><a href="${esc(it.permalink.startsWith("/")?"https://www.facebook.com"+it.permalink:it.permalink)}" target="_blank" rel="noopener" title="Ver el winner">↗</a></span>`:""}</div>
     <div class="cuerpo">
       <div class="dato"><b>Cómo era el hook del winner</b>"${esc(it.ganoCon||"")}"</div>
       <div class="dato"><b>Ángulo</b>${esc(it.angulo||"")}${it.creencia?`<br><span class="sub2">${esc(it.creencia)}</span>`:""}</div>
       ${refWinner(it)}
-      <div class="dato"><b>Hooks · versión UGC (creadora, primera persona)</b>${lista("ugc", it.hooksUgc||[])}</div>
-      <div class="dato"><b>Hooks · versión Founder (Luz)</b>${lista("founder", it.hooksFounder||[])}</div>
+      <div class="dato"><b>${it.modo==="broll"?"Hooks para la voz en off (B-roll, creadora en primera persona)":"Hooks · versión UGC (creadora, primera persona)"}</b>${lista("ugc", it.hooksUgc||[])}</div>
+      ${it.modo==="broll"?"":`<div class="dato"><b>Hooks · versión Founder (Luz)</b>${lista("founder", it.hooksFounder||[])}</div>`}
       ${it.error?`<div class="err">${esc(it.error)}</div>`:""}
       ${editable?`<textarea class="nota" rows="2" placeholder="Si ninguno sirve: qué cambiar para pedir otros hooks"></textarea>
       <div class="acciones" style="grid-template-columns:1fr 1fr"><button class="btn ok escribir" disabled>Escribir los guiones marcados</button><button class="btn dark escribir-mas" disabled>Escribir los marcados + 3 nuevos</button></div>
@@ -458,7 +458,7 @@ function pintarEstado(v){
   if(grupo) html += "</div>";
   const vacio = {proceso:"No hay nada haciéndose. Tocá Iterar en un ganador y aparece acá.", aprobar:"No hay variantes esperando tu OK.", aprobados:"Todavía no aprobaste ninguna. Lo aprobado también queda en Drive, en «Mi Luz · Variantes»."}[v];
   $("#gest").innerHTML = html || `<div class="vacio">${vacio}</div>`;
-  lista.forEach(([id]) => conectar(id));
+  lista.forEach(([id,it]) => it.tipo==="hooks" ? conectarHooks(id) : conectar(id));
   document.querySelectorAll("#gest .cancelar-it").forEach(b=>b.onclick=()=>pedirIterar(b.dataset.m, b.dataset.ad, "cancelado"));
 }
 
@@ -474,7 +474,8 @@ function ventana(a, hasta){
 }
 // ---------------- Cargar un anuncio a mano (Nacho 10/10): link o archivo, de la marca o de otra → variantes o guiones
 const TIPOS_MAN = [["estatico","Estático (imagen)"],["animado","Animado"],["broll","B-roll / voz en off"],["ugc","UGC (creadora)"],["founder","Founder"]];
-function accionDe(tipo, otra){ return (tipo==="ugc"||tipo==="founder"||(otra && tipo!=="estatico")) ? "guiones" : "variantes"; }
+function accionDe(tipo, otra){ return tipo==="broll" ? "broll" : (tipo==="ugc"||tipo==="founder"||(otra && tipo!=="estatico")) ? "guiones" : "variantes"; }
+const CREADORAS_BROLL = [["majo","Majo"],["nikol","Nikol"],["vane","Vane"],["luz","Luz"],["juli","Juli"]];
 function pintarManual(){
   // con el formulario abierto no se repinta (si no, los datos en vivo le borran lo que está escribiendo)
   if(formAbierto && document.querySelector("#manualBox .mform") && !mForzar) return;
@@ -482,7 +483,7 @@ function pintarManual(){
   const marca = soloMarca || Object.keys(semana)[0] || "miluz";
   const nomMarca = "Mi Luz";
   const lista = Object.entries(manuales).filter(([,m])=>m.marca===marca).sort((a,b)=>(b[1].creado||"").localeCompare(a[1].creado||"")).slice(0,6);
-  const estado = m => ({pedido:"En cola · ~5 min", procesando:"Trabajando…", hecho: m.accion==="guiones"?"Listo · en «Hooks para aprobar»":"Listo · en «Para aprobar»", error:"No salió: "+(m.error||""), cancelado:"Cancelado"})[m.estado]||m.estado;
+  const estado = m => ({pedido:"En cola · ~5 min", procesando:"Trabajando…", hecho: m.accion==="guiones"?"Listo · en «Hooks para aprobar»":"Listo · en «Para aprobar» (parte B-roll)", error:"No salió: "+(m.error||""), cancelado:"Cancelado"})[m.estado]||m.estado;
   const form = formAbierto ? `<div class="filtros mform">
       <div class="dato"><b>Cargar un anuncio para sacarle variantes o guiones</b><span class="sub2">De ${nomMarca} o de otra marca. Si es de otra marca: una imagen se rehace con el packaging de ${nomMarca}; un video se adapta en guiones (no se usa su video).</span></div>
       <div class="mgrid">
@@ -494,6 +495,7 @@ function pintarManual(){
         <label>ROAS (opcional)<input id="mRoas" inputmode="decimal" placeholder="3,4"></label>
         <label>Ventas (opcional)<input id="mVentas" inputmode="numeric" placeholder="120"></label>
         <label>¿Cuántas?<select id="mN"><option>3</option><option selected>5</option><option>9</option></select></label>
+        <label id="mCreadoraL">Creadora (tomas para el B-roll)<select id="mCreadora">${CREADORAS_BROLL.map(([v,t])=>`<option value="${v}">${t}</option>`).join("")}</select></label>
       </div>
       <label class="mnota">Nota (qué querés, qué ángulo, qué no)<textarea id="mNota" class="nota" rows="2"></textarea></label>
       <div class="sub2" id="mQue"></div>
@@ -504,7 +506,8 @@ function pintarManual(){
   $("#mAbrir").onclick = () => { formAbierto = !formAbierto; mForzar = true; pintar(); };
   if(!formAbierto) return;
   const que = () => { const otra = $("#mOrigen").value.trim().toLowerCase() && !$("#mOrigen").value.trim().toLowerCase().includes("luz");
-    $("#mQue").textContent = accionDe($("#mTipo").value, otra)==="guiones" ? "→ Va a proponer hooks (UGC + founder) para aprobar y después escribe los guiones." : "→ Va a sacar variantes y te llegan a «Para aprobar»."; };
+    const ac = accionDe($("#mTipo").value, otra); $("#mCreadoraL").style.display = ac==="broll" ? "" : "none";
+    $("#mQue").textContent = ac==="broll" ? "→ Propone hooks para la voz en off; con tu OK escribe el guion nuevo; con tu OK arma el video con las tomas de la creadora." : ac==="guiones" ? "→ Va a proponer hooks (UGC + founder) para aprobar y después escribe los guiones." : "→ Va a sacar variantes y te llegan a «Para aprobar»."; };
   ["mTipo","mOrigen"].forEach(i=>$("#"+i).addEventListener("input",que)); que();
   $("#mCerrar").onclick = () => { formAbierto = false; mForzar = true; pintar(); };
   $("#mEnviar").onclick = async () => {
@@ -524,7 +527,7 @@ function pintarManual(){
       const tipo = $("#mTipo").value;
       await fb.addDoc(fb.collection(fb.db,"variantes_manual"), {marca, link, archivoUrl, tipo, origen, nombre:$("#mNombre").value.trim(),
         roas:parseFloat(($("#mRoas").value||"0").replace(",","."))||0, ventas:parseInt($("#mVentas").value||"0")||0, nota:$("#mNota").value.trim(),
-        n:+$("#mN").value, accion:accionDe(tipo, otra), estado:"pedido", quien, creado:new Date().toISOString()});
+        n:+$("#mN").value, accion:accionDe(tipo, otra), creadora: $("#mCreadora").value, estado:"pedido", quien, creado:new Date().toISOString()});
       formAbierto = false; mForzar = true; toast("Cargado: en ~5 min arranca"); pintar();
     } catch(e){ toast("No se pudo cargar: "+e.message); b.disabled = false; b.textContent = "Cargar y generar"; }
   };
@@ -582,6 +585,8 @@ function pintarSemana(){
   Object.values(items).filter(it=>it.estado!=="rechazado").forEach(it=>{ conVar[it.adId]=(conVar[it.adId]||0)+1; if(it.estado==="revisar") porRev[it.adId]=(porRev[it.adId]||0)+1; });
   $("#gsem").innerHTML = filas.map((x,i)=>tarjetaSemana(x,i,conVar[x.a.id]||0,porRev[x.a.id]||0)).join("");
   document.querySelectorAll("#gsem .iterar").forEach(b=>b.onclick=()=>{ const c=document.querySelector(`[data-cuantas="${b.dataset.ad}"]`); c.classList.toggle("on"); });
+  document.querySelectorAll("#gsem .iterar-b").forEach(b=>b.onclick=()=>{ document.querySelector(`[data-cuantasb="${b.dataset.ad}"]`).classList.toggle("on"); });
+  document.querySelectorAll("#gsem .pedir-b").forEach(b=>b.onclick=async()=>{ try { await fb.updateDoc(fb.doc(fb.db,"variantes_semana",b.dataset.m), {[`pedidos.${b.dataset.ad}`]: {estado:"pedido", tipo:"broll", quien, n:+b.dataset.n, cuando:new Date().toISOString()}}); toast("Listo: los hooks salen en ~5 min en «Para aprobar»"); } catch(e){ toast("No se pudo: "+e.message); } });
   document.querySelectorAll("#gsem .iterar-g").forEach(b=>b.onclick=()=>{ document.querySelector(`[data-cuantasg="${b.dataset.ad}"]`).classList.toggle("on"); });
   document.querySelectorAll("#gsem .ver-g").forEach(b=>b.onclick=()=>irA("g_hooks", b.dataset.ad));
   document.querySelectorAll("#gsem .pedir-g").forEach(b=>b.onclick=()=>pedirGuiones(b.dataset.m, b.dataset.ad, +b.dataset.n));
@@ -609,10 +614,18 @@ function tarjetaSemana(x, i, nvar, nrev){
       <div class="barras" title="Ventas por día">${dias.map(d=>`<i class="${d.f>=w.desde?"en":""}" style="height:${Math.max(4,Math.round(d.c/max*100))}%" data-f="${d.f}" data-c="${d.c}" data-g="${d.g}" data-v="${d.v}" data-i="${d.i||0}" data-l="${d.l||0}" data-p="${d.p3||0}" data-mon="${esc(x.mon)}"></i>`).join("")}</div>
       <div class="sub2">Facturó ${num(w.v)} ${esc(x.mon)} · pasá el mouse por las barras para ver cada día</div>
       ${botonIterar(x, nvar, nrev)}
+      ${F.vista==="semana" && x.tipo==="broll" ? botonBroll(x) : ""}
 
     </div></div>`;
 }
 
+function botonBroll(x){
+  const p = ((semana[x.m]||{}).pedidos||{})[x.a.id] || {};
+  const att = `data-m="${esc(x.m)}" data-ad="${esc(x.a.id)}"`;
+  if(p.tipo==="broll" && (p.estado==="pedido"||p.estado==="procesando")) return `<div class="acciones" style="grid-template-columns:1fr"><button class="btn dark" disabled>Guion nuevo: ${p.estado==="pedido"?"en cola":"escribiendo hooks…"}</button></div>`;
+  return `<div class="acciones" style="grid-template-columns:1fr"><button class="btn iterar-b" ${att}>Guion nuevo + video</button></div>
+    <div class="cuantas" data-cuantasb="${esc(x.a.id)}"><span>¿Cuántos hooks?</span>${[3,5].map(k=>`<button class="btn dark pedir-b" ${att} data-n="${k}">${k}</button>`).join("")}</div>`;
+}
 function botonGuiones(x, chico){
   const p = ((semana[x.m]||{}).pedidos||{})[x.a.id] || {};
   const att = `data-m="${esc(x.m)}" data-ad="${esc(x.a.id)}"`;
@@ -750,7 +763,28 @@ function tarjetaGuionMd(id,it){
       ${it.estado==="error"?`<div class="acciones" style="grid-template-columns:1fr"><button class="btn reintentar">Volver a intentar</button></div>`:""}
     </div></div>`;
 }
+function tarjetaGuionBroll(id,it){
+  const editable = it.estado==="revisar"; const h = it.hook||{};
+  return `<div class="item guion" id="it-${esc(id)}">
+    <div class="cab"><div class="av">B${esc(it.n)}</div><div class="t"><b>${esc(it.codigo||"Guion B-roll")}${it.version>1?` · v${esc(it.version)}`:""}</b>
+      <small><i class="${it.estado==="error"?"mal":""}"></i>${it.estado==="procesando"?"Armando el video…":esc((ESTADOS.find(e=>e[0]===it.estado)||[,it.estado])[1])} · guion de voz en off · creadora ${esc(it.creadora||"")} · ${esc(it.palabras||"")} palabras</small></div></div>
+    <div class="cuerpo">
+      <div class="cambio-t">${esc(it.cambio||"")}</div>
+      <div class="dato"><b>Hook</b>"${esc(h.hook||it.texto||"")}"${h.voc&&h.voc.cita?`<small class="sub2"> · VOC: «${esc(h.voc.cita)}» (${esc(h.voc.cantidad||"")} citas)</small>`:""}</div>
+      <details open><summary>Guion de voz en off</summary><table class="tg"><tr><th>Etapa</th><th>Voz en off</th><th>Toma</th><th>Placa</th></tr>
+        ${(it.filas||[]).map(f=>`<tr><td>${esc(f.etapa)}</td><td>${esc(f.texto)}</td><td>${esc(f.broll)}</td><td>${esc(f.placa||"")}</td></tr>`).join("")}</table></details>
+      ${(it.cambios||[]).length?`<details><summary>Qué cambió contra el winner</summary><ul class="iv">${it.cambios.map(c=>`<li>${esc(c)}</li>`).join("")}</ul></details>`:""}
+      ${refWinner(it)}
+      ${it.error?`<div class="err">${esc(it.error)}</div>`:""}
+      ${editable?`<div class="editor"><input class="texto" value="${esc(h.hook||it.texto||"")}" data-orig="${esc(h.hook||it.texto||"")}" title="Hook">
+        <textarea class="nota" rows="2" placeholder="Qué cambiar del guion"></textarea><button class="btn dark corregir" disabled>Mandar corrección</button></div>
+      <div class="acciones"><button class="btn ok aprobar">Aprobar y armar el video</button><button class="btn abrir-ed">Corregir</button><button class="btn no rechazar" title="Descartar">✕</button></div>`:""}
+      ${it.estado==="error"?`<div class="acciones" style="grid-template-columns:1fr"><button class="btn reintentar">Volver a intentar</button></div>`:""}
+    </div></div>`;
+}
 function tarjeta(id,it){
+  if(it.tipo==="hooks") return tarjetaHooks(id,it);
+  if(it.tipo==="guion_broll") return tarjetaGuionBroll(id,it);
   if(it.tipo==="guion") return tarjetaGuion(id,it);
   const esImg = /\.(png|jpe?g|webp)$/i.test(it.archivo||"") || it.tipo==="estatico";
   const editable = it.estado==="revisar";
