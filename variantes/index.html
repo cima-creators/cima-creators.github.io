@@ -22,6 +22,11 @@ h1{font-size:30px;font-weight:700;letter-spacing:-.03em;line-height:1.1}
 .btn.ok{background:var(--ok);color:#fff;border-color:var(--ok)}
 .btn.no{color:var(--bad)}
 .btn:disabled{opacity:.45;cursor:default}
+.partes{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+@media (max-width:600px){.partes{grid-template-columns:1fr}}
+.pt{border:1px solid var(--line);background:var(--card);color:var(--mut);font-weight:700;font-size:14px;padding:13px 16px;border-radius:16px;cursor:pointer;text-align:left}
+.pt.on{background:var(--acc);border-color:var(--acc);color:#fff}
+.pt b{display:inline-block;margin-left:8px;min-width:22px;padding:0 7px;border-radius:99px;background:var(--acc-bg);color:var(--acc);font-size:11.5px;text-align:center}
 .marcas{display:flex;gap:4px;background:var(--soft);border:1px solid var(--line);border-radius:16px;padding:4px;width:max-content;max-width:100%;overflow-x:auto;margin-bottom:18px}
 .mt{border:0;background:transparent;color:var(--mut);font-weight:600;font-size:13px;padding:8px 16px;border-radius:12px;cursor:pointer;white-space:nowrap}
 .mt.on{background:var(--card);color:var(--txt);box-shadow:0 1px 4px rgba(38,33,30,.08)}
@@ -116,6 +121,7 @@ h3{margin:4px 0 8px;font-size:10.5px;font-weight:600;color:var(--mut);text-trans
 .item.guion .cuerpo{gap:10px}
 .hkop{display:flex;gap:8px;align-items:flex-start;margin-top:6px;font-size:13px;font-weight:600;cursor:pointer}
 .hkop input{margin-top:3px;accent-color:var(--acc)} .hkop small{display:block;font-weight:400;color:var(--mut);font-size:11.5px}
+.ref summary{color:var(--acc)} .refvid{display:block;width:100%;max-width:260px;aspect-ratio:9/16;background:#1d1916;border-radius:12px;margin-top:8px;object-fit:contain}
 .transc{max-height:260px;overflow:auto;font-size:12.5px;background:var(--soft);border-radius:12px;padding:8px 10px;margin-top:6px}
 .transc p{margin:3px 0} .md h4{font-size:14px;margin:8px 0 4px} .md h5{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--mut);margin:10px 0 4px}
 .md p{font-size:12.5px;margin:2px 0}
@@ -208,6 +214,7 @@ body.modal{overflow:hidden}
     <div><h1>Variantes de ganadores</h1><div class="sub" id="resumen">Cargando…</div></div>
     <button class="btn" id="salir">Salir</button>
   </header>
+  <div class="partes" id="partes"></div>
   <div class="marcas" id="vistas"></div>
   <div class="marcas" id="marcas"></div>
   <div id="vest" hidden><div class="aplicados" id="estFiltro" style="margin-bottom:12px"></div><div id="gest"></div></div>
@@ -277,7 +284,11 @@ function abrirVariantes(ad){ soloAd = ad || null; filtro = "revisar"; $("#vvar")
 function cerrarVariantes(){ $("#vvar").hidden = true; document.body.classList.remove("modal"); soloAd = null; pintar(); }
 document.addEventListener("keydown", e => { if(e.key==="Escape" && !$("#vvar").hidden) cerrarVariantes(); });
 // Pestañas (Nacho 9/10): Ganadores → elegís · En proceso → lo que se está haciendo · Para aprobar · Aprobados
-const VISTAS = [["semana","B-roll · Animado · Estático"],["ugcf","UGC · Founder"],["guiones","Guiones"],["proceso","En proceso"],["aprobar","Para aprobar"],["aprobados","Aprobados"]];
+// Dos partes (Nacho 10/10): 1 = variantes de B-roll, animados y estáticos · 2 = UGC y founder, todo lo de guiones
+const PARTES = [["p1","Parte 1 · B-roll · Animado · Estático"],["p2","Parte 2 · UGC · Founder"]];
+const VISTAS_P = {p1:[["semana","Ganadores"],["proceso","En proceso"],["aprobar","Para aprobar"],["aprobados","Aprobados"]],
+                  p2:[["ugcf","Ganadores"],["g_hooks","Hooks para aprobar"],["g_ugc","Guiones UGC"],["g_founder","Guiones Founder"],["g_aprobados","Aprobados"]]};
+const VISTAS = [...VISTAS_P.p1, ...VISTAS_P.p2];
 const ES_GUION = it => it.tipo==="hooks" || it.tipo==="guion";
 const ESTADOS_VISTA = {proceso:["procesando","corregir"], aprobar:["revisar","error"], aprobados:["subido","aprobado"]};
 function pedidosEnCurso(){
@@ -288,21 +299,29 @@ function pedidosEnCurso(){
 }
 function pintar(){
   const vivos = Object.values(items).filter(it => it.estado!=="rechazado");
-  const cuenta = v => v==="proceso" ? vivos.filter(it=>!ES_GUION(it) && ESTADOS_VISTA.proceso.includes(it.estado)).length + pedidosEnCurso().length
+  const G = {g_hooks:it=>it.tipo==="hooks" && it.estado==="revisar", g_ugc:it=>it.tipo==="guion" && it.version_g!=="founder" && it.estado==="revisar",
+             g_founder:it=>it.tipo==="guion" && it.version_g==="founder" && it.estado==="revisar", g_aprobados:()=>false};
+  const cuenta = v => v==="proceso" ? vivos.filter(it=>!ES_GUION(it) && ESTADOS_VISTA.proceso.includes(it.estado)).length + pedidosEnCurso().filter(x=>x.p.tipo!=="guiones").length
                     : (v==="semana" || v==="ugcf") ? 0
-                    : v==="guiones" ? vivos.filter(it=>ES_GUION(it) && it.estado==="revisar").length
-                    : vivos.filter(it=>(!ES_GUION(it) || (v==="aprobados" && it.tipo==="guion")) && ESTADOS_VISTA[v].includes(it.estado)).length;
-  if(!VISTAS.some(x=>x[0]===F.vista)) F.vista = "semana";
+                    : G[v] ? vivos.filter(G[v]).length + (v==="g_hooks" ? pedidosEnCurso().filter(x=>x.p.tipo==="guiones").length : 0)
+                    : vivos.filter(it=>!ES_GUION(it) && ESTADOS_VISTA[v].includes(it.estado)).length;
+  F.parte = F.parte || (VISTAS_P.p2.some(x=>x[0]===F.vista) ? "p2" : "p1");
+  if(!VISTAS_P[F.parte].some(x=>x[0]===F.vista)) F.vista = VISTAS_P[F.parte][0][0];
+  const totalParte = p => VISTAS_P[p].reduce((t,[v])=> t + (["aprobar","g_hooks","g_ugc","g_founder"].includes(v) ? cuenta(v) : 0), 0);
+  $("#partes").innerHTML = PARTES.map(([p,t]) => { const n = totalParte(p); return `<button class="pt ${F.parte===p?"on":""}" data-parte="${p}">${t}${n?`<b>${n}</b>`:""}</button>`; }).join("");
+  document.querySelectorAll("[data-parte]").forEach(b=>b.onclick=()=>{ F.parte=b.dataset.parte; F.vista=VISTAS_P[F.parte][0][0]; soloAd=null; guardarF(); pintar(); window.scrollTo(0,0); });
   $("#vistas").hidden = false;
-  $("#vistas").innerHTML = VISTAS.map(([v,t]) => { const n = cuenta(v); return `<button class="mt ${F.vista===v?"on":""}" data-vista="${v}">${t}${n?`<b>${n}</b>`:""}</button>`; }).join("");
-  document.querySelectorAll("[data-vista]").forEach(b=>b.onclick=()=>{ F.vista=b.dataset.vista; if(F.vista==="semana") soloAd=null; guardarF(); pintar(); window.scrollTo(0,0); });
+  $("#vistas").innerHTML = VISTAS_P[F.parte].map(([v,t]) => { const n = cuenta(v); return `<button class="mt ${F.vista===v?"on":""}" data-vista="${v}">${t}${n?`<b>${n}</b>`:""}</button>`; }).join("");
+  document.querySelectorAll("[data-vista]").forEach(b=>b.onclick=()=>{ F.vista=b.dataset.vista; if(F.vista==="semana"||F.vista==="ugcf") soloAd=null; guardarF(); pintar(); window.scrollTo(0,0); });
   const sem = F.vista==="semana" || F.vista==="ugcf";
   $("#vsem").hidden = !sem; $("#vest").hidden = sem;
-  $("#marcas").hidden = true;   // pintarSemana lo muestra si hay más de una marca
+  $("#marcas").hidden = true;
   $("#resumen").textContent = `Hola ${quien}`;
-  if(sem) pintarSemana(); else if(F.vista==="guiones") pintarGuiones(); else pintarEstado(F.vista);
+  if(sem) pintarSemana();
+  else if(F.vista.startsWith("g_")){ F.gsub = F.vista.slice(2); pintarGuiones(); }
+  else pintarEstado(F.vista);
 }
-function irA(vista, ad){ F.vista = vista; soloAd = ad || null; guardarF(); pintar(); window.scrollTo(0,0); }
+function irA(vista, ad){ F.vista = vista; F.parte = VISTAS_P.p2.some(x=>x[0]===vista) ? "p2" : "p1"; soloAd = ad || null; guardarF(); pintar(); window.scrollTo(0,0); }
 
 // ---------------- Guiones (Nacho 10/10): hooks para aprobar → guiones UGC / founder → Drive
 function mdHtml(md){
@@ -318,6 +337,19 @@ function mdHtml(md){
   }
   return h;
 }
+// La referencia siempre a mano (Nacho 10/10): video del winner, link al anuncio y transcripción
+function refWinner(it){
+  const o = items[it.origen] || {};
+  const video = it.videoRef || o.videoRef || "";
+  const tr = (it.transcripcion && it.transcripcion.length) ? it.transcripcion : (o.transcripcion || []);
+  const pl = it.permalink || o.permalink || "";
+  const link = pl ? (pl.startsWith("/") ? "https://www.facebook.com"+pl : pl) : "";
+  if(!video && !tr.length && !link) return "";
+  return `<details class="ref"><summary>▶ Ver el winner (video y transcripción)</summary>
+    ${video?`<video src="${esc(video)}#t=0.1" controls playsinline preload="metadata" class="refvid"></video>`:""}
+    ${link?`<div class="sub2"><a href="${esc(link)}" target="_blank" rel="noopener">Abrir el anuncio en Meta ↗</a></div>`:""}
+    ${tr.length?`<div class="transc">${tr.map(t=>`<p>${t.etapa?`<b>${esc(t.etapa)}</b> `:""}${esc(t.texto)}</p>`).join("")}</div>`:""}</details>`;
+}
 function tarjetaHooks(id,it){
   const editable = it.estado==="revisar"; const m = it.metricas||{};
   const lista = (v, hs) => hs.map((x,i)=>`<label class="hkop"><input type="checkbox" data-v="${v}" data-i="${i}" ${editable?"":"disabled"}><span>"${esc(x.hook)}"<small>Placa: ${esc(x.placa||"")} · sale de: ${esc(x.referencia||"")}</small></span></label>`).join("");
@@ -327,7 +359,7 @@ function tarjetaHooks(id,it){
     <div class="cuerpo">
       <div class="dato"><b>Cómo era el hook del winner</b>"${esc(it.ganoCon||"")}"</div>
       <div class="dato"><b>Ángulo</b>${esc(it.angulo||"")}${it.creencia?`<br><span class="sub2">${esc(it.creencia)}</span>`:""}</div>
-      <details><summary>Ver el video transcripto</summary><div class="transc">${(it.transcripcion||[]).map(t=>`<p>${t.etapa?`<b>${esc(t.etapa)}</b> `:""}${esc(t.texto)}</p>`).join("")}</div></details>
+      ${refWinner(it)}
       <div class="dato"><b>Hooks · versión UGC (creadora, primera persona)</b>${lista("ugc", it.hooksUgc||[])}</div>
       <div class="dato"><b>Hooks · versión Founder (Luz)</b>${lista("founder", it.hooksFounder||[])}</div>
       ${it.error?`<div class="err">${esc(it.error)}</div>`:""}
@@ -364,14 +396,15 @@ function pintarGuiones(){
   F.gsub = F.gsub || "hooks";
   const filtro_ = (SUBS.find(x=>x[0]===F.gsub)||SUBS[0])[2];
   const nombreAd = soloAd ? ((vivos[0]||[,{}])[1].adNombre || soloAd) : "";
-  $("#estFiltro").innerHTML = `<div class="marcas" style="margin:0">${SUBS.map(([k,t,f])=>{ const n=vivos.filter(f).filter(([,it])=>k==="aprobados"||it.estado==="revisar").length; return `<button class="mt ${F.gsub===k?"on":""}" data-gsub="${k}">${t}${n?`<b>${n}</b>`:""}</button>`; }).join("")}</div>
-    ${soloAd?`<span style="margin-left:8px">Solo: <span class="ap"><b>${esc(nombreAd)}</b><button id="quitarAd">✕</button></span></span>`:""}
+  $("#estFiltro").innerHTML = `${soloAd?`<span style="margin-left:8px">Solo: <span class="ap"><b>${esc(nombreAd)}</b><button id="quitarAd">✕</button></span></span>`:""}
     <span class="sub2" style="margin-left:8px">Aprobados van a Drive: «Mi Luz · Guiones Winners – UGC» / «– Founder»</span>`;
   document.querySelectorAll("[data-gsub]").forEach(b=>b.onclick=()=>{ F.gsub=b.dataset.gsub; guardarF(); pintar(); });
   $("#quitarAd") && ($("#quitarAd").onclick = () => { soloAd = null; pintar(); });
   const lista = vivos.filter(filtro_).sort((a,b)=>(b[1].actualizado||"").localeCompare(a[1].actualizado||""));
   const vacio = {hooks:"No hay hooks esperando. Tocá «Guiones» en un winner y en ~30 min aparecen acá.", ugc:"No hay guiones UGC para revisar.", founder:"No hay guiones founder para revisar.", aprobados:"Todavía no aprobaste guiones."}[F.gsub];
-  $("#gest").innerHTML = lista.length ? `<div class="grilla">${lista.map(([id,it]) => it.tipo==="hooks" ? tarjetaHooks(id,it) : tarjetaGuion(id,it)).join("")}</div>` : `<div class="vacio">${vacio}</div>`;
+  const cola_ = F.gsub==="hooks" ? pedidosEnCurso().filter(x=>x.p.tipo==="guiones" && (!soloAd || x.ad===soloAd)) : [];
+  const enCola = cola_.length ? `<div class="grupo"><h2>En cola</h2><span class="pill">salen en ~5 min</span></div><div class="grilla">${cola_.map(x=>`<div class="item"><div class="cab"><div class="av">H</div><div class="t"><b>${esc(x.a.nombre||x.ad)}</b><small><i></i>${x.p.estado==="procesando"?"Escribiendo hooks…":"Hooks en cola"} · pidió ${esc(x.p.quien||"")}</small></div></div></div>`).join("")}</div>` : "";
+  $("#gest").innerHTML = enCola + (lista.length ? `<div class="grilla">${lista.map(([id,it]) => it.tipo==="hooks" ? tarjetaHooks(id,it) : tarjetaGuion(id,it)).join("")}</div>` : (enCola ? "" : `<div class="vacio">${vacio}</div>`));
   lista.forEach(([id,it]) => it.tipo==="hooks" ? conectarHooks(id) : conectar(id));
 }
 
@@ -381,11 +414,11 @@ function pintarEstado(v){
   const nombreAd = id => { for(const d of Object.values(semana)){ const a=(d.anuncios||[]).find(x=>x.id===id); if(a) return a.nombre; } const it=Object.values(items).find(x=>x.adId===id); return it?.adNombre||id; };
   $("#estFiltro").innerHTML = soloAd ? `Mostrando solo: <span class="ap"><b>${esc(nombreAd(soloAd))}</b><button id="quitarAd" title="Ver todos">✕</button></span>` : "";
   $("#quitarAd") && ($("#quitarAd").onclick = () => { soloAd = null; pintar(); });
-  const lista = Object.entries(items).filter(([,it]) => (!ES_GUION(it) || (v==="aprobados" && it.tipo==="guion")) && ESTADOS_VISTA[v].includes(it.estado) && (!soloAd || it.adId===soloAd))
+  const lista = Object.entries(items).filter(([,it]) => !ES_GUION(it) && ESTADOS_VISTA[v].includes(it.estado) && (!soloAd || it.adId===soloAd))
     .sort((a,b)=>(b[1].fecha||"").localeCompare(a[1].fecha||"") || ((b[1].metricas||{}).ganancia||0)-((a[1].metricas||{}).ganancia||0) || (a[1].clave||"").localeCompare(b[1].clave||"") || (a[1].n||0)-(b[1].n||0));
   let html = "";
   if(v==="proceso"){
-    const ps = pedidosEnCurso().filter(x => !soloAd || x.ad===soloAd);
+    const ps = pedidosEnCurso().filter(x => x.p.tipo!=="guiones" && (!soloAd || x.ad===soloAd));
     if(ps.length){
       html += `<div class="grupo"><h2>En cola</h2><span class="pill">la Mac los toma en la próxima vuelta (cada 30 min)</span></div><div class="grilla">` + ps.map(x => {
         const img = x.mini ? (/^https?:/.test(x.mini) ? x.mini : `https://drive.google.com/thumbnail?id=${esc(x.mini)}&sz=w600`) : "";
@@ -472,7 +505,7 @@ function pintarSemana(){
   $("#gsem").innerHTML = filas.map((x,i)=>tarjetaSemana(x,i,conVar[x.a.id]||0,porRev[x.a.id]||0)).join("");
   document.querySelectorAll("#gsem .iterar").forEach(b=>b.onclick=()=>{ const c=document.querySelector(`[data-cuantas="${b.dataset.ad}"]`); c.classList.toggle("on"); });
   document.querySelectorAll("#gsem .iterar-g").forEach(b=>b.onclick=()=>{ document.querySelector(`[data-cuantasg="${b.dataset.ad}"]`).classList.toggle("on"); });
-  document.querySelectorAll("#gsem .ver-g").forEach(b=>b.onclick=()=>{ F.gsub = "hooks"; irA("guiones", b.dataset.ad); });
+  document.querySelectorAll("#gsem .ver-g").forEach(b=>b.onclick=()=>irA("g_hooks", b.dataset.ad));
   document.querySelectorAll("#gsem .pedir-g").forEach(b=>b.onclick=()=>pedirGuiones(b.dataset.m, b.dataset.ad, +b.dataset.n));
   document.querySelectorAll("#gsem .pedir").forEach(b=>b.onclick=()=>pedirIterar(b.dataset.m, b.dataset.ad, "pedido", +b.dataset.n));
   document.querySelectorAll("#gsem .cancelar-it").forEach(b=>b.onclick=()=>pedirIterar(b.dataset.m, b.dataset.ad, "cancelado"));
@@ -515,7 +548,7 @@ function botonGuiones(x, chico){
 }
 async function pedirGuiones(m, ad, n){
   try { await fb.updateDoc(fb.doc(fb.db,"variantes_semana",m), {[`pedidos.${ad}`]: {estado:"pedido", tipo:"guiones", quien, n, cuando:new Date().toISOString()}});
-    toast(`Listo: ${n} hooks por versión en cola. Salen en ~30 min en «Guiones»`);
+    toast(`Listo: ${n} hooks por versión en cola. Salen en ~5 min en «Parte 2 › Hooks para aprobar»`);
   } catch(e){ toast("No se pudo guardar: "+e.message); }
 }
 function botonIterar(x, nvar, nrev){
@@ -627,6 +660,7 @@ function tarjetaGuionMd(id,it){
       <div class="cambio-t">${esc(it.cambio||"")}</div>
       <div class="dato"><b>Hook</b>"${esc(h.hook||it.texto||"")}"</div>
       <div class="dato"><b>Ángulo del winner</b>${esc(it.angulo||"")} · hook original: "${esc(it.ganoCon||"")}"</div>
+      ${refWinner(it)}
       <details><summary>Ver el guion completo</summary><div class="md">${mdHtml(it.guionMd)}</div><button class="btn copiar" style="margin-top:6px">Copiar guion</button></details>
       ${it.qa?`<div class="err">Verificador del SOP: ${esc(it.qa)}</div>`:""}
       ${it.error?`<div class="err">${esc(it.error)}</div>`:""}
