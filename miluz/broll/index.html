@@ -23,6 +23,15 @@ h1{font-size:30px;font-weight:700;letter-spacing:-.03em;line-height:1.1}
 .btn.no{color:var(--bad)}
 .btn:disabled{opacity:.45;cursor:default}
 .marcas{display:flex;gap:4px;background:var(--soft);border:1px solid var(--line);border-radius:16px;padding:4px;width:max-content;max-width:100%;overflow-x:auto;margin-bottom:18px}
+.fila-sol{display:flex;gap:14px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;margin-bottom:18px}
+.fila-sol .marcas{margin-bottom:0}
+.especial{display:flex;align-items:center;gap:12px;border:0;cursor:pointer;text-align:left;padding:11px 20px 11px 14px;border-radius:16px;
+  background:linear-gradient(135deg,#3a302b,#1f1a17);color:#fff;box-shadow:0 6px 18px rgba(38,33,30,.18);transition:transform .15s}
+.especial:hover{transform:translateY(-1px)}
+.especial .ico{display:grid;place-items:center;width:34px;height:34px;border-radius:11px;background:rgba(255,255,255,.12);font-size:17px}
+.especial b{display:block;font-size:14px}.especial small{display:block;font-size:11.5px;color:rgba(255,255,255,.7);margin-top:2px}
+.especial.on{outline:2px solid #C9A27E;outline-offset:3px}
+@media(max-width:640px){.especial{width:100%}}
 .mt{border:0;background:transparent;color:var(--mut);font-weight:600;font-size:13px;padding:8px 16px;border-radius:12px;cursor:pointer;white-space:nowrap}
 .mt.on{background:var(--card);color:var(--txt);box-shadow:0 1px 4px rgba(38,33,30,.08)}
 .mt b{display:inline-block;margin-left:7px;min-width:20px;padding:0 6px;border-radius:99px;background:var(--warn-bg);color:var(--warn);font-size:11px;font-weight:600}
@@ -119,7 +128,7 @@ h3{margin:4px 0 8px;font-size:10.5px;font-weight:600;color:var(--mut);text-trans
     <div><h1>B-roll + voz en off · Mi Luz</h1><div class="sub" id="resumen">Cargando…</div></div>
     <button class="btn" id="salir">Salir</button>
   </header>
-  <div class="marcas" id="solapas"></div>
+  <div class="fila-sol"><div class="marcas" id="solapas"></div><button class="especial" id="sol-pedido"><span class="ico">✨</span><span><b>Pedir variantes</b><small>Subí un video y te sacamos versiones</small></span></button></div>
   <div class="top"><div class="hero" id="hero"></div><div class="kpis" id="tabs"></div></div>
   <div id="lista"></div>
 </div>
@@ -127,7 +136,7 @@ h3{margin:4px 0 8px;font-size:10.5px;font-weight:600;color:var(--mut);text-trans
 <script type="module">
 const CLAVES = {"miluz-2026":"Luz","cima-2026":"Nacho"};
 const $ = s => document.querySelector(s);
-const SOLAPAS = [["video","Videos"],["guion","Guiones"],["pedido","Pedir variantes"],["hook","Hooks"],["banco","Banco de tomas"]];
+const SOLAPAS = [["video","Videos"],["guion","Guiones"],["hook","Hooks"],["banco","Banco de tomas"]];   // "Pedir variantes" va aparte, a la derecha
 const ESTADOS = {
   video: [["revisar","Para revisar"],["corregir","Corrigiéndose"],["subido","Listos para subir"],["descartado","Descartados"],["error","Con error"]],
   guion: [["propuesto","Para aprobar"],["armando","Armándose"],["armado","Ya armados"],["corregir","Corrigiéndose"],["descartado","Descartados"]],
@@ -168,6 +177,8 @@ function pintar(){
   const pend = {video:de("video").filter(([,i])=>i.estado==="revisar").length, guion:de("guion").filter(([,i])=>i.estado==="propuesto").length, hook:de("hook").filter(([,i])=>i.estado==="propuesto").length};
   $("#solapas").innerHTML = SOLAPAS.map(([k,t])=>`<button class="mt ${k===solapa?"on":""}" data-s="${k}">${t}${pend[k]?`<b>${pend[k]}</b>`:""}</button>`).join("");
   document.querySelectorAll("[data-s]").forEach(b=>b.onclick=()=>{solapa=b.dataset.s; try{localStorage.setItem("miluz_broll_solapa",solapa)}catch(e){} pintar();});
+  $("#sol-pedido").classList.toggle("on", solapa==="pedido");
+  $("#sol-pedido").onclick=()=>{solapa="pedido"; try{localStorage.setItem("miluz_broll_solapa",solapa)}catch(e){} pintar();};
   heroYtabs(pend);
   if(solapa==="banco") return pintarBanco();
   if(solapa==="pedido") return pintarPedidos();
