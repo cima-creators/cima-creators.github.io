@@ -286,7 +286,7 @@ document.addEventListener("keydown", e => { if(e.key==="Escape" && !$("#vvar").h
 // Pestañas (Nacho 9/10): Ganadores → elegís · En proceso → lo que se está haciendo · Para aprobar · Aprobados
 // Dos partes (Nacho 10/10): 1 = variantes de B-roll, animados y estáticos · 2 = UGC y founder, todo lo de guiones
 const PARTES = [["p1","Parte 1 · B-roll · Animado · Estático"],["p2","Parte 2 · UGC · Founder"]];
-const VISTAS_P = {p1:[["semana","Ganadores"],["proceso","En proceso"],["aprobar","Para aprobar"],["aprobados","Aprobados"]],
+const VISTAS_P = {p1:[["semana","Ganadores"],["aprobar","Para aprobar"],["proceso","En proceso"],["aprobados","Aprobados"]],
                   p2:[["ugcf","Ganadores"],["g_hooks","Hooks para aprobar"],["g_ugc","Guiones UGC"],["g_founder","Guiones Founder"],["g_aprobados","Aprobados"]]};
 const VISTAS = [...VISTAS_P.p1, ...VISTAS_P.p2];
 const ES_GUION = it => it.tipo==="hooks" || it.tipo==="guion";
