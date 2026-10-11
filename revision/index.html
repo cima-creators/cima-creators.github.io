@@ -81,6 +81,11 @@ h3{margin:4px 0 8px;font-size:10.5px;font-weight:600;color:var(--mut);text-trans
 #login input{width:100%;margin:16px 0 10px;padding:12px 14px;border:1px solid var(--line);border-radius:14px;font-size:15px;background:var(--soft);color:var(--txt)}
 .toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--txt);color:#fff;padding:11px 18px;border-radius:99px;font-size:13px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:9}
 .toast.on{opacity:1}
+#aprende{margin-top:28px}
+.apr{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px 15px;margin-bottom:8px;font-size:13.5px}
+.apr .m{font-size:11.5px;color:var(--mut2);margin-bottom:4px}
+.apr b{font-weight:600}
+.apr .r{margin-top:5px;color:var(--mut)}
 </style>
 </head>
 <body>
@@ -99,6 +104,7 @@ h3{margin:4px 0 8px;font-size:10.5px;font-weight:600;color:var(--mut);text-trans
   <div class="marcas" id="marcas"></div>
   <div class="top"><div class="hero" id="hero"></div><div class="kpis" id="tabs"></div></div>
   <div id="lista"></div>
+  <section id="aprende" hidden><h3>Lo que aprendió la skill de tus correcciones</h3><div id="aprende-l"></div></section>
 </div>
 <div class="toast" id="toast"></div>
 <script type="module">
@@ -134,6 +140,13 @@ async function arrancar(){
     snap.docChanges().forEach(c => { if(c.type==="removed") delete items[c.doc.id]; else items[c.doc.id] = c.doc.data(); });
     pintar();
   }, err => { $("#resumen").textContent = "No se pudo leer la cola: " + err.message; });
+  // agente de aprendizaje (aprender.py): cada corrección mejora la skill de edición; acá se ve qué aprendió
+  onSnapshot(collection(db,"edicion_aprendizaje"), snap => {
+    const xs = snap.docs.map(d=>d.data()).sort((a,b)=>(b.fecha||"").localeCompare(a.fecha||"")).slice(0,12);
+    $("#aprende").hidden = !xs.length;
+    const tipo = t => (t||[]).includes("general") ? "Regla nueva para todos los videos" : (t||[]).includes("codigo") ? "Anotado para el código" : (t||[]).includes("pendiente") ? "Anotado (falta procesar)" : "Solo ese video";
+    $("#aprende-l").innerHTML = xs.map(x => `<div class="apr"><div class="m">${esc(new Date(x.fecha).toLocaleString("es-AR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}))} · ${esc(x.quien)} · ${esc(x.marca)} · ${tipo(x.tipo)}</div><b>${esc(x.resumen||x.nota)}</b>${x.regla?`<div class="r">Regla: ${esc(x.regla)}</div>`:""}</div>`).join("");
+  }, () => {});
 }
 
 function pintar(){
@@ -219,7 +232,7 @@ function conectar(id){
   el.querySelector(".aprobar")?.addEventListener("click", () => marcar({estado:"aprobado"}, "Aprobado: pasa a Editados y a la app"));
   corr?.addEventListener("click", () => {
     const pantallas = [...el.querySelectorAll(".subs input")].map(i=>i.value);
-    marcar({estado:"corregir", pedido:{pantallas, broll:!!(ob&&ob.checked), nota:(nt?nt.value.trim():"")}}, "Listo: vuelve editado en ~20 min");
+    marcar({estado:"corregir", pedido:{pantallas, broll:!!(ob&&ob.checked), nota:(nt?nt.value.trim():""), por:quien}}, "Listo: vuelve editado en ~20 min · la skill aprende de esto");
   });
   el.querySelector(".rechazar")?.addEventListener("click", () => {
     const n = el.querySelector(".nota").value.trim();
