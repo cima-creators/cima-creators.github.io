@@ -23,6 +23,9 @@ h1{font-size:30px;font-weight:700;letter-spacing:-.03em;line-height:1.1}
 .btn.no{color:var(--bad)}
 .btn:disabled{opacity:.45;cursor:default}
 .marcas{display:flex;gap:4px;background:var(--soft);border:1px solid var(--line);border-radius:16px;padding:4px;width:max-content;max-width:100%;overflow-x:auto;margin-bottom:18px}
+.proceso{display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:14px;font-size:13px}
+.proceso b{margin-right:4px}.pp{padding:5px 10px;border-radius:99px;background:var(--soft);color:var(--txt);font-size:12px}
+.pp.armando{background:#FFF3DF;color:#9A6512}.pp.error{background:#FDE8E6;color:#B3261E}
 .fila-sol{display:flex;gap:14px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;margin-bottom:18px}
 .fila-sol .marcas{margin-bottom:0}
 .especial{display:flex;align-items:center;gap:12px;border:0;cursor:pointer;text-align:left;padding:11px 20px 11px 14px;border-radius:16px;
@@ -183,8 +186,13 @@ function pintar(){
   if(solapa==="banco") return pintarBanco();
   if(solapa==="pedido") return pintarPedidos();
   const lista = de(solapa).filter(([,it])=>it.estado===filtro[solapa]).sort((a,b)=>String(a[1].codigo||a[1].n||"").localeCompare(String(b[1].codigo||b[1].n||""),undefined,{numeric:true}));
-  if(!lista.length){ $("#lista").innerHTML = `<div class="vacio">Nada por acá.</div>`; return; }
-  $("#lista").innerHTML = lista.map(([id,it]) => solapa==="video"?tVideo(id,it):solapa==="guion"?tGuion(id,it):tHook(id,it)).join("");
+  // En proceso: guiones aprobados que todavía se están armando (Nacho 11/10: "apruebo y no los veo en ningún lado")
+  const proc = de("guion").filter(([,it])=>["aprobado","armando","error"].includes(it.estado))
+    .sort((a,b)=>String(a[1].codigo).localeCompare(String(b[1].codigo),undefined,{numeric:true}));
+  const franja = (solapa==="video"||solapa==="guion") && proc.length ? `<div class="proceso"><b>⏳ En proceso</b>${proc.map(([,it])=>
+    `<span class="pp ${it.estado}">${String(it.codigo).replace("MLZ-P-F26-","")} · ${it.estado==="aprobado"?"en cola":it.estado==="armando"?"armándose (~5 min)":"⚠️ error"}</span>`).join("")}</div>` : "";
+  if(!lista.length){ $("#lista").innerHTML = franja + `<div class="vacio">Nada por acá.</div>`; return; }
+  $("#lista").innerHTML = franja + lista.map(([id,it]) => solapa==="video"?tVideo(id,it):solapa==="guion"?tGuion(id,it):tHook(id,it)).join("");
   lista.forEach(([id,it]) => conectar(id,it));
 }
 document.addEventListener("focusout", () => setTimeout(() => { if(pendiente && !document.querySelector("#lista .cambio")) pintar(); }, 250));
