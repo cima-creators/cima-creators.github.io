@@ -332,7 +332,8 @@ function tarjetaHooks(id,it){
       <div class="dato"><b>Hooks · versión Founder (Luz)</b>${lista("founder", it.hooksFounder||[])}</div>
       ${it.error?`<div class="err">${esc(it.error)}</div>`:""}
       ${editable?`<textarea class="nota" rows="2" placeholder="Si ninguno sirve: qué cambiar para pedir otros hooks"></textarea>
-      <div class="acciones" style="grid-template-columns:1fr 1fr auto"><button class="btn ok escribir" disabled>Escribir los guiones marcados</button><button class="btn otros">Otros hooks</button><button class="btn no rechazar" title="Descartar">✕</button></div>`:""}
+      <div class="acciones" style="grid-template-columns:1fr 1fr"><button class="btn ok escribir" disabled>Escribir los guiones marcados</button><button class="btn dark escribir-mas" disabled>Escribir los marcados + 3 nuevos</button></div>
+      <div class="acciones" style="grid-template-columns:1fr auto"><button class="btn otros">Ninguno sirve: otros hooks</button><button class="btn no rechazar" title="Descartar">✕</button></div>`:""}
       ${it.estado==="procesando"?`<div class="sub2">Escribiendo los guiones de los hooks elegidos…</div>`:""}
       ${it.estado==="error"?`<div class="acciones" style="grid-template-columns:1fr"><button class="btn reintentar">Volver a intentar</button></div>`:""}
     </div></div>`;
@@ -342,8 +343,12 @@ function conectarHooks(id){
   const ref = fb.doc(fb.db,"variantes_cola",id);
   const marcar = async (d,msg) => { try { await fb.updateDoc(ref,{...d,revisadoPor:quien,actualizado:new Date().toISOString()}); toast(msg); pintar(); } catch(e){ toast("No se pudo guardar: "+e.message); } };
   const cbs = [...el.querySelectorAll("input[type=checkbox]")], esc_ = el.querySelector(".escribir");
-  cbs.forEach(c=>c.addEventListener("change",()=>{ const n=cbs.filter(x=>x.checked).length; esc_.disabled=!n; esc_.textContent = n?`Escribir ${n} ${n===1?"guion":"guiones"}`:"Escribir los guiones marcados"; }));
-  esc_?.addEventListener("click",()=>marcar({estado:"aprobado", elegidos:cbs.filter(x=>x.checked).map(x=>({v:x.dataset.v,i:+x.dataset.i}))},"Listo: los guiones salen en ~30 min"));
+  const mas = el.querySelector(".escribir-mas");
+  cbs.forEach(c=>c.addEventListener("change",()=>{ const n=cbs.filter(x=>x.checked).length; esc_.disabled=!n; mas.disabled=!n;
+    esc_.textContent = n?`Escribir ${n} ${n===1?"guion":"guiones"}`:"Escribir los guiones marcados"; mas.textContent = n?`Escribir ${n} + 3 hooks nuevos`:"Escribir los marcados + 3 nuevos"; }));
+  const elegidos = () => cbs.filter(x=>x.checked).map(x=>({v:x.dataset.v,i:+x.dataset.i}));
+  esc_?.addEventListener("click",()=>marcar({estado:"aprobado", elegidos:elegidos()},"Listo: los guiones salen en unos minutos"));
+  mas?.addEventListener("click",()=>marcar({estado:"aprobado", elegidos:elegidos(), masHooks:3},"Listo: 3 hooks nuevos en ~5 min y después los guiones"));
   el.querySelector(".otros")?.addEventListener("click",()=>{ const n=el.querySelector(".nota").value.trim(); marcar({estado:"corregir", pedido:{nota:n}},"Pidiendo otros hooks"); });
   el.querySelector(".rechazar")?.addEventListener("click",()=>marcar({estado:"rechazado"},"Descartado"));
   el.querySelector(".reintentar")?.addEventListener("click",()=>marcar({estado:it_estado(id)},"Se vuelve a intentar"));
