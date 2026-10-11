@@ -291,7 +291,7 @@ function pintar(){
   const cuenta = v => v==="proceso" ? vivos.filter(it=>!ES_GUION(it) && ESTADOS_VISTA.proceso.includes(it.estado)).length + pedidosEnCurso().length
                     : (v==="semana" || v==="ugcf") ? 0
                     : v==="guiones" ? vivos.filter(it=>ES_GUION(it) && it.estado==="revisar").length
-                    : vivos.filter(it=>!ES_GUION(it) && ESTADOS_VISTA[v].includes(it.estado)).length;
+                    : vivos.filter(it=>(!ES_GUION(it) || (v==="aprobados" && it.tipo==="guion")) && ESTADOS_VISTA[v].includes(it.estado)).length;
   if(!VISTAS.some(x=>x[0]===F.vista)) F.vista = "semana";
   $("#vistas").hidden = false;
   $("#vistas").innerHTML = VISTAS.map(([v,t]) => { const n = cuenta(v); return `<button class="mt ${F.vista===v?"on":""}" data-vista="${v}">${t}${n?`<b>${n}</b>`:""}</button>`; }).join("");
@@ -353,9 +353,9 @@ function pintarGuiones(){
   if(document.querySelector("#gest .editor.on") || (document.activeElement && document.activeElement.closest("#gest input[type=text], #gest textarea, #gest input.texto"))){ pendiente = true; return; }
   const vivos = Object.entries(items).filter(([,it]) => ES_GUION(it) && it.estado!=="rechazado" && (!soloAd || it.adId===soloAd));
   const SUBS = [["hooks","Hooks para aprobar", ([,it])=>it.tipo==="hooks" && it.estado!=="subido"],
-    ["ugc","Guiones UGC", ([,it])=>it.tipo==="guion" && it.version_g!=="founder" && it.estado!=="subido"],
-    ["founder","Guiones Founder", ([,it])=>it.tipo==="guion" && it.version_g==="founder" && it.estado!=="subido"],
-    ["aprobados","Aprobados", ([,it])=>it.tipo==="guion" && it.estado==="subido"]];
+    ["ugc","Guiones UGC", ([,it])=>it.tipo==="guion" && it.version_g!=="founder" && !["subido","aprobado"].includes(it.estado)],
+    ["founder","Guiones Founder", ([,it])=>it.tipo==="guion" && it.version_g==="founder" && !["subido","aprobado"].includes(it.estado)],
+    ["aprobados","Aprobados", ([,it])=>it.tipo==="guion" && ["subido","aprobado"].includes(it.estado)]];
   F.gsub = F.gsub || "hooks";
   const filtro_ = (SUBS.find(x=>x[0]===F.gsub)||SUBS[0])[2];
   const nombreAd = soloAd ? ((vivos[0]||[,{}])[1].adNombre || soloAd) : "";
@@ -376,7 +376,7 @@ function pintarEstado(v){
   const nombreAd = id => { for(const d of Object.values(semana)){ const a=(d.anuncios||[]).find(x=>x.id===id); if(a) return a.nombre; } const it=Object.values(items).find(x=>x.adId===id); return it?.adNombre||id; };
   $("#estFiltro").innerHTML = soloAd ? `Mostrando solo: <span class="ap"><b>${esc(nombreAd(soloAd))}</b><button id="quitarAd" title="Ver todos">✕</button></span>` : "";
   $("#quitarAd") && ($("#quitarAd").onclick = () => { soloAd = null; pintar(); });
-  const lista = Object.entries(items).filter(([,it]) => !ES_GUION(it) && ESTADOS_VISTA[v].includes(it.estado) && (!soloAd || it.adId===soloAd))
+  const lista = Object.entries(items).filter(([,it]) => (!ES_GUION(it) || (v==="aprobados" && it.tipo==="guion")) && ESTADOS_VISTA[v].includes(it.estado) && (!soloAd || it.adId===soloAd))
     .sort((a,b)=>(b[1].fecha||"").localeCompare(a[1].fecha||"") || ((b[1].metricas||{}).ganancia||0)-((a[1].metricas||{}).ganancia||0) || (a[1].clave||"").localeCompare(b[1].clave||"") || (a[1].n||0)-(b[1].n||0));
   let html = "";
   if(v==="proceso"){
@@ -616,7 +616,7 @@ function tarjetaGuionMd(id,it){
   const punto = it.estado==="subido" ? "ok" : it.estado==="error" ? "mal" : "";
   return `<div class="item guion" id="it-${esc(id)}">
     <div class="cab"><div class="av">${it.version_g==="founder"?"F":"U"}${esc(it.n)}</div><div class="t"><b>${esc(it.codigo||"Guion")}${it.version>1?` · v${esc(it.version)}`:""}</b>
-      <small><i class="${punto}"></i>${esc((ESTADOS.find(e=>e[0]===it.estado)||[,it.estado])[1])} · Guion ${it.version_g==="founder"?"Founder":"UGC"} · winner ${esc(it.adNombre||"")}</small></div>
+      <small><i class="${it.estado==="aprobado"?"ok":punto}"></i>${it.estado==="aprobado"?"Aprobado · guardando en Drive…":it.estado==="subido"?"Aprobado · en Drive":esc((ESTADOS.find(e=>e[0]===it.estado)||[,it.estado])[1])} · Guion ${it.version_g==="founder"?"Founder":"UGC"} · winner ${esc(it.adNombre||"")}</small></div>
       ${it.driveLink?`<span class="links-cab"><a class="drive" href="${esc(it.driveLink)}" target="_blank" rel="noopener">Drive</a></span>`:""}</div>
     <div class="cuerpo">
       <div class="cambio-t">${esc(it.cambio||"")}</div>
@@ -689,7 +689,7 @@ function conectar(id){
   const ref = fb.doc(fb.db,"variantes_cola",id);
   const marcar = async (datos,msg) => { try { await fb.updateDoc(ref,{...datos,revisadoPor:quien,actualizado:new Date().toISOString()}); toast(msg);
       el.querySelectorAll(".cambio").forEach(i=>i.classList.remove("cambio")); el.querySelector(".editor")?.classList.remove("on"); document.activeElement?.blur(); pintar(); } catch(e){ toast("No se pudo guardar: "+e.message); } };
-  el.querySelector(".aprobar")?.addEventListener("click", () => marcar({estado:"aprobado"}, "Aprobada: pasa al Drive de la marca"));
+  el.querySelector(".aprobar")?.addEventListener("click", () => marcar({estado:"aprobado"}, items[id]?.tipo==="guion" ? "Aprobado: está en «Aprobados» y se guarda en Drive en ~5 min" : "Aprobada: pasa al Drive de la marca"));
   corr?.addEventListener("click", () => marcar({estado:"corregir", pedido:{texto:(tx?tx.value.trim():""), nota:(nt?nt.value.trim():"")}}, "Listo: vuelve corregida en ~30 min"));
   el.querySelector(".rechazar")?.addEventListener("click", () => marcar({estado:"rechazado", nota:(nt?nt.value.trim():"")}, "Descartada"));
   el.querySelector(".reintentar")?.addEventListener("click", () => marcar({estado:"corregir", pedido:{}}, "Se vuelve a intentar"));
