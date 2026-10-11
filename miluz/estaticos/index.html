@@ -146,6 +146,11 @@ a.btn{display:inline-flex;align-items:center;justify-content:center;text-decorat
 .ang b{font-size:12px;color:var(--acc);font-weight:600}
 .ang span{font-size:12px;color:var(--txt);line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .ang small{font-size:11px;color:var(--mut)}
+#iterar{position:fixed;inset:0;background:rgba(10,8,8,.6);display:none;align-items:center;justify-content:center;z-index:16;padding:16px}
+#iterar.on{display:flex}
+#iterar .sx{background:var(--card);border-radius:var(--r);max-width:520px;width:100%;max-height:92vh;overflow:auto;padding:20px}
+#iterar .tipo{display:flex;flex-direction:column;gap:8px;margin-bottom:12px;font-size:13.5px}
+#iterar .tipo small{color:var(--mut)}
 #subir{position:fixed;inset:0;background:rgba(10,8,8,.6);display:none;align-items:center;justify-content:center;z-index:16;padding:16px}
 #subir.on{display:flex}
 #subir .sx{background:var(--card);border-radius:var(--r);max-width:520px;width:100%;max-height:92vh;overflow:auto;padding:20px}
@@ -176,6 +181,16 @@ a.btn{display:inline-flex;align-items:center;justify-content:center;text-decorat
 </div>
 <div id="lb"><img alt=""></div>
 <div id="ficha"><div class="fx"></div></div>
+<div id="iterar" class="modal"><div class="sx">
+  <div style="display:flex;gap:14px;align-items:flex-start;margin-bottom:12px"><img id="itImg" alt="" style="width:96px;border-radius:12px;background:var(--soft)">
+    <div><h3 style="font-size:19px;margin:0 0 4px">Iterar esta pieza</h3><p class="sub" style="margin:0" id="itCod"></p></div></div>
+  <div class="tipo">
+    <label><input type="radio" name="itTipo" value="mismo" checked> <b>Más de lo mismo</b> <small>— 3 opciones nuevas con el mismo diseño y otros dolores de las clientas</small></label>
+    <label><input type="radio" name="itTipo" value="otra"> <b>Quiero otra cosa</b> <small>— escribí qué cambiar</small></label></div>
+  <textarea id="itPedido" placeholder="Ej: lo mismo pero con fondo bordó y una mano más grande; que hable de la menopausia"></textarea>
+  <p id="itErr" class="sub" style="color:var(--bad);margin:8px 0 0"></p>
+  <div class="acciones" style="margin-top:12px"><button class="btn" id="itNo">Cancelar</button><button class="btn acc" id="itSi">Iterar</button></div>
+</div></div>
 <div id="subir"><div class="sx">
   <h3 style="font-size:19px;margin:0 0 4px">Renovar una pieza</h3>
   <p class="sub" style="margin:0 0 14px">Subí la imagen (foto o captura) o pegá un link. La hacemos con tus productos en 3 opciones y aparece en <b>Revisar</b>.</p>
@@ -271,6 +286,34 @@ $("#subirSi").onclick = async () => {
     tab = "proceso"; pintar(); toast("Listo: en un rato aparece en Revisar con 3 opciones");
   } catch (e) { $("#subirErr").textContent = "No se pudo mandar: " + e.message; }
   b.disabled = false; b.textContent = "Mandar";
+};
+
+// ---- «Iterar» desde Listas: nueva pieza basada en la aprobada (la original queda en Listas) ----
+let itSel = null;
+function abrirIterar(ds){
+  itSel = ds; const d = items[ds.id];
+  $("#itImg").src = ds.url; $("#itCod").textContent = `${d.codigo || ""} · ${d.formato || ""}`;
+  $("#itPedido").value = ""; $("#itErr").textContent = ""; document.querySelector('input[name="itTipo"][value="mismo"]').checked = true;
+  $("#iterar").classList.add("on");
+}
+$("#itNo").onclick = () => $("#iterar").classList.remove("on");
+$("#iterar").onclick = e => { if (e.target.id === "iterar") $("#iterar").classList.remove("on"); };
+$("#itPedido").oninput = () => { if ($("#itPedido").value.trim()) document.querySelector('input[name="itTipo"][value="otra"]').checked = true; };
+$("#itSi").onclick = async () => {
+  const tipo = document.querySelector('input[name="itTipo"]:checked').value, pedido = $("#itPedido").value.trim();
+  if (tipo === "otra" && !pedido) { $("#itErr").textContent = "Escribí qué querés cambiar."; return; }
+  const b = $("#itSi"); b.disabled = true;
+  try {
+    const d = items[itSel.id], ts = Date.now().toString(36);
+    await fb.setDoc(fb.doc(fb.db, "estaticos", `${d.id}_it${ts}`), {marca: MARCA, fecha: hoy(), estado: "elegida", iteraDe: d.id,
+      elegidaEn: new Date().toISOString(), creado: new Date().toISOString(), notaElegir: tipo === "otra" ? pedido : "", version: 0, variantes: [],
+      por: quien, formato: d.formato || "", idea: tipo === "otra" ? pedido : `Más de lo mismo: ${d.codigo}`, porque: d.porque || "",
+      prompt: itSel.prompt || d.prompt || "", usa: d.usa || ["fenix"], nivel: d.nivel || 3, maqueta: !!d.maqueta,
+      ref: {id: "it" + ts, m: NOMBRES[MARCA] || MARCA, img: itSel.url, link: "", nicho: "iteracion", d: 0, dup: 0, senal: 0, t: d.codigo || ""},
+      refOriginal: d.ref || {}});
+    $("#iterar").classList.remove("on"); tab = "proceso"; pintar(); toast("Listo: en un rato aparecen 3 opciones nuevas en Revisar");
+  } catch (e) { $("#itErr").textContent = "No se pudo: " + e.message; }
+  b.disabled = false;
 };
 
 async function marcar(id, datos, msg){
@@ -434,9 +477,10 @@ function vListas(lista){
       <div class="body"><div class="pills">${d.estado === "lista" ? `<span class="pill ok">En tu Drive · ${fFecha(((d.entregado||"").match(/\d{4}-\d{2}-\d{2}/)||[""])[0])}</span>` : `<span class="pill warn">Copiándose a Drive</span>`}
         ${d.maqueta ? `<span class="pill warn">Maqueta</span>` : ""}</div>
         <h3>${esc(d.formato)}</h3>${d.archivos?.[k] ? `<p class="m">${esc(d.archivos[k])}</p>` : ""}${origen(d)}
-        <div style="display:flex;gap:6px;margin-top:4px"><a class="btn sm" href="${esc(v.url)}" target="_blank" rel="noopener">Ver</a>${(d.drive?.[k] || (v.driveId && `https://drive.google.com/file/d/${v.driveId}/view`)) ? `<a class="btn sm drv" href="${esc(d.drive?.[k] || `https://drive.google.com/file/d/${v.driveId}/view`)}" target="_blank" rel="noopener">Drive</a>` : ""}</div></div></div>`)).join("")}</div>`
+        <div style="display:flex;gap:6px;margin-top:4px"><a class="btn sm" href="${esc(v.url)}" target="_blank" rel="noopener">Ver</a>${(d.drive?.[k] || (v.driveId && `https://drive.google.com/file/d/${v.driveId}/view`)) ? `<a class="btn sm drv" href="${esc(d.drive?.[k] || `https://drive.google.com/file/d/${v.driveId}/view`)}" target="_blank" rel="noopener">Drive</a>` : ""}<button class="btn sm acc iterar" data-id="${esc(d.id)}" data-url="${esc(v.url)}" data-prompt="${esc(v.prompt || d.prompt || "")}" style="margin-left:auto">Iterar</button></div></div></div>`)).join("")}</div>`
     : `<div class="vacio">Todavía no aprobaste ninguna.</div>`;
   $("#vista").querySelectorAll("[data-z]").forEach(i => i.parentElement.onclick = () => zoom(i.dataset.z));
+  $("#vista").querySelectorAll(".iterar").forEach(b => b.onclick = () => abrirIterar(b.dataset));
 }
 
 function vDescartadas(lista){
