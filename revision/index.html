@@ -178,14 +178,14 @@ function pintar(){
   const lista = deMarca.filter(([,it])=>it.estado===filtro).sort((a,b)=>(a[1].fechaCrudo||"").localeCompare(b[1].fechaCrudo||""));
   if(!lista.length){ $("#lista").innerHTML = `<div class="vacio">${filtro==="revisar"?"No hay videos para revisar. Los de hoy aparecen solos cuando terminan de editarse.":"Nada por acá."}</div>`; return; }
   // si está escribiendo una corrección, no le borramos lo que tipeó: se repinta cuando suelta
-  const editando = [...document.querySelectorAll("#lista .cambio, #lista .otro-broll:checked")].length || (document.activeElement && document.activeElement.closest("#lista input, #lista textarea"));
+  const editando = [...document.querySelectorAll("#lista .cambio, #lista .otro-broll:checked:not(.rh)")].length || (document.activeElement && document.activeElement.closest("#lista input, #lista textarea"));
   if(editando){ pendiente = true; return; }
   pendiente = false;
   $("#lista").innerHTML = lista.map(([id,it]) => tarjeta(id,it)).join("");
   lista.forEach(([id]) => conectar(id));
 }
 let pendiente = false;
-document.addEventListener("focusout", () => setTimeout(() => { if(pendiente && !document.querySelector("#lista .cambio, #lista .otro-broll:checked")) pintar(); }, 200));
+document.addEventListener("focusout", () => setTimeout(() => { if(pendiente && !document.querySelector("#lista .cambio, #lista .otro-broll:checked:not(.rh)")) pintar(); }, 200));
 
 function tarjeta(id,it){
   const verId = it.vistaId || it.driveId;   // la versión liviana: Drive la prepara en 1-2 min
@@ -195,13 +195,14 @@ function tarjeta(id,it){
   const fecha = (it.fechaCrudo||"").slice(0,10).split("-").reverse().join("/");
   const subs = (it.pantallas||[]).map((t,i)=>`<label><span>${i+1}</span><input data-i="${i}" value="${esc(t)}" data-orig="${esc(t)}"></label>`).join("");
   const editable = it.estado==="revisar";
+  const rehacible = ["subido","aprobado"].includes(it.estado);   // Nacho 12/10: rehacer un aprobado con una nota
   return `<div class="item" id="it-${esc(id)}">
     <div class="vid">${vid}</div>
     <div>
       <div class="meta"><span class="pill m">${esc(it.marcaNombre||it.marca)}</span><span class="pill">Guion ${esc(it.guion||"—")}</span><span class="pill">${esc(it.creadora||"")}</span><span class="pill">${fecha}</span><span class="pill e-${esc(it.estado)}">${esc((ESTADOS.find(e=>e[0]===it.estado)||[,it.estado])[1])}</span></div>
       ${it.driveId?`<div class="links"><a href="https://drive.google.com/file/d/${esc(it.driveId)}/view" target="_blank" rel="noopener">Abrir en Drive</a> · <a href="${esc(it.crudoLink)}" target="_blank" rel="noopener">Ver el crudo</a></div>`:""}
       ${it.error?`<div class="err">${esc(it.error)}</div>`:""}
-      ${subs?`<h3>Subtítulos ${editable?"· tocá uno para corregirlo":""}</h3><div class="subs">${subs}</div>`:""}
+      ${subs?`<h3>Subtítulos ${editable||rehacible?"· tocá uno para corregirlo":""}</h3><div class="subs">${subs}</div>`:""}
       ${editable?`
       <h3 style="margin-top:16px">Qué hay que cambiar</h3>
       <textarea class="nota" rows="3" placeholder="Ej.: seg 23 el b-roll no tiene que ver, poné algo de enzimas · seg 50 sacá el del cinturón"></textarea>
@@ -212,6 +213,12 @@ function tarjeta(id,it){
         <button class="btn no rechazar" title="Solo si el crudo no sirve: audio cortado, mal grabado">Rechazar el crudo</button>
       </div>
       <p class="ayuda">Las correcciones vuelven editadas en ~20 min. "Rechazar el crudo" es solo si hay que volver a grabarlo.</p>`:""}
+      ${rehacible?`
+      <h3 style="margin-top:16px">Rehacer este video</h3>
+      <textarea class="nota" rows="3" placeholder="Opcional. Ej.: rehacelo con las reglas nuevas · seg 12 poné el frasco · más corto el arranque"></textarea>
+      <label class="chk"><input type="checkbox" class="otro-broll rh" checked> Elegir todo el b-roll de nuevo</label>
+      <div class="acciones"><button class="btn dark corregir rehacer">Rehacer</button></div>
+      <p class="ayuda">Vuelve a "Para revisar" en ~20 min con las reglas de hoy. Hasta que lo apruebes de nuevo, la app sigue con la versión anterior.</p>`:""}
       ${it.estado==="error"?`<div class="acciones"><button class="btn reintentar">Volver a intentar</button></div>`:""}
       ${it.nota?`<div class="hist">Nota: ${esc(it.nota)}</div>`:""}
       ${(it.notas||[]).length?`<div class="hist"><b>Versión ${it.version||1}.</b> Correcciones pedidas: ${(it.notas||[]).map(esc).join(" · ")}</div>`:""}
@@ -222,7 +229,8 @@ function conectar(id){
   const el = document.getElementById("it-"+id); if(!el) return;
   const corr = el.querySelector(".corregir"), ob = el.querySelector(".otro-broll");
   const nt = el.querySelector(".nota");
-  const hayCambios = () => [...el.querySelectorAll(".subs input")].some(i=>i.value!==i.dataset.orig) || (ob && ob.checked) || (nt && nt.value.trim());
+  const esRehacer = !!el.querySelector(".rehacer");
+  const hayCambios = () => esRehacer || [...el.querySelectorAll(".subs input")].some(i=>i.value!==i.dataset.orig) || (ob && ob.checked) || (nt && nt.value.trim());
   nt && nt.addEventListener("input", () => { nt.classList.toggle("cambio", !!nt.value.trim()); corr.disabled = !hayCambios(); });
   el.querySelectorAll(".subs input").forEach(i => i.addEventListener("input", () => { i.classList.toggle("cambio", i.value!==i.dataset.orig); if(corr) corr.disabled=!hayCambios(); }));
   ob && ob.addEventListener("change", () => { corr.disabled = !hayCambios(); });
@@ -232,6 +240,10 @@ function conectar(id){
   el.querySelector(".aprobar")?.addEventListener("click", () => marcar({estado:"aprobado"}, "Aprobado: pasa a Editados y a la app"));
   corr?.addEventListener("click", () => {
     const pantallas = [...el.querySelectorAll(".subs input")].map(i=>i.value);
+    if(esRehacer){
+      if(!confirm("¿Rehacer este video? Vuelve a Para revisar; la app sigue con el aprobado hasta que apruebes el nuevo.")) return;
+      return marcar({estado:"corregir", pedido:{pantallas, broll:!!(ob&&ob.checked), nota:(nt?nt.value.trim():""), por:quien, rehacer:true}}, "Listo: se rehace y vuelve a Para revisar en ~20 min");
+    }
     marcar({estado:"corregir", pedido:{pantallas, broll:!!(ob&&ob.checked), nota:(nt?nt.value.trim():""), por:quien}}, "Listo: vuelve editado en ~20 min · la skill aprende de esto");
   });
   el.querySelector(".rechazar")?.addEventListener("click", () => {
