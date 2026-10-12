@@ -443,6 +443,7 @@ function pintarGuiones(){
   const pend_ = lista.filter(([,it])=>!hecho_(it)), apro_ = lista.filter(([,it])=>hecho_(it));
   const bloque_ = (t, l) => l.length ? `<div class="grupo"><h2>${t}</h2><span class="pill">${l.length}</span></div><div class="grilla">${l.map(([id,it]) => tarjeta(id,it)).join("")}</div>` : "";
   const cuerpo_ = F.gsub==="hooks" ? (lista.length ? `<div class="grilla">${lista.map(([id,it]) => tarjeta(id,it)).join("")}</div>` : "")
+                : F.gsub==="founder" ? bloque_("Para revisar", pend_) + bloque_("Para grabar", apro_.filter(([,it])=>!it.grabado)) + bloque_("Grabados", apro_.filter(([,it])=>it.grabado))
                 : bloque_("Para revisar", pend_) + bloque_("Aprobados · en Drive", apro_);
   $("#gest").innerHTML = enCola + (cuerpo_ || (enCola ? "" : `<div class="vacio">${vacio}</div>`));
   lista.forEach(([id,it]) => it.tipo==="hooks" ? conectarHooks(id) : conectar(id));
@@ -779,6 +780,12 @@ function tarjetaGuion(id,it){
       ${it.estado==="error"?`<div class="acciones" style="grid-template-columns:1fr"><button class="btn reintentar">Volver a intentar</button></div>`:""}
     </div></div>`;
 }
+// Nacho 11/10: Luz marca los founder que ya grabó → pasan de «Para grabar» a «Grabados»
+function grabadoHtml(it){
+  if(it.version_g!=="founder" || !["subido","aprobado"].includes(it.estado)) return "";
+  if(it.grabado) return `<div class="acciones" style="grid-template-columns:1fr auto"><button class="btn ok" disabled>✓ Grabado${it.grabadoCuando?` el ${esc(fdia(it.grabadoCuando))}`:""}${it.grabadoPor?` · ${esc(it.grabadoPor)}`:""}</button><button class="btn degrabar" title="Volver a «Para grabar»">Deshacer</button></div>`;
+  return `<div class="acciones" style="grid-template-columns:1fr"><button class="btn ok grabado">🎬 Ya lo grabé</button></div>`;
+}
 function tarjetaGuionMd(id,it){
   const editable = it.estado==="revisar"; const h = it.hook||{};
   const punto = it.estado==="subido" ? "ok" : it.estado==="error" ? "mal" : "";
@@ -791,6 +798,7 @@ function tarjetaGuionMd(id,it){
       <div class="dato"><b>${(it.hooks||[]).length>1?`${it.hooks.length} hooks para testear (un solo cuerpo)`:"Hook"}</b>${(it.hooks&&it.hooks.length?it.hooks:[h]).map((x,i)=>`<div class="hk">${(it.hooks||[]).length>1?(i+1)+". ":""}"${esc(x.hook||it.texto||"")}"</div>`).join("")}</div>
       <div class="dato"><b>Ángulo del winner</b>${esc(it.angulo||"")} · hook original: "${esc(it.ganoCon||"")}"</div>
       ${refWinner(it)}
+      ${grabadoHtml(it)}
       <details><summary>Ver el guion completo</summary><div class="md">${mdHtml(it.guionMd)}</div><button class="btn copiar" style="margin-top:6px">Copiar guion</button></details>
       ${it.qa?`<div class="err">Verificador del SOP: ${esc(it.qa)}</div>`:""}
       ${it.error?`<div class="err">${esc(it.error)}</div>`:""}
@@ -879,6 +887,8 @@ function conectar(id){
   const ref = fb.doc(fb.db,"variantes_cola",id);
   const marcar = async (datos,msg) => { try { await fb.updateDoc(ref,{...datos,revisadoPor:quien,actualizado:new Date().toISOString()}); toast(msg);
       el.querySelectorAll(".cambio").forEach(i=>i.classList.remove("cambio")); el.querySelector(".editor")?.classList.remove("on"); document.activeElement?.blur(); pintar(); } catch(e){ toast("No se pudo guardar: "+e.message); } };
+  el.querySelector(".grabado")?.addEventListener("click", () => marcar({grabado:true, grabadoPor:quien, grabadoCuando:new Date().toISOString()}, "Listo: pasa a «Grabados»"));
+  el.querySelector(".degrabar")?.addEventListener("click", () => marcar({grabado:false}, "Vuelve a «Para grabar»"));
   el.querySelector(".aprobar")?.addEventListener("click", () => marcar({estado:"aprobado"}, items[id]?.tipo==="guion" ? "Aprobado: está en «Aprobados» y se guarda en Drive en ~5 min" : "Aprobada: pasa al Drive de la marca"));
   corr?.addEventListener("click", () => marcar({estado:"corregir", pedido:{texto:(tx?tx.value.trim():""), nota:(nt?nt.value.trim():"")}}, "Listo: vuelve corregida en ~30 min"));
   el.querySelector(".rechazar")?.addEventListener("click", () => marcar({estado:"rechazado", nota:(nt?nt.value.trim():"")}, "Descartada"));
