@@ -226,6 +226,7 @@ function tVideo(id,it){
     <div class="meta"><span class="pill m">${esc(it.codigo)}</span>${it.creadora?`<span class="pill">${esc(it.creadora)}</span>`:""}<span class="pill">${esc(it.fecha||"")}</span>${it.winner?`<span class="pill">Variante del winner ${esc(String(it.winner).slice(-6))}</span>`:""}</div>
     <h3>${esc(it.titulo||"")}</h3>
     ${it.driveId?`<div class="links"><a href="https://drive.google.com/file/d/${esc(it.driveId)}/view" target="_blank" rel="noopener">Abrir en Drive</a></div>`:""}
+    ${it.gate&&!it.error?`<div class="origen-v" style="background:#E8F5EC;color:#1E6B3A;border-color:#BFE3CB">${esc(it.gate)}</div>`:""}
     ${it.error?`<div class="err">${esc(it.error)}</div>`:""}
     ${editable?`<h3 style="margin-top:14px">Qué hay que cambiar</h3>
       <textarea class="nota" rows="3" placeholder="Ej.: más cara de la creadora al principio · seg 13 sacá la toma del frasco · la landing más larga"></textarea>
