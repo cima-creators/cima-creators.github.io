@@ -26,6 +26,7 @@ h1{font-size:30px;font-weight:700;letter-spacing:-.03em;line-height:1.1}
 .proceso{display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:14px;font-size:13px}
 .proceso b{margin-right:4px}.pp{padding:5px 10px;border-radius:99px;background:var(--soft);color:var(--txt);font-size:12px}
 .pp.armando{background:#FFF3DF;color:#9A6512}.pp.error{background:#FDE8E6;color:#B3261E}
+.origen-v{background:#FFF3DF;color:#7A4B0C;border:1px solid #F3D9A8;border-radius:12px;padding:8px 12px;font-size:12.5px;font-weight:600;margin:8px 0 2px}
 .fila-sol{display:flex;gap:14px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;margin-bottom:18px}
 .fila-sol .marcas{margin-bottom:0}
 .especial{display:flex;align-items:center;gap:12px;border:0;cursor:pointer;text-align:left;padding:11px 20px 11px 14px;border-radius:16px;
@@ -238,6 +239,7 @@ function tGuion(id,it){
   const filas = (it.filas||[]).map((f,i)=>`<div class="fila"><div class="et">${esc((f.etapa||"").toLowerCase())}</div>${editable?`<textarea data-i="${i}" data-orig="${esc(f.texto)}" rows="2">${esc(f.texto)}</textarea>`:`<div class="tx">${esc(f.texto)}</div>`}</div>`).join("");
   return `<div class="cr" id="it-${esc(id)}" style="margin-bottom:12px">
     <div class="meta"><span class="pill m">${esc(it.codigo)}</span>${it.creadora?`<span class="pill">${esc(it.creadora)}</span>`:""}<span class="pill">${esc(it.palabras||"")} palabras</span>${it.winner?`<span class="pill">Variante del winner ${esc(String(it.winner).slice(-6))}</span>`:""}${it.placa?`<span class="pill">Placa: ${esc(it.placa)}</span>`:""}</div>
+    ${it.origen_variantes?`<div class="origen-v">🏆 ${esc(it.origen_variantes)}</div>`:""}
     <h3>${esc(it.titulo||"")}</h3><div class="guion">${filas}</div>
     ${(it.cambios||[]).length?`<div class="hist"><b>Qué corrigió del winner:</b> ${(it.cambios||[]).map(esc).join(" · ")}</div>`:""}
     ${editable?`<h3 style="margin-top:14px">O pedile el cambio con tus palabras</h3>
