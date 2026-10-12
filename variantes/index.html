@@ -311,9 +311,10 @@ $("#vit").addEventListener("click", e => { if(e.target.id==="vit") cerrarIterar(
 // Dos partes (Nacho 10/10): 1 = variantes de B-roll, animados y estáticos · 2 = UGC y founder, todo lo de guiones
 const PARTES = [["p2","UGC · Founder · guiones variantes"],["p1","B-roll · Animado · Estático"]];   // foco: UGC y founder (Nacho 10/10)
 const VISTAS_P = {p1:[["semana","Ganadores"],["aprobar","Para aprobar"],["proceso","En proceso"],["aprobados","Aprobados"]],
-                  p2:[["ugcf","Ganadores"],["g_hooks","Hooks para aprobar"],["g_ugc","Guiones UGC"],["g_founder","Guiones Founder"],["g_broll","Guiones B-roll"]]};
+                  p2:[["ugcf","Ganadores"],["g_hooks","Hooks para aprobar"],["g_ugc","Guiones UGC"],["g_founder","Guiones Founder"]]};
 const VISTAS = [...VISTAS_P.p1, ...VISTAS_P.p2];
-const ES_GUION = it => it.tipo==="hooks" || it.tipo==="guion" || it.tipo==="guion_broll";   // Nacho 11/10: TODO guion (también los de B-roll) va en la parte de UGC · Founder
+const ES_GUION = it => it.tipo==="hooks" || it.tipo==="guion" || it.tipo==="guion_broll";
+const EN_BROLL = it => it.tipo==="guion_broll";   // Nacho 11/10: los guiones B-roll se aprueban y se arman SOLO en la app de b-roll (cima-creators.github.io/miluz/broll)   // Nacho 11/10: TODO guion (también los de B-roll) va en la parte de UGC · Founder
 const ESTADOS_VISTA = {proceso:["procesando","corregir"], aprobar:["revisar","error"], aprobados:["subido","aprobado"]};
 function pedidosEnCurso(){
   const out = [];
@@ -324,14 +325,14 @@ function pedidosEnCurso(){
 function pintar(){
   const vivos = Object.values(items).filter(it => it.estado!=="rechazado");
   const G = {g_hooks:it=>it.tipo==="hooks" && it.estado==="revisar", g_ugc:it=>it.tipo==="guion" && it.version_g!=="founder" && it.estado==="revisar",
-             g_founder:it=>it.tipo==="guion" && it.version_g==="founder" && it.estado==="revisar", g_broll:it=>it.tipo==="guion_broll" && it.estado==="revisar", g_aprobados:()=>false};
+             g_founder:it=>it.tipo==="guion" && it.version_g==="founder" && it.estado==="revisar", g_aprobados:()=>false};
   const cuenta = v => v==="proceso" ? vivos.filter(it=>!ES_GUION(it) && ESTADOS_VISTA.proceso.includes(it.estado)).length + pedidosEnCurso().filter(x=>x.p.tipo!=="guiones").length
                     : (v==="semana" || v==="ugcf") ? 0
                     : G[v] ? vivos.filter(G[v]).length + (v==="g_hooks" ? pedidosEnCurso().filter(x=>x.p.tipo==="guiones").length : 0)
                     : vivos.filter(it=>!ES_GUION(it) && ESTADOS_VISTA[v].includes(it.estado)).length;
   F.parte = F.parte || "p2";
   if(!VISTAS_P[F.parte].some(x=>x[0]===F.vista)) F.vista = VISTAS_P[F.parte][0][0];
-  const totalParte = p => VISTAS_P[p].reduce((t,[v])=> t + (["aprobar","g_hooks","g_ugc","g_founder","g_broll"].includes(v) ? cuenta(v) : 0), 0);
+  const totalParte = p => VISTAS_P[p].reduce((t,[v])=> t + (["aprobar","g_hooks","g_ugc","g_founder"].includes(v) ? cuenta(v) : 0), 0);
   $("#partes").innerHTML = PARTES.map(([p,t]) => { const n = totalParte(p); return `<button class="pt ${F.parte===p?"on":""}" data-parte="${p}">${t}${n?`<b>${n}</b>`:""}</button>`; }).join("");
   document.querySelectorAll("[data-parte]").forEach(b=>b.onclick=()=>{ F.parte=b.dataset.parte; F.vista=VISTAS_P[F.parte][0][0]; soloAd=null; guardarF(); pintar(); window.scrollTo(0,0); });
   $("#vistas").hidden = false;
@@ -421,12 +422,11 @@ function conectarHooks(id){
 function it_estado(id){ return (items[id]||{}).elegidos ? "aprobado" : "corregir"; }
 function pintarGuiones(){
   if(document.querySelector("#gest .editor.on") || (document.activeElement && document.activeElement.closest("#gest input[type=text], #gest textarea, #gest input.texto"))){ pendiente = true; return; }
-  const vivos = Object.entries(items).filter(([,it]) => ES_GUION(it) && it.estado!=="rechazado" && (!soloAd || it.adId===soloAd));
+  const vivos = Object.entries(items).filter(([,it]) => ES_GUION(it) && !EN_BROLL(it) && it.estado!=="rechazado" && (!soloAd || it.adId===soloAd));
   const SUBS = [["hooks","Hooks para aprobar", ([,it])=>it.tipo==="hooks" && it.estado!=="subido"],
     ["ugc","Guiones UGC", ([,it])=>it.tipo==="guion" && it.version_g!=="founder"],   // Nacho 11/10: todos, los aprobados también (abajo)
     ["founder","Guiones Founder", ([,it])=>it.tipo==="guion" && it.version_g==="founder"],
-    ["broll","Guiones B-roll", ([,it])=>it.tipo==="guion_broll"],
-    ["aprobados","Aprobados", ([,it])=>(it.tipo==="guion" || it.tipo==="guion_broll") && ["subido","aprobado"].includes(it.estado)]];
+    ["aprobados","Aprobados", ([,it])=>it.tipo==="guion" && ["subido","aprobado"].includes(it.estado)]];
   F.gsub = F.gsub || "hooks";
   const filtro_ = (SUBS.find(x=>x[0]===F.gsub)||SUBS[0])[2];
   const nombreAd = soloAd ? ((vivos[0]||[,{}])[1].adNombre || soloAd) : "";
@@ -652,7 +652,7 @@ function botonGuiones(x, chico){
   const p = ((semana[x.m]||{}).pedidos||{})[x.a.id] || {};
   const att = `data-m="${esc(x.m)}" data-ad="${esc(x.a.id)}"`;
   const cuantas = `<div class="cuantas" data-cuantasg="${esc(x.a.id)}"><span>¿Cuántos hooks?</span>${[3,5,9].map(k=>`<button class="btn dark pedir-g" ${att} data-n="${k}">${k}</button>`).join("")}</div>`;
-  const gs = Object.values(items).filter(it=>it.adId===x.a.id && ES_GUION(it) && it.estado!=="rechazado");
+  const gs = Object.values(items).filter(it=>it.adId===x.a.id && ES_GUION(it) && !EN_BROLL(it) && it.estado!=="rechazado");
   const rev = gs.filter(it=>it.estado==="revisar").length;
   if(p.tipo==="guiones" && p.estado==="pedido") return `<div class="acciones" style="grid-template-columns:1fr auto"><button class="btn dark" disabled>Hooks en cola · ~30 min</button><button class="btn no cancelar-it" ${att} title="Cancelar">✕</button></div>`;
   if(p.tipo==="guiones" && p.estado==="procesando") return `<div class="acciones" style="grid-template-columns:1fr"><button class="btn dark" disabled>Escribiendo hooks…</button></div>`;
