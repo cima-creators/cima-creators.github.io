@@ -341,7 +341,7 @@ function tarjeta(d){
   if (d.estado === "descartada") botones = `${mas}<button class="btn sm" data-acc="volver" data-id="${esc(d.id)}">Recuperar</button>`;
   if (d.estado === "produciendo" || d.estado === "fallo") botones = mas;
   if (d.estado === "producido") botones = `${mas}<button class="btn sm" data-acc="cambiar" data-id="${esc(d.id)}">Cambiar</button><button class="btn sm dark" data-acc="aprobar" data-id="${esc(d.id)}">Aprobar</button>`;
-  if (d.estado === "aprobado") botones = `${mas}${d.driveUrl ? `<a class="btn sm ok" href="${esc(d.driveUrl)}" target="_blank" rel="noopener">Ver en Drive</a>` : `<span class="btn sm" style="flex:1">Pasando a Drive…</span>`}`;
+  if (d.estado === "aprobado") botones = `${mas}<button class="btn sm dark" data-acc="iterar" data-id="${esc(d.id)}">Iterar</button>${d.driveUrl ? `<a class="btn sm ok" href="${esc(d.driveUrl)}" target="_blank" rel="noopener">Ver en Drive</a>` : `<span class="btn sm" style="flex:1">Pasando a Drive…</span>`}`;
   const caja = d.estado === "producido" ? `<div class="cambio" hidden><textarea placeholder="¿Qué cambiamos? Ej: al principio, cuando dice las semanas, mostrá la uña pintándose" rows="3"></textarea><div class="acciones"><button class="btn sm" data-acc="nocambio" data-id="${esc(d.id)}">Cancelar</button><button class="btn sm dark" data-acc="enviarcambio" data-id="${esc(d.id)}">Enviar cambio</button></div></div>` : "";
   const bajar = prod ? `<div class="links"><a href="${esc(d.finalSubs || d.final)}" target="_blank" rel="noopener" download>Bajar con subtítulos</a>${d.finalSubs ? ` · <a href="${esc(d.final)}" target="_blank" rel="noopener" download>sin subtítulos</a>` : ""}</div>` : "";
   const nueva = d.fecha === hoy && d.estado === "nueva";
@@ -396,13 +396,14 @@ async function accion(id, acc){
     return;
   }
   if (acc === "elegir") { abrirPlan(id); return; }
+  if (acc === "iterar") { abrirIterar(id); return; }
   const estado = {elegir:"elegida", soltar:"nueva", descartar:"descartada", volver:"nueva"}[acc];
   const extra = acc === "elegir" ? {eligio: quien, eligioEn: new Date().toISOString()} : {};
   try { await fs.updateDoc(fs.doc(fs.db, "animados_luz", id), {estado, ...extra}); toast({elegir:"Elegida: se produce sola ✓", descartar:"Descartada", volver:"Recuperada", soltar:"Cancelada"}[acc]); }
   catch (e) { toast("No se pudo guardar: " + e.code); }
 }
 
-let planId = null, vocExtra = [];
+let planId = null, vocExtra = [], modo = "elegir";
 fetch("voc-extra.json").then(r => r.json()).then(x => {
   vocExtra = x;
   $("#vocExtra").innerHTML = '<option value="">+ Sumar un dolor del VOC para variar…</option>' +
@@ -424,15 +425,16 @@ function planTexto(d, a){
     `Qué NO va: `,
   ].join("\n");
 }
-function bloqueAng(d, a, on, propio){
+function bloqueAng(d, a, on, propio, tipo, texto){
   const el = document.createElement("div");
   el.className = "ang" + (on ? " on" : "");
   el.dataset.nombre = a.nombre || "";
+  el.dataset.tipo = tipo || "";
   el.innerHTML = `<label class="cab"><input type="checkbox" ${on ? "checked" : ""}><div>
       ${propio ? `<input class="nom" placeholder="Nombre del ángulo (ej: me da vergüenza mostrar las manos)">` : `<b>${esc(a.nombre)}</b>${a.enfoque ? ` <span class="fr">· ${esc(a.enfoque)}</span>` : ""}`}
       ${a.tag ? `<div><span class="tag2 ${a.validado === false ? "nuevo" : ""}">${esc(a.tag)}</span></div>` : ""}
       ${a.frase ? `<div class="fr">«${esc(a.frase)}»${a.cuantas ? ` · ${esc(a.cuantas)} personas` : ""}</div>` : ""}
-    </div></label><textarea>${esc(propio ? planTexto(d, {nombre: "", bajada: ""}) : planTexto(d, a))}</textarea>`;
+    </div></label><textarea>${esc(texto || (propio ? planTexto(d, {nombre: "", bajada: ""}) : planTexto(d, a)))}</textarea>`;
   const cb = el.querySelector("input[type=checkbox]");
   cb.onchange = () => el.classList.toggle("on", cb.checked);
   if (propio) el.querySelector(".nom").oninput = e => {
@@ -444,7 +446,9 @@ function bloqueAng(d, a, on, propio){
 }
 function abrirPlan(id){
   const d = docs.find(x => x.id === id); if (!d) return;
-  planId = id;
+  planId = id; modo = "elegir";
+  $("#planT").textContent = "¿Con qué ángulos lo hacemos?";
+  $("#planSi").textContent = "Producir";
   const f = d.formato || "otro";
   $("#planImg").src = d.thumb || "";
   $("#planMarca").textContent = `${d.marca} · ${f === "otro" ? "Otro formato" : f + " · " + FMT[f]}`;
@@ -456,13 +460,40 @@ function abrirPlan(id){
   $("#vocExtra").value = "";
   $("#plan").classList.add("on");
 }
+
+window.abrirIterar = id => abrirIterar(id);
+const ESTILOS_IT = ["Pixar / Disney 3D", "Bloques de juguete tipo LEGO", "2D dibujo animado", "CGI realista", "Plastilina (claymation)"];
+function abrirIterar(id){
+  const d = docs.find(x => x.id === id); if (!d) return;
+  planId = id; modo = "iterar";
+  $("#planT").textContent = "¿Cómo lo iteramos?";
+  $("#planSi").textContent = "Producir iteraciones";
+  $("#planImg").src = d.thumb || "";
+  $("#planMarca").textContent = `${d.codigo || ""} · ${d.marca}${d.anguloElegido ? " · " + d.anguloElegido : ""}`;
+  $("#planIdea").textContent = "Tildá las que quieras: cada una sale como un video nuevo. El plan de cada una se puede editar.";
+  $("#angs").innerHTML = "";
+  const tit = t => { const h = document.createElement("div"); h.className = "ayuda"; h.innerHTML = `<b>${t}</b>`; $("#angs").appendChild(h); };
+  tit("Mismo guion y misma voz, otra animación");
+  ESTILOS_IT.forEach(e => bloqueAng(d, {nombre: "Otra animación · " + e}, false, false, "otra_animacion",
+    `Iteración de ${d.codigo}: mismo guion y mismo audio, solo cambia la animación.\nEstilo: ${e}\n\nQué NO va: `));
+  tit("Mismo video, otro ángulo");
+  (d.angulos || []).filter(a => a.nombre !== d.anguloElegido).forEach(a => bloqueAng(d, a, false, false, "otro_angulo",
+    `Iteración de ${d.codigo}: misma estructura y ritmo, otro ángulo.\n` + planTexto(d, a)));
+  tit("Mismo video, otro hook (solo los primeros 3 segundos)");
+  const otras = (d.angulos || []).map(a => a.frase).filter(f => f && f !== d.fraseVoc);
+  bloqueAng(d, {nombre: "Otro hook"}, false, false, "otro_hook",
+    `Iteración de ${d.codigo}: mismo video, solo cambia el hook (lo que se dice, la placa y los clips de los primeros ~3 s).\n` +
+    `Hook nuevo con la frase de la clienta: «${otras[0] || ""}»\nPlaca: \n\nQué NO va: `);
+  $("#vocExtra").value = "";
+  $("#plan").classList.add("on");
+}
 $("#vocExtra").onchange = e => {
   const v = vocExtra[+e.target.value]; if (!v) return;
   const d = docs.find(x => x.id === planId);
-  bloqueAng(d, {nombre: v.dolor, tag: "Del VOC · " + v.angulo, validado: false, frase: v.frases[0], cuantas: v.cuantas, bajada: ""}, true);
+  bloqueAng(d, {nombre: v.dolor, tag: "Del VOC · " + v.angulo, validado: false, frase: v.frases[0], cuantas: v.cuantas, bajada: ""}, true, false, modo === "iterar" ? "otro_angulo" : "");
   e.target.value = "";
 };
-$("#angPropio").onclick = () => { const d = docs.find(x => x.id === planId); bloqueAng(d, {}, true, true).querySelector(".nom").focus(); };
+$("#angPropio").onclick = () => { const d = docs.find(x => x.id === planId); bloqueAng(d, {}, true, true, modo === "iterar" ? "otro_angulo" : "").querySelector(".nom").focus(); };
 function cerrarPlan(){ $("#plan").classList.remove("on"); planId = null; }
 $("#planNo").onclick = cerrarPlan;
 $("#plan").addEventListener("click", e => { if (e.target.id === "plan") cerrarPlan(); });
@@ -470,10 +501,23 @@ document.addEventListener("keydown", e => { if (e.key === "Escape" && planId) ce
 const slug = t => (t || "propio").toLowerCase().normalize("NFD").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 30) || "propio";
 $("#planSi").onclick = async () => {
   const id = planId, d = docs.find(x => x.id === id);
-  const elegidos = [...document.querySelectorAll("#angs .ang.on")].map(el => ({nombre: el.dataset.nombre, plan: el.querySelector("textarea").value.trim()}));
-  if (!elegidos.length) { toast("Tildá al menos un ángulo"); return; }
+  const elegidos = [...document.querySelectorAll("#angs .ang.on")].map(el => ({nombre: el.dataset.nombre, tipo: el.dataset.tipo, plan: el.querySelector("textarea").value.trim()}));
+  if (!elegidos.length) { toast("Tildá al menos una opción"); return; }
   if (elegidos.some(x => !x.plan)) { toast("Hay un plan vacío"); return; }
   const marca = {eligio: quien, eligioEn: new Date().toISOString()};
+  if (modo === "iterar") {
+    const base = {...d}; delete base.id;
+    for (const k of ["final","finalSubs","finalLocal","finalSubsLocal","codigo","enDrive","driveUrl","driveId","driveLink","driveRuta",
+                     "producidoEn","aprobadoEn","aprobo","cambioNota","cambioEn","costoUsd","produciendoDesde","turno","falloMotivo","productor"]) delete base[k];
+    try {
+      for (const [k, x] of elegidos.entries()) {
+        await fs.setDoc(fs.doc(fs.db, "animados_luz", `${id}__it-${slug(x.nombre)}-${Date.now() % 100000 + k}`),
+          {...base, estado: "lista", plan: x.plan, anguloElegido: x.nombre, iteracion: {tipo: x.tipo || "otro_angulo", base: d.codigo, baseDoc: id}, ...marca});
+      }
+      cerrarPlan(); toast(`${elegidos.length} iteraci${elegidos.length > 1 ? "ones" : "ón"} en producción ✓`);
+    } catch (e) { toast("No se pudo guardar: " + e.code); }
+    return;
+  }
   try {
     await fs.updateDoc(fs.doc(fs.db, "animados_luz", id), {estado: "elegida", plan: elegidos[0].plan, anguloElegido: elegidos[0].nombre, ...marca});
     const base = {...d}; delete base.id;
