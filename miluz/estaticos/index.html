@@ -153,6 +153,8 @@ a.btn{display:inline-flex;align-items:center;justify-content:center;text-decorat
 #iterar .tipo small{color:var(--mut)}
 .adj{display:flex;align-items:center;gap:10px;margin-top:8px;padding:8px 10px;border:1px dashed var(--line2);border-radius:12px;cursor:pointer;font-size:12.5px;color:var(--mut);background:var(--soft)}
 .adj img{width:44px;height:55px;object-fit:cover;border-radius:8px}
+.adj span{flex:1;min-width:0}
+.quitar{border:1px solid var(--line2);background:var(--card);color:var(--bad);border-radius:99px;padding:4px 10px;font-size:12px;font-weight:600;cursor:pointer;flex-shrink:0}
 #subir{position:fixed;inset:0;background:rgba(10,8,8,.6);display:none;align-items:center;justify-content:center;z-index:16;padding:16px}
 #subir.on{display:flex}
 #subir .sx{background:var(--card);border-radius:var(--r);max-width:520px;width:100%;max-height:92vh;overflow:auto;padding:20px}
@@ -200,7 +202,7 @@ a.btn{display:inline-flex;align-items:center;justify-content:center;text-decorat
   <p class="sub" style="margin:0 0 14px">Subí la imagen (foto o captura) o pegá un link. La hacemos con tus productos en 3 opciones y aparece en <b>Revisar</b>.</p>
   <div class="tipo"><label><input type="radio" name="tipo" value="otra" checked> Es de otra marca <small>(copiamos el formato)</small></label>
     <label><input type="radio" name="tipo" value="propia"> Es un anuncio nuestro <small>(lo renovamos)</small></label></div>
-  <label class="drop" id="drop"><input type="file" id="archivo" accept="image/*" hidden><img id="prev" alt="" hidden><span id="dropTxt">Tocá para subir una foto o captura</span></label>
+  <label class="drop" id="drop" style="position:relative"><input type="file" id="archivo" accept="image/*" hidden><img id="prev" alt="" hidden><span id="dropTxt">Tocá para subir una foto o captura</span><button type="button" class="quitar" id="quitarPrev" hidden style="position:absolute;top:8px;right:8px">✕ Quitar</button></label>
   <div class="lbl" style="margin-top:12px">…o pegá un link</div>
   <input id="link" class="campo" placeholder="Link del anuncio, de Instagram o de una imagen"><small class="sub" style="display:block;margin-top:4px">Si el link no anda (algunos de Facebook piden sesión), mejor subí una captura.</small>
   <div class="lbl" style="margin-top:12px">¿Qué querés? (opcional)</div>
@@ -258,7 +260,9 @@ let archivoSubido = null;
 $("#renovar").onclick = () => { $("#subir").classList.add("on"); $("#subirErr").textContent = ""; };
 $("#subirNo").onclick = () => $("#subir").classList.remove("on");
 $("#subir").onclick = e => { if (e.target.id === "subir") $("#subir").classList.remove("on"); };
-$("#archivo").onchange = e => { archivoSubido = e.target.files[0] || null; if (archivoSubido) { $("#prev").src = URL.createObjectURL(archivoSubido); $("#prev").hidden = false; $("#dropTxt").hidden = true; } };
+$("#archivo").onchange = e => { archivoSubido = e.target.files[0] || null; if (archivoSubido) { $("#prev").src = URL.createObjectURL(archivoSubido); $("#prev").hidden = false; $("#dropTxt").hidden = true; $("#quitarPrev").hidden = false; } };
+$("#quitarPrev").onclick = e => { e.preventDefault(); e.stopPropagation(); archivoSubido = null; $("#archivo").value = "";
+  $("#prev").hidden = true; $("#dropTxt").hidden = false; $("#quitarPrev").hidden = true; };
 function aJpg(file){   // cualquier foto del celu (heic, webp, png) → JPG de hasta 1600 px
   return new Promise((ok, mal) => { const img = new Image(); img.onload = () => { const k = Math.min(1, 1600 / Math.max(img.width, img.height));
     const c = document.createElement("canvas"); c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
@@ -273,10 +277,14 @@ async function subirImagen(file, pref = "up"){   // → link público (la regla 
   const meta = await resp.json();
   return `https://firebasestorage.googleapis.com/v0/b/${B}/o/${encodeURIComponent(ruta)}?alt=media&token=${meta.downloadTokens}`;
 }
-const ADJ = (id) => `<label class="adj"><input type="file" accept="image/*" hidden id="${id}"><span>📎 Agregar una imagen (opcional)</span><img alt="" hidden></label>`;
+const ADJ = (id) => `<label class="adj"><input type="file" accept="image/*" hidden id="${id}"><span>📎 Agregar una imagen (opcional)</span><img alt="" hidden><button type="button" class="quitar" hidden>✕ Quitar</button></label>`;
 function engancharAdj(input){
-  input.onchange = () => { const f = input.files[0], lab = input.closest(".adj"); if (!f) return;
-    lab.querySelector("img").src = URL.createObjectURL(f); lab.querySelector("img").hidden = false; lab.querySelector("span").textContent = "📎 " + f.name + " · tocá para cambiarla"; };
+  const lab = input.closest(".adj"), q = lab.querySelector(".quitar");
+  input.onchange = () => { const f = input.files[0]; if (!f) return;
+    lab.querySelector("img").src = URL.createObjectURL(f); lab.querySelector("img").hidden = false; q.hidden = false;
+    lab.querySelector("span").textContent = "📎 " + f.name + " · tocá para cambiarla"; };
+  q.onclick = e => { e.preventDefault(); e.stopPropagation(); input.value = "";
+    lab.querySelector("img").hidden = true; q.hidden = true; lab.querySelector("span").textContent = "📎 Agregar una imagen (opcional)"; };
 }
 
 $("#subirSi").onclick = async () => {
