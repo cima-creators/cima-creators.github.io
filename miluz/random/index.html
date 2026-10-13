@@ -159,6 +159,7 @@ summary{cursor:pointer;font-weight:600;font-size:13px}
 <div id="modal" role="dialog" aria-modal="true" aria-labelledby="mT"><div class="box">
   <h2 id="mT">Revisá las frases</h2>
   <p class="sub" id="mSub" style="margin:0"></p>
+  <p class="sub" style="margin:0">Salen 3 videos con las mismas tomas, uno por cada versión del hook. Las «Toma 2/3…» van en los tres.</p>
   <div id="mBloques" style="display:flex;flex-direction:column;gap:10px"></div>
   <div><h4>Algo que quieras pedir (opcional)</h4><textarea id="mNota" placeholder="Ej: que el después sea con uñas rojas; música más tranqui"></textarea></div>
   <div class="acciones"><button class="btn" id="mNo">Cancelar</button><button class="btn dark" id="mSi">Hacer las 3 versiones</button></div>
@@ -250,6 +251,8 @@ function tarjeta(d){
       ${frases(d)}
       ${aviso(d)}
       <div class="extra">
+        ${(d.versiones || []).length ? `<div><h4>Las 3 versiones del hook</h4><div class="frases">${[d.bloques && d.bloques[0] && d.bloques[0].texto, ...d.versiones].filter(Boolean).map((t, i) => `<div class="fr"><i>V${i + 1}</i><span>${esc(t)}</span></div>`).join("")}</div></div>` : ""}
+        ${d.refMarca ? `<div class="links">Referencia: ${esc(d.refMarca)}${d.refTextos ? " · «" + esc(String(d.refTextos).slice(0, 90)) + "»" : ""}</div>` : ""}
         ${d.fundamento ? `<div><h4>De dónde sale el hook</h4><div class="txt">${esc(d.fundamento)}</div></div>` : ""}
         ${d.musica ? `<div class="links">Música: ${esc(d.musica)}</div>` : ""}
         ${(d.bloques || []).length ? `<div class="links">Tomas: ${d.bloques.map(b => b.tomas.length).reduce((a, b) => a + b, 0)} reales de las creadoras</div>` : ""}
@@ -285,7 +288,8 @@ function abrir(id){
   const d = docs.find(x => x.id === id); if (!d) return;
   abierto = id;
   $("#mSub").textContent = `${d.moldeNombre || ""}${d.angulo && ANG[d.angulo] ? " · " + ANG[d.angulo] : ""}. Cambiá lo que quieras: va encima de cada toma, en ese orden.`;
-  $("#mBloques").innerHTML = (d.bloques || []).map((b, i) => b.texto ? `<label class="bl">${i === 0 ? "Hook" : "Toma " + (i + 1)}<input class="ed" data-i="${i}" value="${esc(b.texto)}" maxlength="90"></label>` : "").join("");
+  $("#mBloques").innerHTML = (d.bloques || []).map((b, i) => b.texto ? `<label class="bl">${i === 0 ? "Hook · versión 1" : "Toma " + (i + 1)}<input class="ed" data-i="${i}" value="${esc(b.texto)}" maxlength="90"></label>` : "").join("")
+    + (d.versiones || []).map((t, j) => `<label class="bl">Hook · versión ${j + 2}<input class="ed" data-v="${j}" value="${esc(t)}" maxlength="90"></label>`).join("");
   $("#mNota").value = "";
   $("#modal").classList.add("on");
 }
@@ -297,8 +301,9 @@ $("#mSi").onclick = async () => {
   const d = docs.find(x => x.id === abierto); if (!d) return cerrar();
   const bloques = (d.bloques || []).map((b, i) => { const inp = document.querySelector(`#mBloques input[data-i="${i}"]`); return inp ? {...b, texto: inp.value.trim()} : b; });
   if (bloques.some((b, i) => (d.bloques[i].texto && !b.texto))) return toast("Ninguna frase puede quedar vacía");
+  const versiones = (d.versiones || []).map((t, j) => { const inp = document.querySelector(`#mBloques input[data-v="${j}"]`); return inp ? inp.value.trim() || t : t; });
   const id = abierto; cerrar();
-  await guardar(id, {estado: "elegida", bloques, nota: $("#mNota").value.trim(), eligio: quien, eligioEn: new Date().toISOString()}, "Elegida: salen 3 versiones ✓");
+  await guardar(id, {estado: "elegida", bloques, versiones, nota: $("#mNota").value.trim(), eligio: quien, eligioEn: new Date().toISOString()}, "Elegida: salen 3 versiones ✓");
 };
 </script>
 </body>
