@@ -158,6 +158,7 @@ details summary{cursor:pointer;font-size:12.5px;font-weight:600;color:var(--acc)
 .revbtn{background:var(--warn-bg);color:var(--warn);border:0;border-radius:12px;font-weight:600;font-size:13px;padding:9px 14px;cursor:pointer;min-height:40px}
 .cuantas{display:none;grid-template-columns:auto 1fr 1fr 1fr;gap:6px;align-items:center}
 .cuantas.on{display:grid}
+.cuantas .nota-p,#vit .nota-p{grid-column:1/-1;font-size:12.5px;padding:9px 11px}
 .cuantas span{font-size:12px;color:var(--mut);font-weight:600;margin-right:2px}
 body.modal{overflow:hidden}
 #vit{position:fixed;inset:0;background:rgba(38,33,30,.45);z-index:30;display:flex;align-items:center;justify-content:center;padding:16px}
@@ -234,6 +235,7 @@ body.modal{overflow:hidden}
   <div id="vest" hidden><div class="aplicados" id="estFiltro" style="margin-bottom:12px"></div><div id="gest"></div></div>
   <div id="vsem" hidden><div id="manualBox"></div><div class="filtros" id="filtros"></div><div class="resumen-sem" id="rsem"></div><div class="grilla" id="gsem"></div></div>
   <div id="vit" hidden><div class="panel"><button class="btn cerrar" id="cerrarVit">✕</button><h3>¿Cómo lo iterás?</h3><div class="sub2" id="vitAd"></div>
+    <textarea id="vitNota" class="nota nota-p" rows="2" placeholder="Indicación (opcional): fondo rosa, que el titular hable de las uñas que se pelan, más corto…"></textarea>
     <div class="op"><b>Mismo formato</b><small id="vitFmt">Variantes del mismo anuncio. Van a «Para aprobar» de esta parte.</small><div class="ns"></div></div>
     <div class="op"><b>Guiones founder (Luz)</b><small>Mismo ángulo, guion para que lo grabe Luz. Primero los hooks en «UGC · Founder › Hooks para aprobar».</small><div class="ns"></div></div>
   </div></div>
@@ -608,11 +610,11 @@ function pintarSemana(){
   $("#gsem").innerHTML = filas.map((x,i)=>tarjetaSemana(x,i,conVar[x.a.id]||0,porRev[x.a.id]||0)).join("");
   document.querySelectorAll("#gsem .iterar").forEach(b=>b.onclick=()=>abrirIterar(b.dataset.m, b.dataset.ad, b.dataset.tipo, b.dataset.nombre));
   document.querySelectorAll("#gsem .iterar-b").forEach(b=>b.onclick=()=>{ document.querySelector(`[data-cuantasb="${b.dataset.ad}"]`).classList.toggle("on"); });
-  document.querySelectorAll("#gsem .pedir-b").forEach(b=>b.onclick=async()=>{ try { await fb.updateDoc(fb.doc(fb.db,"variantes_semana",b.dataset.m), {[`pedidos.${b.dataset.ad}`]: {estado:"pedido", tipo:"broll", quien, n:+b.dataset.n, cuando:new Date().toISOString()}}); toast("Listo: los hooks salen en ~5 min en «Para aprobar»"); } catch(e){ toast("No se pudo: "+e.message); } });
+  document.querySelectorAll("#gsem .pedir-b").forEach(b=>b.onclick=async()=>{ try { await fb.updateDoc(fb.doc(fb.db,"variantes_semana",b.dataset.m), {[`pedidos.${b.dataset.ad}`]: {estado:"pedido", tipo:"broll", quien, n:+b.dataset.n, nota:notaDe(b), cuando:new Date().toISOString()}}); toast("Listo: los hooks salen en ~5 min en «Para aprobar»"); } catch(e){ toast("No se pudo: "+e.message); } });
   document.querySelectorAll("#gsem .iterar-g").forEach(b=>b.onclick=()=>{ document.querySelector(`[data-cuantasg="${b.dataset.ad}"]`).classList.toggle("on"); });
   document.querySelectorAll("#gsem .ver-g").forEach(b=>b.onclick=()=>irA("g_hooks", b.dataset.ad));
-  document.querySelectorAll("#gsem .pedir-g").forEach(b=>b.onclick=()=>pedirGuiones(b.dataset.m, b.dataset.ad, +b.dataset.n));
-  document.querySelectorAll("#gsem .pedir").forEach(b=>b.onclick=()=>pedirIterar(b.dataset.m, b.dataset.ad, "pedido", +b.dataset.n));
+  document.querySelectorAll("#gsem .pedir-g").forEach(b=>b.onclick=()=>pedirGuiones(b.dataset.m, b.dataset.ad, +b.dataset.n, notaDe(b)));
+  document.querySelectorAll("#gsem .pedir").forEach(b=>b.onclick=()=>pedirIterar(b.dataset.m, b.dataset.ad, "pedido", +b.dataset.n, notaDe(b)));
   document.querySelectorAll("#gsem .cancelar-it").forEach(b=>b.onclick=()=>pedirIterar(b.dataset.m, b.dataset.ad, "cancelado"));
   document.querySelectorAll("#gsem .ver-var").forEach(b=>b.onclick=()=>irA(b.textContent.includes("revisar")?"aprobar":"aprobados", b.dataset.ad));
   document.querySelectorAll("#gsem .vid[data-drive]").forEach(vd=>vd.addEventListener("click",()=>{ const u=vd.dataset.link; if(u) window.open(u,"_blank","noopener"); }));
@@ -646,12 +648,12 @@ function botonBroll(x){
   const att = `data-m="${esc(x.m)}" data-ad="${esc(x.a.id)}"`;
   if(p.tipo==="broll" && (p.estado==="pedido"||p.estado==="procesando")) return `<div class="acciones" style="grid-template-columns:1fr"><button class="btn dark" disabled>Guion nuevo: ${p.estado==="pedido"?"en cola":"escribiendo hooks…"}</button></div>`;
   return `<div class="acciones" style="grid-template-columns:1fr"><button class="btn iterar-b" ${att}>Guion nuevo + video</button></div>
-    <div class="cuantas" data-cuantasb="${esc(x.a.id)}"><span>¿Cuántos hooks?</span>${[3,5].map(k=>`<button class="btn dark pedir-b" ${att} data-n="${k}">${k}</button>`).join("")}</div>`;
+    <div class="cuantas" data-cuantasb="${esc(x.a.id)}"><span>¿Cuántos hooks?</span>${[3,5].map(k=>`<button class="btn dark pedir-b" ${att} data-n="${k}">${k}</button>`).join("")}<textarea class="nota nota-p" rows="2" placeholder="Indicación (opcional): fondo rosa, que el titular hable de las uñas que se pelan, más corto…"></textarea></div>`;
 }
 function botonGuiones(x, chico){
   const p = ((semana[x.m]||{}).pedidos||{})[x.a.id] || {};
   const att = `data-m="${esc(x.m)}" data-ad="${esc(x.a.id)}"`;
-  const cuantas = `<div class="cuantas" data-cuantasg="${esc(x.a.id)}"><span>¿Cuántos hooks?</span>${[3,5,9].map(k=>`<button class="btn dark pedir-g" ${att} data-n="${k}">${k}</button>`).join("")}</div>`;
+  const cuantas = `<div class="cuantas" data-cuantasg="${esc(x.a.id)}"><span>¿Cuántos hooks?</span>${[3,5,9].map(k=>`<button class="btn dark pedir-g" ${att} data-n="${k}">${k}</button>`).join("")}<textarea class="nota nota-p" rows="2" placeholder="Indicación (opcional): fondo rosa, que el titular hable de las uñas que se pelan, más corto…"></textarea></div>`;
   const gs = Object.values(items).filter(it=>it.adId===x.a.id && ES_GUION(it) && !EN_BROLL(it) && it.estado!=="rechazado");
   const rev = gs.filter(it=>it.estado==="revisar").length;
   if(p.tipo==="guiones" && p.estado==="pedido") return `<div class="acciones" style="grid-template-columns:1fr auto"><button class="btn dark" disabled>Hooks en cola · ~30 min</button><button class="btn no cancelar-it" ${att} title="Cancelar">✕</button></div>`;
@@ -659,8 +661,10 @@ function botonGuiones(x, chico){
   if(gs.length) return `<div class="acciones" style="grid-template-columns:1fr 1fr"><button class="btn ${chico?"":"ok"} ver-g" data-ad="${esc(x.a.id)}">${rev?`Guiones: ${rev} para revisar`:`Guiones (${gs.length})`}</button><button class="btn iterar-g" ${att}>Más guiones</button></div>${cuantas}`;
   return `<div class="acciones" style="grid-template-columns:1fr"><button class="btn ${chico?"":"ok"} iterar-g" ${att}>${chico?"Guiones UGC + founder":"Pedir guiones (UGC + founder)"}</button></div>${cuantas}`;
 }
-async function pedirGuiones(m, ad, n){
-  try { await fb.updateDoc(fb.doc(fb.db,"variantes_semana",m), {[`pedidos.${ad}`]: {estado:"pedido", tipo:"guiones", quien, n, cuando:new Date().toISOString()}});
+// Luz 13/10: indicación opcional al pedir (fondo rosa, que el titular hable de…): va como pedidos.<id>.nota y el bot la usa como indicación principal
+function notaDe(b){ const t = b.closest(".cuantas")?.querySelector(".nota-p"); return t ? t.value.trim() : ""; }
+async function pedirGuiones(m, ad, n, nota=""){
+  try { await fb.updateDoc(fb.doc(fb.db,"variantes_semana",m), {[`pedidos.${ad}`]: {estado:"pedido", tipo:"guiones", quien, n, nota, cuando:new Date().toISOString()}});
     toast(`Listo: ${n} hooks por versión en cola. Salen en ~5 min en «Parte 2 › Hooks para aprobar»`);
   } catch(e){ toast("No se pudo guardar: "+e.message); }
 }
@@ -672,7 +676,7 @@ function botonIterar(x, nvar, nrev){
   if(p.tipo==="founder" && (p.estado==="pedido"||p.estado==="procesando")) return `<div class="acciones" style="grid-template-columns:1fr"><button class="btn dark" disabled>Guiones founder: ${p.estado==="pedido"?"hooks en cola":"escribiendo hooks…"}</button></div>`;
   if(p.estado==="pedido") return `<div class="acciones" style="grid-template-columns:1fr auto"><button class="btn dark" disabled>${p.n||4} en cola · salen en ~30 min</button><button class="btn no cancelar-it" ${att} title="Cancelar">✕</button></div>`;
   if(p.estado==="procesando") return `<div class="acciones" style="grid-template-columns:1fr"><button class="btn dark" disabled>Generando variantes…</button></div>`;
-  const cuantas = `<div class="cuantas" data-cuantas="${esc(x.a.id)}"><span>¿Cuántas?</span>${[3,5,9].map(k=>`<button class="btn dark pedir" ${att} data-n="${k}">${k}</button>`).join("")}</div>`;
+  const cuantas = `<div class="cuantas" data-cuantas="${esc(x.a.id)}"><span>¿Cuántas?</span>${[3,5,9].map(k=>`<button class="btn dark pedir" ${att} data-n="${k}">${k}</button>`).join("")}<textarea class="nota nota-p" rows="2" placeholder="Indicación (opcional): fondo rosa, que el titular hable de las uñas que se pelan, más corto…"></textarea></div>`;
   if(nvar) return `<div class="acciones" style="grid-template-columns:1fr 1fr"><button class="btn ok ver-var" data-ad="${esc(x.a.id)}">${nrev?`${nrev} para revisar`:`Variantes (${nvar})`}</button><button class="btn iterar" ${att}>Iterar de nuevo</button></div>${cuantas}`;
   return `<div class="acciones" style="grid-template-columns:1fr"><button class="btn ok iterar" ${att}>Iterar este</button></div>${cuantas}`;
 }
@@ -684,17 +688,18 @@ function abrirIterar(m, ad, tipo, nombre){
   const [nsF, nsG] = v.querySelectorAll(".ns");
   nsF.innerHTML = [3,5,9].map(k=>`<button class="btn dark" data-k="${k}">${k}</button>`).join("");
   nsG.innerHTML = [3,5,9].map(k=>`<button class="btn ok" data-k="${k}">${k} hooks</button>`).join("");
-  nsF.querySelectorAll("button").forEach(b=>b.onclick=()=>{ cerrarIterar(); pedirIterar(m, ad, "pedido", +b.dataset.k); });
-  nsG.querySelectorAll("button").forEach(b=>b.onclick=()=>{ cerrarIterar(); pedirFounder(m, ad, +b.dataset.k); });
+  $("#vitNota").value = "";
+  nsF.querySelectorAll("button").forEach(b=>b.onclick=()=>{ const n_=$("#vitNota").value.trim(); cerrarIterar(); pedirIterar(m, ad, "pedido", +b.dataset.k, n_); });
+  nsG.querySelectorAll("button").forEach(b=>b.onclick=()=>{ const n_=$("#vitNota").value.trim(); cerrarIterar(); pedirFounder(m, ad, +b.dataset.k, n_); });
 }
 function cerrarIterar(){ $("#vit").hidden = true; if($("#vvar").hidden) document.body.classList.remove("modal"); }
-async function pedirFounder(m, ad, n){
-  try { await fb.updateDoc(fb.doc(fb.db,"variantes_semana",m), {[`pedidos.${ad}`]: {estado:"pedido", tipo:"founder", quien, n, cuando:new Date().toISOString()}});
+async function pedirFounder(m, ad, n, nota=""){
+  try { await fb.updateDoc(fb.doc(fb.db,"variantes_semana",m), {[`pedidos.${ad}`]: {estado:"pedido", tipo:"founder", quien, n, nota, cuando:new Date().toISOString()}});
     toast(`Listo: ${n} hooks founder en cola. Salen en ~30 min en «UGC · Founder › Hooks para aprobar»`);
   } catch(e){ toast("No se pudo guardar: "+e.message); }
 }
-async function pedirIterar(m, ad, estado, n){
-  try { await fb.updateDoc(fb.doc(fb.db,"variantes_semana",m), {[`pedidos.${ad}`]: {estado, quien, n:n||4, cuando:new Date().toISOString()}});
+async function pedirIterar(m, ad, estado, n, nota=""){
+  try { await fb.updateDoc(fb.doc(fb.db,"variantes_semana",m), {[`pedidos.${ad}`]: {estado, quien, n:n||4, nota, cuando:new Date().toISOString()}});
     toast(estado==="pedido" ? "Listo: lo ves en «En proceso». Salen en ~30 min" : "Cancelado");
   } catch(e){ toast("No se pudo guardar: "+e.message); }
 }
