@@ -158,7 +158,6 @@ async function arrancar() {
   escuchar("edi", query(collection(db, "edicion_cola"), where("marca", "==", "miluz")), d => t(d, "actualizado", "creado"));
   escuchar("var", query(collection(db, "variantes_cola"), where("marca", "==", "miluz")), d => t(d, "actualizado", "creado"));
   escuchar("bro", collection(db, "broll_luz"), d => t(d, "actualizado", "creado"));
-  escuchar("ugc", collection(db, "ugcia_luz"), d => t(d, "aprobadoEn", "revisarEn", "clonandoDesde", "eligioEn", "creado"));
   escuchar("gan", query(collection(db, "variantes_ganadores"), where("marca", "==", "miluz")), d => t(d, "procesado", "recibido") || d.fecha || "");
   onSnapshot(doc(db, "variantes_semana", "miluz"), x => { datos.sem = x.exists() ? x.data() : null; pintar(); }, e => console.warn("sem", e));
 }
@@ -198,10 +197,9 @@ function pintar() {
      que: "Cada noche lee lo que vendió en la semana (10+ ventas y ROAS 1,8+). Vos elegís cuál iterar y cuántas (3 · 5 · 9) y te llegan para aprobar.",
      nums: [[ganadores, "elegir", true], [cuenta(va, "revisar"), "revisar", true], [cuenta(va, "procesando", "corregir"), "en curso"], [cuenta(va, "subido", "aprobado"), "listas"]],
      ult: [ultimo(va), ultimo(gan), (datos.sem && datos.sem.recibido) || ""].sort().pop(), horas: 30},
-    {ico: "🤖", nom: "UGC con IA", cuando: "Videos nuevos a las 8 · clona cada 15 min", url: "/miluz/ugc-ia",
-     que: "Te propone videos de creadoras que funcionan en marcas top; los que elegís se clonan con una actriz hecha con IA y el Fénix real.",
-     nums: [[cuenta(ugc, "nueva"), "elegir", true], [cuenta(ugc, "revisar"), "revisar", true], [cuenta(ugc, "elegida", "clonando", "cambiar"), "en curso"], [cuenta(ugc, "aprobado"), "listos"]],
-     ult: ultimo(ugc), horas: 30},
+    {ico: "🎞️", nom: "Ads Random", cuando: "En preparación", url: "",
+     que: "Clips cortos de 8 a 15 s sin voz: un video lindo de uñas, una frase arriba y el producto. Rápidos, baratos y los que más escalan.",
+     nums: [["–", "elegir"], ["–", "revisar"], ["–", "en curso"], ["–", "listos"]], ult: "", horas: 30, apagado: "Próximamente"},
   ];
   $("#bots").innerHTML = bots.map(b => {
     const [cl, tx] = estado(b.ult, b.horas, b.apagado);
@@ -232,13 +230,13 @@ function pintar() {
   $("#k5").textContent = cuenta(ani, "producido", "aprobado");
   $("#k6").textContent = cuenta(va, "subido", "aprobado");
 
-  const NOM = {est: "Estáticos", ani: "Animados", edi: "Edición", var: "Variantes", bro: "B-roll", ugc: "UGC con IA"};
+  const NOM = {est: "Estáticos", ani: "Animados", edi: "Edición", var: "Variantes", bro: "B-roll"};
   const ESTADO = {elegida: "elegida", generando: "generándose", revisar: "para revisar", lista: "lista", aprobada: "aprobada",
     aprobado: "aprobado", producido: "producido", produciendo: "produciéndose", procesando: "procesándose", subido: "subida",
     fallo: "no salió", error: "error", modificar: "con cambio", cambiar: "con cambio", rechazado: "descartada",
     corregir: "con cambio", armando: "armándose", armado: "armado", clonando: "clonándose"};
   const evs = [];
-  for (const k of ["est", "ani", "edi", "var", "bro", "ugc"]) for (const d of (datos[k] || [])) if (d._t && ESTADO[d.estado] && d.tipo !== "banco")
+  for (const k of ["est", "ani", "edi", "var", "bro"]) for (const d of (datos[k] || [])) if (d._t && ESTADO[d.estado] && d.tipo !== "banco")
     evs.push({t: d._t, bot: NOM[k], txt: d.codigo || d.adNombre || d.formato || d.marca || d._id, est: ESTADO[d.estado]});
   evs.sort((a, b) => a.t < b.t ? 1 : -1);
   $("#feed").innerHTML = evs.slice(0, 12).map(e => `<div class="ev"><span class="t">${cuando(e.t)}</span>
