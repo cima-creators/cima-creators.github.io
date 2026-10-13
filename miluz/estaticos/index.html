@@ -189,7 +189,8 @@ a.btn{display:inline-flex;align-items:center;justify-content:center;text-decorat
   <div class="tipo">
     <label><input type="radio" name="itTipo" value="mismo" checked> <b>Más de lo mismo</b> <small>— 3 opciones nuevas con el mismo diseño y otros dolores de las clientas</small></label>
     <label><input type="radio" name="itTipo" value="otra"> <b>Quiero otra cosa</b> <small>— escribí qué cambiar</small></label></div>
-  <textarea id="itPedido" placeholder="Ej: lo mismo pero con fondo bordó y una mano más grande; que hable de la menopausia"></textarea>
+  <div class="lbl" style="margin-bottom:4px">Aclaración (opcional en «Más de lo mismo»)</div>
+  <textarea id="itPedido" placeholder="Ej: que el título sea más corto · que una opción hable de la menopausia · fondo bordó"></textarea>
   <div id="itAdj"></div>
   <p id="itErr" class="sub" style="color:var(--bad);margin:8px 0 0"></p>
   <div class="acciones" style="margin-top:12px"><button class="btn" id="itNo">Cancelar</button><button class="btn acc" id="itSi">Iterar</button></div>
@@ -311,12 +312,12 @@ function abrirIterar(ds){
   itSel = ds; const d = items[ds.id];
   $("#itImg").src = ds.url; $("#itCod").textContent = `${d.codigo || ""} · ${d.formato || ""}`;
   $("#itPedido").value = ""; $("#itErr").textContent = ""; $("#itAdj").innerHTML = ADJ("itFile"); engancharAdj($("#itFile"));
-  $("#itFile").addEventListener("change", () => document.querySelector('input[name="itTipo"][value="otra"]').checked = true); document.querySelector('input[name="itTipo"][value="mismo"]').checked = true;
+ document.querySelector('input[name="itTipo"][value="mismo"]').checked = true;
   $("#iterar").classList.add("on");
 }
 $("#itNo").onclick = () => $("#iterar").classList.remove("on");
 $("#iterar").onclick = e => { if (e.target.id === "iterar") $("#iterar").classList.remove("on"); };
-$("#itPedido").oninput = () => { if ($("#itPedido").value.trim()) document.querySelector('input[name="itTipo"][value="otra"]').checked = true; };
+// el texto y la imagen sirven en las dos opciones: en «Más de lo mismo» son una aclaración, en «Otra cosa» el pedido
 $("#itSi").onclick = async () => {
   const tipo = document.querySelector('input[name="itTipo"]:checked').value, pedido = $("#itPedido").value.trim();
   const archivoIt = $("#itFile")?.files[0];
@@ -326,8 +327,8 @@ $("#itSi").onclick = async () => {
     const d = items[itSel.id], ts = Date.now().toString(36);
     const imgPedido = archivoIt ? await subirImagen(archivoIt, "pedido") : "";
     await fb.setDoc(fb.doc(fb.db, "estaticos", `${d.id}_it${ts}`), {marca: MARCA, fecha: hoy(), estado: "elegida", iteraDe: d.id,
-      elegidaEn: new Date().toISOString(), creado: new Date().toISOString(), notaElegir: tipo === "otra" ? pedido : "", version: 0, variantes: [],
-      por: quien, imgPedido, formato: d.formato || "", idea: tipo === "otra" ? (pedido || "Con la imagen que adjuntaste") : `Más de lo mismo: ${d.codigo}`, porque: d.porque || "",
+      elegidaEn: new Date().toISOString(), creado: new Date().toISOString(), notaElegir: pedido, version: 0, variantes: [],
+      por: quien, imgPedido, formato: d.formato || "", idea: tipo === "otra" ? (pedido || "Con la imagen que adjuntaste") : `Más de lo mismo: ${d.codigo}${pedido ? " · " + pedido : ""}`, porque: d.porque || "",
       prompt: itSel.prompt || d.prompt || "", usa: d.usa || ["fenix"], nivel: d.nivel || 3, maqueta: !!d.maqueta,
       ref: {id: "it" + ts, m: NOMBRES[MARCA] || MARCA, img: itSel.url, link: "", nicho: "iteracion", d: 0, dup: 0, senal: 0, t: d.codigo || ""},
       refOriginal: d.ref || {}});
