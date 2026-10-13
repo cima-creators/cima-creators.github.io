@@ -114,7 +114,7 @@ const $ = s => document.querySelector(s);
 const CLAVES = {"miluz-2026":"Luz","luz-2026":"Luz","cima-2026":"Nacho","vane-2026":"Vane","abril-2026":"Abril"};
 const URL_BASE = "https://cima-creators.github.io";
 let quien = null;
-const datos = {est: [], ani: [], edi: [], var: [], gan: [], bro: [], ugc: [], sem: null};
+const datos = {est: [], ani: [], edi: [], var: [], gan: [], bro: [], rnd: [], sem: null};
 try { quien = CLAVES[localStorage.getItem("sistemas_miluz_clave") || ""] || null; } catch (e) {}
 function entrar() {
   const c = $("#clave").value.trim().toLowerCase(), n = CLAVES[c];
@@ -158,6 +158,7 @@ async function arrancar() {
   escuchar("edi", query(collection(db, "edicion_cola"), where("marca", "==", "miluz")), d => t(d, "actualizado", "creado"));
   escuchar("var", query(collection(db, "variantes_cola"), where("marca", "==", "miluz")), d => t(d, "actualizado", "creado"));
   escuchar("bro", collection(db, "broll_luz"), d => t(d, "actualizado", "creado"));
+  escuchar("rnd", collection(db, "random_luz"), d => t(d, "revisarEn", "aprobadoEn", "eligioEn", "creado"));   // bot 6 Ads Random (12/10)
   escuchar("gan", query(collection(db, "variantes_ganadores"), where("marca", "==", "miluz")), d => t(d, "procesado", "recibido") || d.fecha || "");
   onSnapshot(doc(db, "variantes_semana", "miluz"), x => { datos.sem = x.exists() ? x.data() : null; pintar(); }, e => console.warn("sem", e));
 }
@@ -170,7 +171,7 @@ function estado(ultimaVez, horas, apagado) {
 
 function pintar() {
   const {est, ani, edi, var: va, gan, bro} = datos;
-  const ugc = datos.ugc || [];
+  const ugc = datos.rnd || [];   // bot 6 = Ads Random (random_luz) desde el 12/10
   const bt = (tipo, ...es) => bro.filter(d => d.tipo === tipo && es.includes(d.estado)).length;
   const sa = datos.sem && datos.sem.anuncios;
   const ganadores = Array.isArray(sa) ? sa.length : (sa && typeof sa === "object" ? Object.keys(sa).length : 0);
@@ -197,9 +198,10 @@ function pintar() {
      que: "Cada noche lee lo que vendió en la semana (10+ ventas y ROAS 1,8+). Vos elegís cuál iterar y cuántas (3 · 5 · 9) y te llegan para aprobar.",
      nums: [[ganadores, "elegir", true], [cuenta(va, "revisar"), "revisar", true], [cuenta(va, "procesando", "corregir"), "en curso"], [cuenta(va, "subido", "aprobado"), "listas"]],
      ult: [ultimo(va), ultimo(gan), (datos.sem && datos.sem.recibido) || ""].sort().pop(), horas: 30},
-    {ico: "🎞️", nom: "Ads Random", cuando: "En preparación", url: "",
-     que: "Clips cortos de 8 a 15 s sin voz: un video lindo de uñas, una frase arriba y el producto. Rápidos, baratos y los que más escalan.",
-     nums: [["–", "elegir"], ["–", "revisar"], ["–", "en curso"], ["–", "listos"]], ult: "", horas: 30, apagado: "Próximamente"},
+    {ico: "🎞️", nom: "Ads Random", cuando: "Ideas a la mañana · se arman cada 15 min", url: "/miluz/random",
+     que: "Clips cortos de 8 a 15 s sin voz: tomas reales de uñas, una frase arriba y el Fénix con color. Elegís la idea y salen 3 versiones.",
+     nums: [[cuenta(ugc, "nueva"), "elegir", true], [cuenta(ugc, "revisar"), "revisar", true], [cuenta(ugc, "elegida", "produciendo", "cambiar"), "en curso"], [cuenta(ugc, "aprobado"), "listos"]],
+     ult: ultimo(ugc), horas: 30},
   ];
   $("#bots").innerHTML = bots.map(b => {
     const [cl, tx] = estado(b.ult, b.horas, b.apagado);
@@ -213,7 +215,7 @@ function pintar() {
     </div>`;
   }).join("");
 
-  const pend = [[cuenta(est, "revisar"), "estáticos para revisar"], [cuenta(ani, "producido"), "animados para revisar"], [cuenta(ugc, "revisar"), "clones UGC para revisar"],
+  const pend = [[cuenta(est, "revisar"), "estáticos para revisar"], [cuenta(ani, "producido"), "animados para revisar"], [cuenta(ugc, "revisar"), "randoms para revisar"],
                 [cuenta(va, "revisar"), "variantes para revisar"], [ganadores, "ganadores para elegir cuál iterar"], [cuenta(ani, "nueva"), "animados nuevos para elegir"],
                 [cuenta(est, "elegir"), "estáticos nuevos para elegir"]].filter(x => x[0] > 0);
   const totalRevisar = cuenta(est, "revisar") + cuenta(ani, "producido") + cuenta(va, "revisar") + cuenta(ugc, "revisar");
@@ -224,7 +226,7 @@ function pintar() {
   const h = hoy(), esHoy = d => (d._t || "").startsWith(h);
   $("#k1").textContent = est.filter(d => ["lista", "aprobada"].includes(d.estado) && esHoy(d)).length
     + ani.filter(d => d.estado === "aprobado" && esHoy(d)).length + va.filter(d => ["subido", "aprobado"].includes(d.estado) && esHoy(d)).length + ugc.filter(d => d.estado === "aprobado" && esHoy(d)).length;
-  $("#k2").textContent = cuenta(est, "elegida", "generando") + cuenta(ani, "elegida", "lista", "produciendo") + cuenta(edi, "procesando") + cuenta(va, "procesando") + cuenta(ugc, "elegida", "clonando", "cambiar");
+  $("#k2").textContent = cuenta(est, "elegida", "generando") + cuenta(ani, "elegida", "lista", "produciendo") + cuenta(edi, "procesando") + cuenta(va, "procesando") + cuenta(ugc, "elegida", "produciendo", "cambiar");
   $("#k3").textContent = ganadores;
   $("#k4").textContent = cuenta(est, "lista", "aprobada");
   $("#k5").textContent = cuenta(ani, "producido", "aprobado");
