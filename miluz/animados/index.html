@@ -163,7 +163,7 @@ summary{cursor:pointer;font-weight:600;font-size:13px}
   <header>
     <div>
       <h1>Animados que escalan</h1>
-      <p class="sub">Anuncios 100% animados de cualquier nicho que siguen prendidos; todos los días se suman 20 nuevos. Tocá <b>La quiero</b> en los que te sirvan: el video de Mi Luz se produce solo (hasta 15 por día) y aparece en <b>Producidos</b>. Tocá <b>No</b> en los que no; los que no toques quedan para otro día.</p>
+      <p class="sub">Anuncios 100% animados de cualquier nicho que siguen prendidos; todos los días se suman 20 nuevos. Tocá <b>La quiero</b> en los que te sirvan: el video de Mi Luz se produce solo y aparece en <b>Producidos</b>. Tocá <b>No</b> en los que no; los que no toques quedan para otro día.</p>
     </div>
   </header>
 
@@ -182,7 +182,7 @@ summary{cursor:pointer;font-weight:600;font-size:13px}
     </div>
     <div class="kpis">
       <button class="kpi on" data-v="hoy"><span class="l">Para elegir</span><span class="v" id="kHoy">–</span><span class="h" id="kHoyH"></span></button>
-      <button class="kpi alerta" data-v="elegidas"><span class="l">En producción</span><span class="v" id="kEleg">–</span><span class="h">hasta 15 videos por día</span></button>
+      <button class="kpi alerta" data-v="elegidas"><span class="l">En producción</span><span class="v" id="kEleg">–</span><span class="h">de a 3 por vez, sin tope</span></button>
       <button class="kpi ok" data-v="hechos"><span class="l">Producidos</span><span class="v" id="kHechos">–</span><span class="h">aprobar o pedir cambios</span></button>
       <button class="kpi mal" data-v="todas"><span class="l">Descartadas</span><span class="v" id="kDesc">–</span><span class="h">se pueden recuperar</span></button>
     </div>
@@ -321,7 +321,7 @@ function desarmado(d){
 
 function estadoProd(d){
   if (d.estado === "elegida") return `<div class="aviso w">Desarmando la referencia…</div>`;
-  if (d.estado === "lista") return `<div class="aviso w">${d.turno === "mañana" ? "En fila: se produce mañana (tope de 15 por día)" : "En fila para producir"}</div>`;
+  if (d.estado === "lista") return `<div class="aviso w">${d.turno === "mañana" ? "En fila para producir" : "En fila para producir"}</div>`;
   if (d.estado === "produciendo") return `<div class="aviso w">Produciendo el video de Mi Luz… (alrededor de una hora)</div>`;
   if (d.estado === "cambiar") return `<div class="aviso w">Haciendo el cambio: ${esc(d.cambioNota || "")}</div>`;
   if (d.estado === "aprobado") return `<div class="aviso ok">${d.enDrive ? "✓ En Drive · " + esc(d.enDrive) : "✓ Aprobado · pasando a Drive…"}</div>`;
