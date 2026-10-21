@@ -260,7 +260,7 @@ function pantallaCuentas() {
 async function elegir(id, b) {
   document.querySelectorAll(".cuentas button").forEach(x => x.disabled = true);
   b.innerHTML = "<span>Trayendo tus anuncios… puede tardar un minuto</span>";
-  try { await api("elegir", { cuenta: id }); history.replaceState(null, "", `?m=${MARCA}&k=${K}`); iniciar(); }
+  try { await api("elegir", { cuenta: id }); location.replace(`?m=${MARCA}&k=${encodeURIComponent(K)}`); }
   catch (e) { alert("No se pudo: " + e.message); pantallaCuentas(); }
 }
 
