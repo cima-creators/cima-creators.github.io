@@ -1,0 +1,437 @@
+<!doctype html>
+<html lang="es"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Radar · CIMA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#fff;--side:#fafafa;--txt:#18181b;--sub:#71717a;--line:#e4e4e7;--chip:#f4f4f5;--acc:#18181b;--ok:#16a34a;--bad:#dc2626;
+  --g1:#f0fdf4;--g2:#dcfce7;--g3:#bbf7d0;--g4:#86efac;--r1:#fef2f2;--r2:#fee2e2;--blue:#2563eb}
+*{box-sizing:border-box}html,body{margin:0;height:100%}
+body{font:14px/1.45 Inter,system-ui,sans-serif;color:var(--txt);background:var(--bg)}
+button,select,input{font:inherit;color:inherit}
+a{color:inherit}
+.app{display:flex;min-height:100vh}
+aside{width:236px;flex:none;background:var(--side);border-right:1px solid var(--line);padding:12px 10px;display:flex;flex-direction:column;gap:2px;position:sticky;top:0;height:100vh;overflow:auto}
+.marca{display:flex;align-items:center;gap:8px;padding:6px 8px 12px;font-weight:600;font-size:13px}
+.marca i{width:22px;height:22px;border-radius:6px;background:#c7d2fe;color:#3730a3;display:grid;place-items:center;font-style:normal;font-size:12px}
+.nav{display:flex;align-items:center;gap:9px;word-spacing:3px;padding:6px 10px;border-radius:7px;color:#3f3f46;cursor:pointer;text-decoration:none;font-size:13.5px;border:0;background:none;width:100%;text-align:left}
+.nav:hover{background:#f0f0f1}.nav.on{background:#ececee;font-weight:600;color:var(--txt)}
+.nav small{margin-left:auto;font-size:10.5px;color:var(--sub);background:var(--chip);border-radius:9px;padding:1px 6px}
+.grupo{font-size:12px;color:var(--sub);padding:14px 10px 4px}
+.pie{margin-top:auto;padding:10px 8px 2px;font-size:12px;color:var(--sub);border-top:1px solid var(--line)}
+main{flex:1;min-width:0}
+.top{height:52px;display:flex;align-items:center;gap:10px;padding:0 20px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--bg);z-index:5}
+.top .t{font-size:14px}.top .sp{flex:1}.top .muted{font-size:12px;color:var(--sub)}
+.btn{border:1px solid var(--line);background:#fff;border-radius:8px;padding:6px 12px;cursor:pointer;font-size:13px;font-weight:500;display:inline-flex;align-items:center;gap:6px}
+.btn:hover{background:#f7f7f8}.btn.neg{background:var(--acc);border-color:var(--acc);color:#fff}.btn.neg:hover{background:#000}
+.btn:disabled{opacity:.5;cursor:default}
+.hambur{display:none}
+.cuerpo{padding:28px 28px 60px;max-width:1500px}
+h1{font-size:26px;margin:6px 0 4px;letter-spacing:-.01em}
+.desc{color:var(--sub);margin:0 0 20px}
+.filtros{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.chip{border:1px solid var(--line);border-radius:8px;background:#fff;padding:6px 10px;font-size:13px;display:inline-flex;align-items:center;gap:6px;cursor:pointer;position:relative}
+.chip b{font-weight:600}.chip.gris{background:var(--chip)}
+.chip select{border:0;background:transparent;font-weight:600;cursor:pointer;padding:0;appearance:none;-webkit-appearance:none}
+.menu{position:absolute;top:calc(100% + 4px);left:0;background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 30px rgba(0,0,0,.08);padding:6px;z-index:20;min-width:200px;display:none}
+.menu.on{display:block}
+.menu label{display:flex;gap:8px;align-items:center;padding:6px 8px;border-radius:6px;cursor:pointer;white-space:nowrap}
+.menu label:hover{background:var(--chip)}
+.caja{border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.barra{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid var(--line)}
+.barra .sp{flex:1}
+.vistas{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.vistas button{border:0;background:#fff;padding:6px 9px;cursor:pointer;line-height:0}
+.vistas button.on{background:var(--chip)}
+.buscar{border:1px solid var(--line);border-radius:8px;padding:6px 10px;width:200px;font-size:13px}
+.scroll{overflow:auto;max-height:calc(100vh - 250px)}
+table{border-collapse:separate;border-spacing:0;width:100%;font-size:13px;white-space:nowrap}
+th{position:sticky;top:0;background:#fff;z-index:2;text-align:left;font-weight:500;color:var(--sub);padding:10px 12px;border-bottom:1px solid var(--line);cursor:pointer;user-select:none}
+th.num,td.num{text-align:right}
+th.ord{color:var(--txt);font-weight:600}
+th:first-child,td:first-child{position:sticky;left:0;background:#fff;z-index:1}
+th:first-child{z-index:3}
+td{padding:9px 12px;border-bottom:1px solid #f1f1f3;font-variant-numeric:tabular-nums}
+tr:hover td{background:#fafafa}
+tr:hover td:first-child{background:#fafafa}
+.crea{display:flex;align-items:center;gap:10px;min-width:280px;max-width:340px;cursor:pointer}
+.mini{width:38px;height:38px;border-radius:7px;object-fit:cover;background:var(--chip);flex:none}
+.crea .n{font-weight:500;overflow:hidden;text-overflow:ellipsis;max-width:280px}
+.crea .s{font-size:11.5px;color:var(--sub);display:flex;gap:6px;align-items:center}
+.pill{font-size:11px;border-radius:999px;padding:1px 8px;background:var(--chip);color:#3f3f46;font-weight:500}
+.pill.test{background:#dbeafe;color:#1d4ed8}.pill.esc{background:#dcfce7;color:#15803d}.pill.baja{background:#fee2e2;color:#b91c1c}
+.tag{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;border:1px solid var(--line);border-radius:6px;padding:2px 7px;color:#3f3f46;max-width:200px;overflow:hidden;text-overflow:ellipsis}
+.mas{font-size:11px;color:var(--sub);margin-left:4px}
+.verde1{background:var(--g1)!important}.verde2{background:var(--g2)!important}.verde3{background:var(--g3)!important}.verde4{background:var(--g4)!important}
+.rojo{background:var(--r1)!important;color:#991b1b}
+.tarjetas{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px;padding:14px}
+.tar{border:1px solid var(--line);border-radius:12px;overflow:hidden;cursor:pointer;background:#fff;transition:box-shadow .15s}
+.tar:hover{box-shadow:0 6px 24px rgba(0,0,0,.07)}
+.tar .img{aspect-ratio:4/5;background:var(--chip) center/cover no-repeat;position:relative}
+.tar .fmt{position:absolute;top:8px;left:8px;background:rgba(0,0,0,.65);color:#fff;font-size:11px;border-radius:6px;padding:2px 7px}
+.tar .st{position:absolute;top:8px;right:8px}
+.tar .info{padding:10px 12px}
+.tar .n{font-weight:600;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tar .met{display:grid;grid-template-columns:1fr 1fr;gap:6px 10px;margin:9px 0}
+.tar .met div{font-size:11.5px;color:var(--sub)}.tar .met b{display:block;font-size:14px;color:var(--txt)}
+.tar .tags{display:flex;flex-wrap:wrap;gap:4px}
+.vacio{padding:60px 20px;text-align:center;color:var(--sub)}
+.centro{max-width:520px;margin:9vh auto;padding:0 16px;text-align:center}
+.centro h1{font-size:28px}.centro p{color:var(--sub)}
+.fb{background:#1877f2;border-color:#1877f2;color:#fff;font-size:15px;padding:11px 20px;border-radius:10px}
+.fb:hover{background:#166fe0}
+.pasos{text-align:left;margin:26px auto 0;max-width:420px;color:#3f3f46;font-size:13.5px}
+.pasos li{margin:6px 0}
+.cuentas{display:flex;flex-direction:column;gap:8px;margin-top:20px;text-align:left}
+.cuentas button{border:1px solid var(--line);border-radius:10px;padding:12px 14px;background:#fff;cursor:pointer;display:flex;justify-content:space-between;gap:10px}
+.cuentas button:hover{border-color:#a1a1aa}
+.panel{position:fixed;inset:0;background:rgba(0,0,0,.35);display:none;z-index:50}
+.panel.on{display:block}
+.hoja{position:absolute;right:0;top:0;bottom:0;width:min(560px,100%);background:#fff;overflow:auto;padding:22px}
+.hoja img{width:100%;border-radius:10px;background:var(--chip)}
+.hoja h2{font-size:18px;margin:14px 0 4px;word-break:break-word}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:16px 0}
+.kpis div{border:1px solid var(--line);border-radius:10px;padding:10px;font-size:12px;color:var(--sub)}
+.kpis b{display:block;font-size:17px;color:var(--txt)}
+.copy{white-space:pre-wrap;background:var(--side);border-radius:10px;padding:12px;font-size:13px;color:#3f3f46}
+.cerrar{float:right}
+.aviso{background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:10px 14px;margin-bottom:14px;font-size:13px}
+.cargando{color:var(--sub);font-size:12px}
+@media (max-width:860px){
+  aside{position:fixed;left:-260px;z-index:40;transition:left .2s;box-shadow:0 0 40px rgba(0,0,0,.1)}
+  aside.on{left:0}
+  .hambur{display:inline-flex}
+  .cuerpo{padding:18px 16px 50px}
+  .top{padding:0 12px}.top .muted{display:none}
+  .buscar{width:100%}
+  .scroll{max-height:none}
+  .tarjetas{grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;padding:10px}
+}
+</style>
+</head>
+<body>
+<div id="raiz"></div>
+<script>
+const FN = "https://us-central1-cleargy-creators.cloudfunctions.net/radar";
+const q = new URLSearchParams(location.search);
+const MARCA = (q.get("m") || "").toLowerCase(), K = q.get("k") || "", DEMO = q.get("demo") === "1";
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const guardar = (k, v) => { try { localStorage.setItem("radar_" + k, JSON.stringify(v)); } catch (_) {} };
+const leer = (k, d) => { try { const v = localStorage.getItem("radar_" + k); return v ? JSON.parse(v) : d; } catch (_) { return d; } };
+
+const PRESETS = { last_7d: "Últimos 7 días", last_14d: "Últimos 14 días", last_30d: "Últimos 30 días", last_90d: "Últimos 90 días" };
+const FORMATOS = { video: "Video", imagen: "Imagen", carrusel: "Carrusel", flexible: "Flexible", post: "Post", catalogo: "Catálogo", otro: "Otro" };
+const METRICAS = {
+  roas: { n: "ROAS", f: v => v == null ? "—" : fmtN(v, 2) + "×" },
+  spend: { n: "Gasto", f: v => fmtM(v) },
+  purchase_value: { n: "Facturación", f: v => fmtM(v) },
+  purchases: { n: "Compras", f: v => fmtN(v, 0) },
+  ctr_link: { n: "CTR (enlace)", f: v => v == null ? "—" : fmtN(v, 2) + " %" },
+  cpc_link: { n: "CPC (enlace)", f: v => v == null ? "—" : fmtM(v), menor: true },
+  cpa: { n: "CPA", f: v => v == null ? "—" : fmtM(v), menor: true },
+  impressions: { n: "Impresiones", f: v => fmtN(v, 0) },
+  aov: { n: "Ticket promedio", f: v => v == null ? "—" : fmtM(v) },
+};
+const TAGS = { formato_visual: "Formato visual", tema_mensaje: "Tema de mensaje", publico: "Público" };
+
+let est = {
+  preset: leer("preset", "last_14d"), vista: leer("vista", "tabla"),
+  formatos: leer("formatos", ["video", "imagen", "carrusel", "flexible", "post", "otro"]),
+  metricas: leer("metricas", Object.keys(METRICAS)), tarjeta: ["roas", "spend", "cpa", "ctr_link"],
+  orden: leer("orden", { m: "roas", dir: "desc" }), buscar: "", minGasto: leer("minGasto", 0),
+  conexion: null, datos: null, cache: {}, reporte: leer("reporte", "mejores"), datos90: null,
+};
+let moneda = "";
+function fmtN(v, d) { return Number(v || 0).toLocaleString("es-AR", { minimumFractionDigits: d, maximumFractionDigits: d }); }
+function fmtM(v) {
+  if (v == null) return "—";
+  const d = Math.abs(v) >= 1000 ? 0 : 2;
+  return "$ " + fmtN(v, d);
+}
+function fecha(iso) { if (!iso) return "—"; const d = new Date(iso); const m = ["ene","feb","mar","abr","may","jun","jul","ago","sept","oct","nov","dic"][d.getMonth()]; return `${d.getDate()} ${m} ${d.getFullYear()}`; }
+function hace(ms) {
+  if (!ms) return "nunca"; const m = Math.round((Date.now() - ms) / 60000);
+  if (m < 2) return "este minuto"; if (m < 60) return `hace ${m} min`; const h = Math.round(m / 60); if (h < 24) return `hace ${h} h`; return `hace ${Math.round(h / 24)} días`;
+}
+async function api(accion, extra) {
+  const u = new URL(FN); u.searchParams.set("accion", accion); u.searchParams.set("marca", MARCA); u.searchParams.set("k", K);
+  for (const [a, b] of Object.entries(extra || {})) u.searchParams.set(a, b);
+  const r = await fetch(u); const j = await r.json().catch(() => ({ ok: false, error: "respuesta rara" }));
+  if (!j.ok) throw new Error(j.error || "error");
+  return j;
+}
+
+// ── derivar métricas y estado ──────────────────────────────────────
+function derivar(filas, be) {
+  const total = filas.reduce((s, f) => s + f.spend, 0) || 1;
+  return filas.map(f => {
+    const x = Object.assign({}, f);
+    x.purchase_value = f.value;
+    x.roas = f.spend > 0 ? f.value / f.spend : null;
+    x.ctr_link = f.impressions > 0 ? f.clicks / f.impressions * 100 : null;
+    x.cpc_link = f.clicks > 0 ? f.spend / f.clicks : null;
+    x.cpa = f.purchases > 0 ? f.spend / f.purchases : null;
+    x.aov = f.purchases > 0 ? f.value / f.purchases : null;
+    const dias = f.lanzado ? (Date.now() - new Date(f.lanzado)) / 864e5 : 99, share = f.spend / total;
+    x.estado = dias < 7 ? ["Testing", "test"] : share < 0.01 ? ["Low impact", ""] : (x.roas || 0) >= be && share >= 0.05 ? ["Escalando", "esc"]
+      : (x.roas || 0) < be * 0.6 && share >= 0.03 ? ["Bajando", "baja"] : ["Estable", ""];
+    return x;
+  });
+}
+function filtradas() {
+  if (!est.datos) return [];
+  const be = est.conexion?.breakEven || 2, b = est.buscar.trim().toLowerCase();
+  let fs = derivar(est.datos.filas, be).filter(f => est.formatos.includes(f.formato) && f.spend >= est.minGasto);
+  if (est.reporte === "lanzamientos") {
+    const dias = { last_7d: 7, last_14d: 14, last_30d: 30, last_90d: 90 }[est.preset], desde = Date.now() - dias * 864e5;
+    fs = fs.filter(f => f.lanzado && new Date(f.lanzado).getTime() >= desde);
+  }
+  if (b) fs = fs.filter(f => (f.nombre + " " + Object.values(f.tags || {}).join(" ")).toLowerCase().includes(b));
+  const { m, dir } = est.orden, s = dir === "desc" ? -1 : 1;
+  fs.sort((a, c) => { const x = a[m], y = c[m]; if (x == null && y == null) return 0; if (x == null) return 1; if (y == null) return -1; return (x > y ? 1 : x < y ? -1 : 0) * s; });
+  return fs.slice(0, 300);
+}
+function sombra(m, v, fs) {
+  if (v == null) return "";
+  const be = est.conexion?.breakEven || 2;
+  if (m === "roas") { if (v < be) return "rojo"; return v >= be * 2 ? "verde4" : v >= be * 1.5 ? "verde3" : v >= be * 1.2 ? "verde2" : "verde1"; }
+  const vals = fs.map(f => f[m]).filter(x => x != null).sort((a, b) => a - b);
+  if (vals.length < 5) return "";
+  const p = vals.findIndex(x => x >= v) / vals.length, top = METRICAS[m].menor ? 1 - p : p;
+  return top >= .9 ? "verde3" : top >= .75 ? "verde2" : top >= .6 ? "verde1" : "";
+}
+
+// ── pantallas ──────────────────────────────────────────────────────
+function marco(contenido, titulo) {
+  const nombre = est.conexion?.cuentaNombre || MARCA || "Radar";
+  return `<div class="app">
+  <aside id="lado">
+    <div class="marca"><i>${esc(nombre[0] || "R").toUpperCase()}</i><span>${esc(nombre)}</span></div>
+    <button class="nav ${est.reporte === "mejores" ? "on" : ""}" onclick="irA('mejores')">🏆 Mejores creativos</button>
+    <button class="nav ${est.reporte === "lanzamientos" ? "on" : ""}" onclick="irA('lanzamientos')">🚀 Lanzamientos nuevos</button>
+    <div class="grupo">Pronto</div>
+    <button class="nav" disabled>🟢 Anuncios activos <small>pronto</small></button>
+    <button class="nav" disabled>🪝 Mejores hooks <small>pronto</small></button>
+    <button class="nav" disabled>💬 Temas de mensaje <small>pronto</small></button>
+    <button class="nav" disabled>🏅 Leaderboard <small>pronto</small></button>
+    <div class="grupo">Cuenta</div>
+    <button class="nav" onclick="ajustes()">⚙️ Ajustes</button>
+    <div class="pie">${est.conexion?.usuario ? "Conectado como <b>" + esc(est.conexion.usuario) + "</b><br>" : ""}Radar · CIMA UGC</div>
+  </aside>
+  <main>
+    <div class="top"><button class="btn hambur" onclick="$('#lado').classList.toggle('on')">☰</button>
+      <span class="t">${esc(titulo)}</span><span class="sp"></span>
+      <span class="muted" id="cuando">${est.datos ? "Actualizado " + hace(est.datos.actualizado) : ""}</span>
+      <button class="btn" id="refrescar" onclick="refrescar()" title="Traer datos nuevos de Meta">↻</button>
+    </div>
+    <div class="cuerpo">${contenido}</div>
+  </main></div>
+  <div class="panel" id="panel" onclick="if(event.target.id==='panel')this.classList.remove('on')"><div class="hoja" id="hoja"></div></div>`;
+}
+
+function pantallaSinLink() {
+  $("#raiz").innerHTML = `<div class="centro"><h1>Radar</h1><p>Este link está incompleto. Pedile a CIMA el link de tu marca.</p></div>`;
+}
+function pantallaConectar(error) {
+  const href = `${FN}?accion=conectar&marca=${encodeURIComponent(MARCA)}&k=${encodeURIComponent(K)}`;
+  $("#raiz").innerHTML = `<div class="centro">
+    <div style="font-size:42px">📡</div>
+    <h1>Conectá tu cuenta de Meta</h1>
+    <p>Un clic y ves todos tus anuncios ordenados por lo que vende: ROAS, CPA, CTR y qué tipo de creativo funciona.</p>
+    ${error ? `<div class="aviso">No se completó la conexión. Probá de nuevo.</div>` : ""}
+    <a class="btn fb" href="${href}">Conectar con Facebook</a>
+    <ol class="pasos">
+      <li>Entrás con tu Facebook (el que administra la cuenta publicitaria).</li>
+      <li>Aceptás que Radar <b>lea</b> tus anuncios. Solo lectura: no puede crear, cambiar ni gastar nada.</li>
+      <li>Elegís la cuenta publicitaria y listo. Se actualiza solo cada 6 horas.</li>
+    </ol>
+    <p style="font-size:12px;margin-top:24px"><a href="https://cima-creators.github.io/privacidad/">Privacidad</a></p></div>`;
+}
+function pantallaCuentas() {
+  const cs = (est.conexion.cuentas || []).slice().sort((a, b) => b.activa - a.activa);
+  $("#raiz").innerHTML = `<div class="centro"><h1>¿Qué cuenta querés ver?</h1>
+    <p>Encontramos ${cs.length} cuentas publicitarias en tu Facebook.</p>
+    <div class="cuentas">${cs.map(c => `<button onclick="elegir('${esc(c.id)}',this)"><span><b>${esc(c.nombre)}</b><br><small style="color:var(--sub)">${esc(c.id)} · ${esc(c.moneda)}</small></span><span>${c.activa ? "Activa" : "Inactiva"}</span></button>`).join("")}</div></div>`;
+}
+async function elegir(id, b) {
+  document.querySelectorAll(".cuentas button").forEach(x => x.disabled = true);
+  b.innerHTML = "<span>Trayendo tus anuncios… puede tardar un minuto</span>";
+  try { await api("elegir", { cuenta: id }); history.replaceState(null, "", `?m=${MARCA}&k=${K}`); iniciar(); }
+  catch (e) { alert("No se pudo: " + e.message); pantallaCuentas(); }
+}
+
+function pantallaReporte() {
+  const fs = filtradas(), ms = est.metricas;
+  const nFmt = est.formatos.length, todos = Object.keys(FORMATOS).length;
+  const contenido = `
+    ${est.reporte === "lanzamientos" ? `<h1>🚀 Lanzamientos nuevos</h1>
+    <p class="desc">Lo que salió en el período y cómo le está yendo. Abajo, la tasa de acierto de cada semana.</p>` : `<h1>🏆 Mejores creativos</h1>
+    <p class="desc">Tus creativos con mejor rendimiento, para ver rápido qué está funcionando.</p>`}
+    ${est.conexion?.error ? `<div class="aviso">La última actualización falló: ${esc(est.conexion.error)}. Si dice "token", volvé a conectar.</div>` : ""}
+    ${est.conexion?.tokenVence && est.conexion.tokenVence - Date.now() < 7 * 864e5 ? `<div class="aviso">La conexión con Meta vence pronto. <a href="${FN}?accion=conectar&marca=${MARCA}&k=${K}">Renovar</a></div>` : ""}
+    <div class="filtros">
+      <label class="chip"><select onchange="cambiarPreset(this.value)">${Object.entries(PRESETS).map(([k, v]) => `<option value="${k}" ${k === est.preset ? "selected" : ""}>${v}</option>`).join("")}</select> ▾</label>
+      <span class="chip gris">Agrupar por <b>Creativo</b></span>
+      <span class="chip gris" onclick="abrir(event,'mfmt')">Tipo de anuncio ${nFmt === todos ? "<b>todos</b>" : est.formatos.includes("catalogo") ? `<b>${nFmt} de ${todos}</b>` : "no es <b>Catálogo</b>"} ▾
+        <div class="menu" id="mfmt" onclick="event.stopPropagation()">${Object.entries(FORMATOS).map(([k, v]) => `<label><input type="checkbox" ${est.formatos.includes(k) ? "checked" : ""} onchange="togFmt('${k}',this.checked)"> ${v}</label>`).join("")}</div></span>
+      <span class="chip" onclick="abrir(event,'mgasto')">Gasto mínimo <b>${est.minGasto ? fmtM(est.minGasto) : "sin mínimo"}</b> ▾
+        <div class="menu" id="mgasto" onclick="event.stopPropagation()">${[0, 1000, 10000, 50000, 100000, 500000].map(v => `<label><input type="radio" name="mg" ${est.minGasto === v ? "checked" : ""} onchange="setGasto(${v})"> ${v ? fmtM(v) : "Sin mínimo"}</label>`).join("")}</div></span>
+    </div>
+    <div class="caja">
+      <div class="barra">
+        <input class="buscar" placeholder="Buscar creativo o etiqueta" value="${esc(est.buscar)}" oninput="est.buscar=this.value;dibujarCuerpo()">
+        <span class="chip" onclick="abrir(event,'mmet')">＋ Métrica
+          <div class="menu" id="mmet" onclick="event.stopPropagation()">${Object.entries(METRICAS).map(([k, v]) => `<label><input type="checkbox" ${ms.includes(k) ? "checked" : ""} onchange="togMet('${k}',this.checked)"> ${v.n}</label>`).join("")}</div></span>
+        <span class="chip gris">✦ Etiquetas IA</span>
+        <span class="sp"></span>
+        <span class="cargando" id="cuenta">${fs.length} creativos</span>
+        <div class="vistas">
+          <button class="${est.vista === "tarjetas" ? "on" : ""}" title="Tarjetas" onclick="setVista('tarjetas')"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="5" height="5" rx="1"/><rect x="9" y="2" width="5" height="5" rx="1"/><rect x="2" y="9" width="5" height="5" rx="1"/><rect x="9" y="9" width="5" height="5" rx="1"/></svg></button>
+          <button class="${est.vista === "tabla" ? "on" : ""}" title="Tabla" onclick="setVista('tabla')"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2.5" width="12" height="11" rx="1.5"/><path d="M2 6.5h12M6 6.5v7"/></svg></button>
+        </div>
+      </div>
+      <div id="cuerpo"></div>
+    </div>
+    ${est.reporte === "lanzamientos" ? semanas() : ""}`;
+  $("#raiz").innerHTML = marco(contenido, est.reporte === "lanzamientos" ? "Lanzamientos nuevos" : "Mejores creativos");
+  dibujarCuerpo();
+}
+
+// Launch analysis: por semana de lanzamiento (con los 90 días, que cubren la vida entera del creativo)
+function semanas() {
+  const d = est.datos90; if (!d || !d.filas.length) return "";
+  const be = est.conexion?.breakEven || 2, fs = derivar(d.filas, be).filter(f => f.lanzado && est.formatos.includes(f.formato));
+  const total = d.filas.reduce((s, f) => s + f.spend, 0) || 1, umbral = total * 0.02;
+  const lunes = iso => { const x = new Date(iso); x.setHours(0, 0, 0, 0); x.setDate(x.getDate() - ((x.getDay() + 6) % 7)); return x.getTime(); };
+  const desde = Date.now() - 84 * 864e5, g = {};
+  for (const f of fs) { const w = lunes(f.lanzado); if (w < desde) continue; (g[w] = g[w] || []).push(f); }
+  const filas = Object.entries(g).sort((a, b) => b[0] - a[0]).map(([w, l]) => {
+    const esc_ = l.filter(f => f.spend >= umbral), gan = esc_.filter(f => (f.roas || 0) >= be);
+    const spend = l.reduce((s, f) => s + f.spend, 0), value = l.reduce((s, f) => s + f.value, 0);
+    return { w: +w, n: l.length, esc: esc_.length, gan: gan.length, tasa: gan.length / l.length, spend, roas: spend ? value / spend : null, mejor: gan.sort((a, b) => b.spend - a.spend)[0] };
+  });
+  if (!filas.length) return "";
+  const tot = filas.reduce((a, f) => ({ n: a.n + f.n, gan: a.gan + f.gan }), { n: 0, gan: 0 });
+  return `<h2 style="font-size:18px;margin:34px 0 4px">Tasa de acierto por semana</h2>
+    <p class="desc">Escaló = gastó más de ${fmtM(umbral)} (2% del gasto de 90 días). Ganador = escaló y ROAS ≥ ${fmtN(be, 2)}. Últimas 12 semanas: <b>${tot.gan} ganadores de ${tot.n} lanzados (${fmtN(tot.gan / tot.n * 100, 0)} %)</b>.</p>
+    <div class="caja"><div class="scroll"><table><thead><tr><th>Semana</th><th class="num">Lanzados</th><th class="num">Escalaron</th><th class="num">Ganadores</th><th class="num">Acierto</th><th class="num">Gasto</th><th class="num">ROAS</th><th>Mejor ganador</th></tr></thead><tbody>
+    ${filas.map(f => `<tr><td>${new Date(f.w).toLocaleDateString("es-AR", { day: "numeric", month: "short" }).replace(".", "")}</td><td class="num">${f.n}</td><td class="num">${f.esc}</td><td class="num">${f.gan}</td>
+      <td class="num ${f.tasa >= .2 ? "verde3" : f.tasa >= .1 ? "verde1" : ""}">${fmtN(f.tasa * 100, 0)} %</td><td class="num">${fmtM(f.spend)}</td><td class="num ${sombra("roas", f.roas, [])}">${METRICAS.roas.f(f.roas)}</td>
+      <td>${f.mejor ? esc(f.mejor.nombre) : "—"}</td></tr>`).join("")}</tbody></table></div></div>`;
+}
+async function irA(r) {
+  est.reporte = r; guardar("reporte", r); $("#lado")?.classList.remove("on");
+  if (r === "lanzamientos") est.orden = { m: "lanzado", dir: "desc" };
+  else if (r === "mejores") est.orden = { m: "roas", dir: "desc" };
+  await cargarDatos(); pantallaReporte();
+}
+function tagsHtml(f, max) {
+  const t = f.tags; if (!t) return `<span class="mas">sin etiquetar</span>`;
+  const vals = Object.keys(TAGS).map(k => t[k]).filter(Boolean);
+  return vals.slice(0, max).map(v => `<span class="tag" title="${esc(v)}">▦ ${esc(v)}</span>`).join(" ") + (vals.length > max ? `<span class="mas">+${vals.length - max}</span>` : "");
+}
+function dibujarCuerpo() {
+  const fs = filtradas(), ms = est.metricas, c = $("#cuerpo");
+  if ($("#cuenta")) $("#cuenta").textContent = fs.length + " creativos";
+  if (!fs.length) { c.innerHTML = `<div class="vacio">${est.datos?.filas?.length ? "Ningún creativo con estos filtros." : "Todavía no hay datos. Tocá ↻ arriba a la derecha para traerlos de Meta."}</div>`; return; }
+  if (est.vista === "tarjetas") {
+    c.innerHTML = `<div class="tarjetas">${fs.map((f, i) => `<div class="tar" onclick="detalle(${i})">
+      <div class="img" style="background-image:url('${esc(f.mini)}')"><span class="fmt">${FORMATOS[f.formato] || f.formato}</span><span class="st pill ${f.estado[1]}">${f.estado[0]}</span></div>
+      <div class="info"><div class="n" title="${esc(f.nombre)}">${esc(f.nombre)}</div>
+      <div class="met">${est.tarjeta.map(m => `<div class="${m === "roas" ? sombra(m, f[m], fs) : ""}" style="border-radius:6px;padding:2px 4px">${METRICAS[m].n}<b>${METRICAS[m].f(f[m])}</b></div>`).join("")}</div>
+      <div class="tags">${tagsHtml(f, 3)}</div></div></div>`).join("")}</div>`;
+  } else {
+    const th = (k, n, num) => `<th class="${num ? "num" : ""} ${est.orden.m === k ? "ord" : ""}" onclick="ordenar('${k}')">${n}${est.orden.m === k ? (est.orden.dir === "desc" ? " ↓" : " ↑") : ""}</th>`;
+    c.innerHTML = `<div class="scroll"><table><thead><tr>${th("nombre", "Creativo")}${th("lanzado", "Lanzamiento")}<th>Etiquetas</th>${ms.map(m => th(m, METRICAS[m].n, true)).join("")}</tr></thead><tbody>
+    ${fs.map((f, i) => `<tr><td><div class="crea" onclick="detalle(${i})"><img class="mini" loading="lazy" src="${esc(f.mini)}" onerror="this.style.visibility='hidden'"><div style="min-width:0"><div class="n" title="${esc(f.nombre)}">${esc(f.nombre)}</div>
+      <div class="s">${f.ads} anuncio${f.ads === 1 ? "" : "s"} <span class="pill ${f.estado[1]}">${f.estado[0]}</span></div></div></div></td>
+      <td>${fecha(f.lanzado)}</td><td>${tagsHtml(f, 1)}</td>
+      ${ms.map(m => `<td class="num ${sombra(m, f[m], fs)}">${METRICAS[m].f(f[m])}</td>`).join("")}</tr>`).join("")}
+    </tbody></table></div>`;
+  }
+  window._fs = fs;
+}
+function detalle(i) {
+  const f = window._fs[i];
+  const ver = f.video ? `<p><a class="btn" target="_blank" rel="noopener" href="https://www.facebook.com/watch/?v=${esc(f.video)}">▶ Ver el video</a></p>` : "";
+  $("#hoja").innerHTML = `<button class="btn cerrar" onclick="$('#panel').classList.remove('on')">✕</button>
+    <span class="pill ${f.estado[1]}">${f.estado[0]}</span> <span class="pill">${FORMATOS[f.formato] || f.formato}</span>
+    <h2>${esc(f.nombre)}</h2><div style="color:var(--sub);font-size:12.5px">${f.ads} anuncio${f.ads === 1 ? "" : "s"} · lanzado ${fecha(f.lanzado)} · ${f.activos ? f.activos + " activo" + (f.activos === 1 ? "" : "s") : "pausado"}</div>
+    <div class="kpis">${Object.keys(METRICAS).map(m => `<div class="${m === "roas" ? sombra(m, f[m], window._fs) : ""}">${METRICAS[m].n}<b>${METRICAS[m].f(f[m])}</b></div>`).join("")}</div>
+    ${f.mini ? `<img src="${esc(f.mini)}" alt="">` : ""}${ver}
+    ${f.tags ? `<h3 style="font-size:14px;margin:18px 0 8px">Etiquetas IA</h3>${Object.entries(TAGS).map(([k, n]) => f.tags[k] ? `<div style="margin:4px 0"><span style="color:var(--sub)">${n}:</span> ${esc(f.tags[k])}</div>` : "").join("")}` : ""}
+    ${f.titulo ? `<h3 style="font-size:14px;margin:18px 0 8px">Titular</h3><div class="copy">${esc(f.titulo)}</div>` : ""}
+    ${f.copy ? `<h3 style="font-size:14px;margin:18px 0 8px">Copy</h3><div class="copy">${esc(f.copy)}</div>` : ""}`;
+  $("#panel").classList.add("on");
+}
+function ajustes() {
+  const c = est.conexion || {};
+  $("#hoja").innerHTML = `<button class="btn cerrar" onclick="$('#panel').classList.remove('on')">✕</button><h2>Ajustes</h2>
+    <p style="color:var(--sub)">Cuenta: <b>${esc(c.cuentaNombre || "—")}</b> (${esc(c.cuenta || "")})<br>Conectado como ${esc(c.usuario || "—")} · vence ${c.tokenVence ? new Date(c.tokenVence).toLocaleDateString("es-AR") : "—"}</p>
+    <label style="display:block;margin:18px 0 6px;font-weight:600">Break-even (ROAS)</label>
+    <p style="color:var(--sub);margin:0 0 8px;font-size:13px">Arriba de este número la marca gana plata: pinta el ROAS de verde o rojo.</p>
+    <input id="be" class="buscar" style="width:120px" value="${fmtN(c.breakEven || 2, 2)}"> <button class="btn neg" onclick="guardarBE()">Guardar</button>
+    <p style="margin-top:26px"><a class="btn" href="${FN}?accion=conectar&marca=${MARCA}&k=${K}">Reconectar o cambiar de Facebook</a></p>
+    ${(c.cuentas || []).length > 1 ? `<p><button class="btn" onclick="$('#panel').classList.remove('on');pantallaCuentas()">Cambiar de cuenta publicitaria</button></p>` : ""}`;
+  $("#panel").classList.add("on");
+}
+async function guardarBE() {
+  const v = $("#be").value.replace(",", ".");
+  if (!DEMO) try { await api("breakeven", { valor: v }); } catch (e) { alert(e.message); return; }
+  est.conexion.breakEven = Number(v); $("#panel").classList.remove("on"); pantallaReporte();
+}
+
+// ── acciones ───────────────────────────────────────────────────────
+function abrir(ev, id) { ev.stopPropagation(); const m = $("#" + id), on = m.classList.contains("on"); document.querySelectorAll(".menu").forEach(x => x.classList.remove("on")); if (!on) m.classList.add("on"); }
+document.addEventListener("click", () => document.querySelectorAll(".menu").forEach(x => x.classList.remove("on")));
+function togFmt(k, on) { est.formatos = on ? [...new Set([...est.formatos, k])] : est.formatos.filter(x => x !== k); guardar("formatos", est.formatos); refrescarChips(); }
+function togMet(k, on) { est.metricas = Object.keys(METRICAS).filter(m => m === k ? on : est.metricas.includes(m)); guardar("metricas", est.metricas); dibujarCuerpo(); }
+function setGasto(v) { est.minGasto = v; guardar("minGasto", v); refrescarChips(); }
+function refrescarChips() { const b = est.buscar; pantallaReporte(); est.buscar = b; }
+function setVista(v) { est.vista = v; guardar("vista", v); pantallaReporte(); }
+function ordenar(m) { est.orden = est.orden.m === m ? { m, dir: est.orden.dir === "desc" ? "asc" : "desc" } : { m, dir: m === "nombre" ? "asc" : "desc" }; guardar("orden", est.orden); dibujarCuerpo(); }
+async function cambiarPreset(p) { est.preset = p; guardar("preset", p); await cargarDatos(); pantallaReporte(); }
+async function refrescar() {
+  if (DEMO) return;
+  const b = $("#refrescar"); b.disabled = true; b.textContent = "Actualizando…";
+  try { const r = await api("actualizar"); if (r.esperar) alert("Se actualizó hace menos de 30 minutos. Ya tenés lo último."); est.cache = {}; await cargarDatos(); pantallaReporte(); }
+  catch (e) { alert("No se pudo actualizar: " + e.message); b.disabled = false; b.textContent = "↻"; }
+}
+async function cargarDatos() {
+  const traer = async p => DEMO ? demoDatos(p) : (est.cache[p] = est.cache[p] || await api("datos", { preset: p }));
+  est.datos = await traer(est.preset);
+  if (est.reporte === "lanzamientos") est.datos90 = await traer("last_90d");
+}
+
+async function iniciar() {
+  if (DEMO) { est.conexion = { cuentaNombre: "Marca demo", usuario: "Demo", breakEven: 2 }; await cargarDatos(); pantallaReporte(); return; }
+  if (!MARCA || !K) return pantallaSinLink();
+  $("#raiz").innerHTML = `<div class="centro"><p>Cargando…</p></div>`;
+  try { est.conexion = await api("estado"); }
+  catch (e) { $("#raiz").innerHTML = `<div class="centro"><h1>Radar</h1><p>${e.message === "link inválido" ? "Este link ya no sirve. Pedile uno nuevo a CIMA." : "No pudimos cargar: " + esc(e.message)}</p></div>`; return; }
+  if (!est.conexion.conectada) return pantallaConectar(q.get("error"));
+  if (!est.conexion.cuenta || q.get("elegir")) return pantallaCuentas();
+  await cargarDatos(); pantallaReporte();
+}
+
+// Datos de ejemplo para ?demo=1 (ver la pantalla sin conectar nada)
+function demoDatos(p) {
+  const mult = { last_7d: .5, last_14d: 1, last_30d: 2.1, last_90d: 6 }[p];
+  const nombres = ["Nio016", "Nmp008Tresxdos", "GEORGINA 119 · RB", "FABI 96 · HP4", "LUCÍA L1 · PF", "Trio25 Comparativa", "VIDEO 1 Cola", "Nio372 Captura de carrito", "T22 V4 Dani · Cuándo empezar", "S42 CBO4 G12", "Nmp052 Verano", "ad3", "JHONATAN J5", "Nio428 Manos maduras"];
+  const fm = ["imagen", "imagen", "video", "video", "video", "carrusel", "video", "imagen", "video", "flexible", "imagen", "post", "video", "imagen"];
+  const tg = [["Foto de estudio de producto", "Promoción 3x2", "Mujeres 35-55"], ["Imagen con texto superpuesto", "Promoción 3x2", "Mujeres 35-55"], ["Video UGC con autógrafo", "Celulitis y flacidez", "Mujeres 40+ con celulitis"], ["Animación 3D anatómica", "Celulitis y flacidez", "Mujeres 45+"], ["Video UGC a cámara", "Rutina corporal simple", "Mamás ocupadas"]];
+  return { moneda: "ARS", actualizado: Date.now() - 4 * 60000, filas: nombres.map((n, i) => {
+    const spend = Math.round((3000 + i * i * 9000) * mult), roas = [42, 34, 16, 9.3, 9.2, 4.2, 2.4, 1.9, 3.4, 3.1, 1.85, 8.8, 1.46, 15][i];
+    const value = spend * roas, purchases = Math.max(1, Math.round(value / 119405));
+    return { id: "d" + i, nombre: n, formato: fm[i], ads: 1 + (i % 3), activos: i % 4 ? 1 : 0, mini: `https://picsum.photos/seed/cima${i}/300/375`,
+      lanzado: new Date(Date.now() - ((i * 5 + 2) % (p === "last_90d" ? 80 : 20)) * 864e5).toISOString(), spend, value, purchases, impressions: spend * 2.4, clicks: spend * 2.4 * (0.006 + i * 0.001),
+      tags: { formato_visual: tg[i % 5][0], tema_mensaje: tg[i % 5][1], publico: tg[i % 5][2] }, copy: "Probé de todo para la celulitis hasta que una amiga me pasó esto…", titulo: "3x2 solo esta semana" };
+  }) };
+}
+iniciar();
+</script>
+</body></html>
