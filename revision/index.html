@@ -49,7 +49,7 @@ h1{font-size:30px;font-weight:700;letter-spacing:-.03em;line-height:1.1}
 .kpi.alerta .v{color:var(--warn)} .kpi.mal .v{color:var(--bad)}
 .item{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px;margin-bottom:12px;display:grid;grid-template-columns:minmax(0,300px) minmax(0,1fr);gap:22px}
 @media (max-width:760px){.item{grid-template-columns:minmax(0,1fr)}}
-.vid{aspect-ratio:9/16;width:100%;border-radius:16px;overflow:hidden;background:#1d1916;position:relative}
+.vid{aspect-ratio:9/16;width:100%;border-radius:16px;overflow:hidden;background:#1d1916;position:sticky;top:12px;align-self:start}
 .vid iframe{position:absolute;top:0;left:-6%;width:112%;height:100%;border:0}
 .vid .ph{position:absolute;inset:0;display:grid;place-items:center;color:#b5a79f;font-size:13px;text-align:center;padding:20px}
 .meta{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:8px}
@@ -61,7 +61,10 @@ h1{font-size:30px;font-weight:700;letter-spacing:-.03em;line-height:1.1}
 .links{font-size:12.5px;color:var(--mut);margin-bottom:14px}
 .links a{color:var(--txt);font-weight:500}
 h3{margin:4px 0 8px;font-size:10.5px;font-weight:600;color:var(--mut);text-transform:uppercase;letter-spacing:.12em}
-.subs{max-height:400px;overflow:auto;border:1px solid var(--line);border-radius:16px;background:var(--card)}
+.subs{max-height:560px;overflow:auto;border:1px solid var(--line);border-radius:16px;background:var(--card)}
+.cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:16px;align-items:start}
+@media (max-width:1000px){.cols{grid-template-columns:minmax(0,1fr)}}
+.dsubs{margin-top:16px}.dsubs summary{cursor:pointer;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);padding:6px 0}
 .subs label{display:grid;grid-template-columns:30px minmax(0,1fr);align-items:center;gap:4px;padding:3px 8px;border-top:1px solid var(--line)}
 .subs label:first-child{border-top:0}
 .subs span{color:var(--mut2);font-size:11.5px;text-align:right;font-variant-numeric:tabular-nums}
@@ -87,9 +90,9 @@ h3{margin:4px 0 8px;font-size:10.5px;font-weight:600;color:var(--mut);text-trans
 .apr b{font-weight:600}
 .apr .r{margin-top:5px;color:var(--mut)}
 .vid video{width:100%;border-radius:16px;background:#000;display:block}
-.tomas{margin-top:14px}.tl{display:flex;gap:6px;overflow-x:auto;padding:4px 0 8px}
-.tchip{flex:0 0 auto;border:1px solid var(--line2);background:var(--card);border-radius:12px;padding:6px 10px;font-size:12px;cursor:pointer;text-align:left;max-width:170px}
-.tchip b{display:block;font-size:12px}.tchip small{color:var(--mut);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tomas{margin-top:0}.tl{display:flex;flex-direction:column;gap:5px;padding:0 4px 8px 0;max-height:290px;overflow:auto}
+.tchip{border:1px solid var(--line2);background:var(--card);border-radius:12px;padding:6px 10px;font-size:12px;cursor:pointer;text-align:left;min-width:0}
+.tchip{display:flex;gap:8px;align-items:baseline}.tchip b{flex:0 0 auto;font-size:12px}.tchip small{color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tchip.on{border-color:var(--txt);box-shadow:0 0 0 2px var(--txt) inset}.tchip.ahora{background:var(--soft)}.tchip.marcada{border-color:var(--bad);background:var(--bad-bg)}
 .tpanel{border:1px solid var(--line);border-radius:16px;padding:12px;margin-top:6px;background:var(--soft)}
 .alts{display:flex;gap:8px;margin:8px 0}.alt{width:96px;cursor:pointer;border:2px solid transparent;border-radius:12px;overflow:hidden;background:#222;font-size:10px;color:#fff;text-align:center}
@@ -231,7 +234,8 @@ function tarjeta(id,it){
       <div class="meta"><span class="pill m">${esc(it.marcaNombre||it.marca)}</span><span class="pill">Guion ${esc(it.guion||"—")}</span><span class="pill">${esc(it.creadora||"")}</span><span class="pill">${fecha}</span><span class="pill e-${esc(it.estado)}">${esc((ESTADOS.find(e=>e[0]===it.estado)||[,it.estado])[1])}</span></div>
       ${it.driveId?`<div class="links"><a href="https://drive.google.com/file/d/${esc(it.driveId)}/view" target="_blank" rel="noopener">Abrir en Drive</a> · <a href="${esc(it.crudoLink)}" target="_blank" rel="noopener">Ver el crudo</a></div>`:""}
       ${it.error?`<div class="err">${esc(it.error)}</div>`:""}
-      ${subs?`<h3>Subtítulos ${editable||rehacible?"· tocá uno para corregirlo":""}</h3><div class="subs">${subs}</div>`:""}
+      <div class="cols">
+      ${subs?`<div><h3>Subtítulos ${editable||rehacible?"· tocá uno para corregirlo":""}</h3><div class="subs">${subs}</div></div>`:""}
       ${editable && it.vistaUrl && (it.tomasLinea||[]).length?`
       <div class="tomas"><h3>Tomas de b-roll · tocá la que no te guste</h3>
         <div class="tl">${it.tomasLinea.map((t,i)=>`<button class="tchip" data-k="${i}" data-t0="${t.t0}" data-t1="${t.t1}"><b>${i+1} · ${Number(t.t0).toFixed(1)}s</b><small>${esc(t.frase||t.clip)}</small></button>`).join("")}</div>
@@ -240,6 +244,7 @@ function tarjeta(id,it){
         <div class="acciones"><button class="btn dark cambiar-tomas" disabled>Cambiar las tomas marcadas</button></div>
         <p class="ayuda">Se cambia solo esa toma (sin re-editar) y vuelve en unos minutos como versión nueva.</p>
       </div>`:""}
+      </div>
       ${editable?`
       <h3 style="margin-top:16px">Qué hay que cambiar</h3>
       <textarea class="nota" rows="3" placeholder="Ej.: seg 23 el b-roll no tiene que ver, poné algo de enzimas · seg 50 sacá el del cinturón"></textarea>
