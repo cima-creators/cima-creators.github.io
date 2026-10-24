@@ -86,6 +86,15 @@ h3{margin:4px 0 8px;font-size:10.5px;font-weight:600;color:var(--mut);text-trans
 .apr .m{font-size:11.5px;color:var(--mut2);margin-bottom:4px}
 .apr b{font-weight:600}
 .apr .r{margin-top:5px;color:var(--mut)}
+.vid video{width:100%;border-radius:16px;background:#000;display:block}
+.tomas{margin-top:14px}.tl{display:flex;gap:6px;overflow-x:auto;padding:4px 0 8px}
+.tchip{flex:0 0 auto;border:1px solid var(--line2);background:var(--card);border-radius:12px;padding:6px 10px;font-size:12px;cursor:pointer;text-align:left;max-width:170px}
+.tchip b{display:block;font-size:12px}.tchip small{color:var(--mut);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tchip.on{border-color:var(--txt);box-shadow:0 0 0 2px var(--txt) inset}.tchip.ahora{background:var(--soft)}.tchip.marcada{border-color:var(--bad);background:var(--bad-bg)}
+.tpanel{border:1px solid var(--line);border-radius:16px;padding:12px;margin-top:6px;background:var(--soft)}
+.alts{display:flex;gap:8px;margin:8px 0}.alt{width:96px;cursor:pointer;border:2px solid transparent;border-radius:12px;overflow:hidden;background:#222;font-size:10px;color:#fff;text-align:center}
+.alt .th{width:96px;height:170px;background-repeat:no-repeat}.alt.sel{border-color:var(--ok)}.alt.sis{display:flex;align-items:center;justify-content:center;height:194px;background:var(--card);color:var(--txt);border:2px dashed var(--line2);padding:6px}
+.alt.sis.sel{border-color:var(--ok)}.tpend{font-size:12px;margin-top:6px;color:var(--bad)}
 </style>
 </head>
 <body>
@@ -186,7 +195,7 @@ function pintar(){
   // tarjeta de un video que cambió DE VERDAD (versión, estado o archivo); las demás quedan intactas, con su video andando.
   const caja = $("#lista");
   caja.querySelectorAll(".vacio").forEach(x => x.remove());
-  const firma = it => [it.estado, it.version, it.vistaId, it.driveId, it.archivo, (it.notas||[]).length, it.nota].join("|");
+  const firma = it => [it.estado, it.version, it.vistaId, it.vistaUrl, it.driveId, it.archivo, (it.notas||[]).length, it.nota].join("|");
   const quedan = new Set(lista.map(([id]) => "it-" + id));
   [...caja.children].forEach(el => { if(!quedan.has(el.id)) el.remove(); });
   let antes = null;
@@ -207,7 +216,9 @@ document.addEventListener("focusout", () => setTimeout(() => { if(pendiente && !
 
 function tarjeta(id,it){
   const verId = it.vistaId || it.driveId;   // la versión liviana: Drive la prepara en 1-2 min
-  const vid = verId
+  const vid = it.vistaUrl
+    ? `<video class="rv" controls playsinline preload="metadata" src="${esc(it.vistaUrl)}"></video>`
+    : verId
     ? `<iframe src="https://drive.google.com/file/d/${esc(verId)}/preview" allow="autoplay" loading="lazy"></iframe>`
     : `<div class="ph">${it.estado==="revisar"?"El video se está terminando de subir a Drive…":"Editándose…"}</div>`;
   const fecha = (it.fechaCrudo||"").slice(0,10).split("-").reverse().join("/");
@@ -221,6 +232,14 @@ function tarjeta(id,it){
       ${it.driveId?`<div class="links"><a href="https://drive.google.com/file/d/${esc(it.driveId)}/view" target="_blank" rel="noopener">Abrir en Drive</a> · <a href="${esc(it.crudoLink)}" target="_blank" rel="noopener">Ver el crudo</a></div>`:""}
       ${it.error?`<div class="err">${esc(it.error)}</div>`:""}
       ${subs?`<h3>Subtítulos ${editable||rehacible?"· tocá uno para corregirlo":""}</h3><div class="subs">${subs}</div>`:""}
+      ${editable && it.vistaUrl && (it.tomasLinea||[]).length?`
+      <div class="tomas"><h3>Tomas de b-roll · tocá la que no te guste</h3>
+        <div class="tl">${it.tomasLinea.map((t,i)=>`<button class="tchip" data-k="${i}" data-t0="${t.t0}" data-t1="${t.t1}"><b>${i+1} · ${Number(t.t0).toFixed(1)}s</b><small>${esc(t.frase||t.clip)}</small></button>`).join("")}</div>
+        <div class="tpanel" hidden></div>
+        <div class="tpend"></div>
+        <div class="acciones"><button class="btn dark cambiar-tomas" disabled>Cambiar las tomas marcadas</button></div>
+        <p class="ayuda">Se cambia solo esa toma (sin re-editar) y vuelve en unos minutos como versión nueva.</p>
+      </div>`:""}
       ${editable?`
       <h3 style="margin-top:16px">Qué hay que cambiar</h3>
       <textarea class="nota" rows="3" placeholder="Ej.: seg 23 el b-roll no tiene que ver, poné algo de enzimas · seg 50 sacá el del cinturón"></textarea>
@@ -271,6 +290,36 @@ function conectar(id){
     marcar({estado:"rechazado", nota:n}, "Rechazado");
   });
   el.querySelector(".reintentar")?.addEventListener("click", () => marcar({estado:"corregir", pedido:{}}, "Se vuelve a intentar"));
+  // revisión por tomas (tipo Frame.io, Nacho 24/10): tocar una toma → ver 3 reemplazos → marcar → "Cambiar las tomas marcadas"
+  const it = items[id] || {}, lin = it.tomasLinea || [], video = el.querySelector("video.rv"), panel = el.querySelector(".tpanel");
+  if(!panel || !lin.length) return;
+  const marcadas = {}; let abierta = null;
+  const pend = () => { const n = Object.keys(marcadas).length; el.querySelector(".cambiar-tomas").disabled = !n;
+    el.querySelector(".tpend").textContent = n ? `${n} ${n===1?"toma marcada":"tomas marcadas"} para cambiar` : "";
+    el.querySelectorAll(".tchip").forEach(c => c.classList.toggle("marcada", c.dataset.k in marcadas)); };
+  const abrir = k => {
+    abierta = k; const t = lin[k]; el.querySelectorAll(".tchip").forEach(c => c.classList.toggle("on", c.dataset.k == k));
+    if(video){ video.currentTime = Number(t.t0) + 0.05; }
+    const m = marcadas[k] || {};
+    const cel = (a,j) => `<div class="alt ${m.clip===a.clip?"sel":""}" data-clip="${esc(a.clip)}" title="${esc(a.desc)}"><div class="th" style="background-image:url('${esc(it.tomasGrilla||"")}');background-size:288px auto;background-position:-${j*96}px -${(t.fila*170.4).toFixed(1)}px"></div>${esc((a.desc||"").slice(0,28))}</div>`;
+    panel.hidden = false;
+    panel.innerHTML = `<b>Toma ${Number(k)+1}</b> · ${Number(t.t0).toFixed(1)}–${Number(t.t1).toFixed(1)} s · «${esc(t.frase||"")}»
+      <div class="alts">${(t.alts||[]).map(cel).join("")}<div class="alt sis ${m && !m.clip && (k in marcadas)?"sel":""}" data-clip="">Que elija el sistema</div></div>
+      <input class="tnota" placeholder="Opcional: qué querés ver acá (ej. el frasco, una panza, sin cara)" value="${esc(m.nota||"")}" style="width:100%">
+      <div class="acciones"><button class="btn ok tmarcar">${k in marcadas?"Actualizar":"Marcar para cambiar"}</button>${k in marcadas?'<button class="btn tquitar">Dejarla como está</button>':""}</div>`;
+    let elegido = m.clip ?? null;
+    panel.querySelectorAll(".alt").forEach(a => a.onclick = () => { panel.querySelectorAll(".alt").forEach(x=>x.classList.remove("sel")); a.classList.add("sel"); elegido = a.dataset.clip; });
+    panel.querySelector(".tmarcar").onclick = () => { marcadas[k] = {t: Number(t.t0) + 0.1, clip: elegido || "", nota: panel.querySelector(".tnota").value.trim()}; pend(); abrir(k); };
+    const q = panel.querySelector(".tquitar"); if(q) q.onclick = () => { delete marcadas[k]; pend(); abrir(k); };
+  };
+  el.querySelectorAll(".tchip").forEach(c => c.onclick = () => abrir(c.dataset.k));
+  if(video) video.addEventListener("timeupdate", () => { const s = video.currentTime;
+    el.querySelectorAll(".tchip").forEach(c => c.classList.toggle("ahora", s >= Number(c.dataset.t0) && s < Number(c.dataset.t1))); });
+  el.querySelector(".cambiar-tomas").onclick = () => {
+    const tomas = Object.values(marcadas).map(m => ({t: m.t, ...(m.clip ? {clip: m.clip} : {}), ...(m.nota ? {nota: m.nota} : {})}));
+    if(!tomas.length) return;
+    marcar({estado:"corregir", pedido:{tomas, por:quien}}, `Listo: se ${tomas.length===1?"cambia esa toma":"cambian esas "+tomas.length+" tomas"} y vuelve en unos minutos`);
+  };
 }
 
 if(quien) arrancar();
