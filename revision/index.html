@@ -64,11 +64,17 @@ h3{margin:4px 0 8px;font-size:10.5px;font-weight:600;color:var(--mut);text-trans
 .subs{max-height:560px;overflow:auto;border:1px solid var(--line);border-radius:16px;background:var(--card)}
 .cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:16px;align-items:start}
 @media (max-width:1000px){.cols{grid-template-columns:minmax(0,1fr)}}
+/* sin tomas (videos viejos): los subtítulos ocupan todo el ancho en columnas, no una tira angosta */
+.cols.solo{grid-template-columns:minmax(0,1fr)}
+.cols.solo .subs{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));max-height:300px}
+.cols.solo .subs label{border-right:1px solid var(--line)}
+.cols h3,.tomas h3{margin-bottom:8px}
+.item .acciones{margin-top:10px}
 .dsubs{margin-top:16px}.dsubs summary{cursor:pointer;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);padding:6px 0}
-.subs label{display:grid;grid-template-columns:30px minmax(0,1fr);align-items:center;gap:4px;padding:3px 8px;border-top:1px solid var(--line)}
+.subs label{display:grid;grid-template-columns:26px minmax(0,1fr);align-items:center;gap:2px;padding:1px 6px;border-top:1px solid var(--line)}
 .subs label:first-child{border-top:0}
 .subs span{color:var(--mut2);font-size:11.5px;text-align:right;font-variant-numeric:tabular-nums}
-.subs input{width:100%;border:1px solid transparent;background:transparent;color:var(--txt);font-size:13.5px;padding:7px 9px;border-radius:10px}
+.subs input{width:100%;border:1px solid transparent;background:transparent;color:var(--txt);font-size:13px;padding:5px 8px;border-radius:9px}
 .subs input:focus{outline:none;border-color:var(--line2);background:var(--soft)}
 .cambio{background:var(--warn-bg)!important;color:var(--warn)!important}
 .nota{width:100%;border:1px solid var(--line);border-radius:14px;padding:11px 13px;font-size:13.5px;background:var(--card);color:var(--txt);resize:vertical}
@@ -223,7 +229,7 @@ function tarjeta(id,it){
     ? `<video class="rv" controls playsinline preload="metadata" src="${esc(it.vistaUrl)}"></video>`
     : verId
     ? `<iframe src="https://drive.google.com/file/d/${esc(verId)}/preview" allow="autoplay" loading="lazy"></iframe>`
-    : `<div class="ph">${it.estado==="revisar"?"El video se está terminando de subir a Drive…":"Editándose…"}</div>`;
+    : `<div class="ph">${it.estado==="revisar"?"El video se está subiendo… recargá en un minuto":"Editándose…"}</div>`;
   const fecha = (it.fechaCrudo||"").slice(0,10).split("-").reverse().join("/");
   const subs = (it.pantallas||[]).map((t,i)=>`<label><span>${i+1}</span><input data-i="${i}" value="${esc(t)}" data-orig="${esc(t)}"></label>`).join("");
   const editable = it.estado==="revisar";
@@ -234,7 +240,7 @@ function tarjeta(id,it){
       <div class="meta"><span class="pill m">${esc(it.marcaNombre||it.marca)}</span><span class="pill">Guion ${esc(it.guion||"—")}</span><span class="pill">${esc(it.creadora||"")}</span><span class="pill">${fecha}</span><span class="pill e-${esc(it.estado)}">${esc((ESTADOS.find(e=>e[0]===it.estado)||[,it.estado])[1])}</span></div>
       ${it.driveId?`<div class="links"><a href="https://drive.google.com/file/d/${esc(it.driveId)}/view" target="_blank" rel="noopener">Abrir en Drive</a> · <a href="${esc(it.crudoLink)}" target="_blank" rel="noopener">Ver el crudo</a></div>`:""}
       ${it.error?`<div class="err">${esc(it.error)}</div>`:""}
-      <div class="cols">
+      <div class="cols ${editable && it.vistaUrl && (it.tomasLinea||[]).length?"":"solo"}">
       ${subs?`<div><h3>Subtítulos ${editable||rehacible?"· tocá uno para corregirlo":""}</h3><div class="subs">${subs}</div></div>`:""}
       ${editable && it.vistaUrl && (it.tomasLinea||[]).length?`
       <div class="tomas"><h3>Tomas de b-roll · tocá la que no te guste</h3>
