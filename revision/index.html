@@ -21,7 +21,7 @@ h1{font-size:30px;font-weight:700;letter-spacing:-.03em;line-height:1.1}
 .btn.dark{background:var(--txt);color:#fff;border-color:var(--txt)}
 .btn.ok{background:var(--ok);color:#fff;border-color:var(--ok)}
 .btn.no{color:var(--bad)}
-.btn:disabled{opacity:.45;cursor:default}
+.btn:disabled{background:var(--soft);color:var(--mut2);border-color:var(--line);cursor:default}
 .marcas{display:flex;gap:4px;background:var(--soft);border:1px solid var(--line);border-radius:16px;padding:4px;width:max-content;max-width:100%;overflow-x:auto;margin-bottom:18px}
 .mt{border:0;background:transparent;color:var(--mut);font-weight:600;font-size:13px;padding:8px 16px;border-radius:12px;cursor:pointer;white-space:nowrap}
 .mt.on{background:var(--card);color:var(--txt);box-shadow:0 1px 4px rgba(38,33,30,.08)}
@@ -47,31 +47,33 @@ h1{font-size:30px;font-weight:700;letter-spacing:-.03em;line-height:1.1}
 .kpi .l{font-size:10.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--mut)}
 .kpi .v{font-size:30px;font-weight:700;letter-spacing:-.035em;margin-top:auto;padding-top:8px;line-height:1}
 .kpi.alerta .v{color:var(--warn)} .kpi.mal .v{color:var(--bad)}
-.item{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px;margin-bottom:12px;display:grid;grid-template-columns:minmax(0,300px) minmax(0,1fr);gap:22px}
-@media (max-width:760px){.item{grid-template-columns:minmax(0,1fr)}}
-.vid{aspect-ratio:9/16;width:100%;border-radius:16px;overflow:hidden;background:#1d1916;position:sticky;top:12px;align-self:start}
+.item{background:var(--card);border:1px solid var(--line);border-radius:24px;padding:18px;margin-bottom:16px;display:grid;grid-template-columns:300px minmax(0,1fr);gap:24px;box-shadow:0 1px 2px rgba(38,33,30,.04)}
+@media (max-width:820px){.item{grid-template-columns:minmax(0,1fr);padding:14px}}
+.vid{aspect-ratio:9/16;width:100%;border-radius:18px;overflow:hidden;background:#1d1916;position:sticky;top:16px;align-self:start}
+@media (max-width:820px){.vid{position:relative;top:0;max-width:340px;margin:0 auto}}
 .vid iframe{position:absolute;top:0;left:-6%;width:112%;height:100%;border:0}
 .vid .ph{position:absolute;inset:0;display:grid;place-items:center;color:#b5a79f;font-size:13px;text-align:center;padding:20px}
-.meta{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:8px}
-.pill{display:inline-block;font-size:11.5px;font-weight:500;padding:4px 11px;border-radius:99px;background:var(--soft);color:var(--mut)}
-.pill.m{background:var(--txt);color:#fff}
+.vid video{width:100%;height:100%;object-fit:cover;display:block;background:#000}
+.ws{display:flex;flex-direction:column;min-width:0;gap:16px}
+.cab{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;padding-bottom:14px;border-bottom:1px solid var(--line)}
+.cab .tt{font-size:18px;font-weight:700;letter-spacing:-.02em;line-height:1.25}
+.cab .st{font-size:12.5px;color:var(--mut);margin-top:3px}
+.cab .st a{color:var(--mut);text-decoration:underline;text-underline-offset:2px}
+.cab .st a:hover{color:var(--txt)}
+.pill{display:inline-block;font-size:11.5px;font-weight:600;padding:5px 12px;border-radius:99px;background:var(--soft);color:var(--mut);white-space:nowrap}
 .pill.e-revisar{background:var(--warn-bg);color:var(--warn)}
 .pill.e-error,.pill.e-rechazado{background:var(--bad-bg);color:var(--bad)}
 .pill.e-subido,.pill.e-aprobado{background:var(--ok-bg);color:var(--ok)}
-.links{font-size:12.5px;color:var(--mut);margin-bottom:14px}
-.links a{color:var(--txt);font-weight:500}
-h3{margin:4px 0 8px;font-size:10.5px;font-weight:600;color:var(--mut);text-transform:uppercase;letter-spacing:.12em}
-.subs{max-height:560px;overflow:auto;border:1px solid var(--line);border-radius:16px;background:var(--card)}
-.cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:16px;align-items:start}
-@media (max-width:1000px){.cols{grid-template-columns:minmax(0,1fr)}}
-/* sin tomas (videos viejos): los subtítulos ocupan todo el ancho en columnas, no una tira angosta */
+.pill.e-procesando,.pill.e-corregir{background:#ECEAF6;color:#5B5592}
+h3{margin:0 0 8px;font-size:11px;font-weight:600;color:var(--mut);text-transform:uppercase;letter-spacing:.1em;display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+h3 small{font-size:11px;font-weight:500;text-transform:none;letter-spacing:0;color:var(--mut2)}
+.cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:1100px){.cols{grid-template-columns:minmax(0,1fr)}}
 .cols.solo{grid-template-columns:minmax(0,1fr)}
-.cols.solo .subs{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));max-height:300px}
-.cols.solo .subs label{border-right:1px solid var(--line)}
-.cols h3,.tomas h3{margin-bottom:8px}
-.item .acciones{margin-top:10px}
-.dsubs{margin-top:16px}.dsubs summary{cursor:pointer;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);padding:6px 0}
-.subs label{display:grid;grid-template-columns:26px minmax(0,1fr);align-items:center;gap:2px;padding:1px 6px;border-top:1px solid var(--line)}
+.cols.solo .subs{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));max-height:320px}
+.lst{border:1px solid var(--line);border-radius:16px;background:var(--card);max-height:440px;overflow:auto;scrollbar-width:thin}
+.subs{}
+.subs label{display:grid;grid-template-columns:28px minmax(0,1fr);align-items:center;gap:2px;padding:2px 8px;border-top:1px solid var(--line);min-height:38px}
 .subs label:first-child{border-top:0}
 .subs span{color:var(--mut2);font-size:11.5px;text-align:right;font-variant-numeric:tabular-nums}
 .subs input{width:100%;border:1px solid transparent;background:transparent;color:var(--txt);font-size:13px;padding:5px 8px;border-radius:9px}
@@ -95,15 +97,42 @@ h3{margin:4px 0 8px;font-size:10.5px;font-weight:600;color:var(--mut);text-trans
 .apr .m{font-size:11.5px;color:var(--mut2);margin-bottom:4px}
 .apr b{font-weight:600}
 .apr .r{margin-top:5px;color:var(--mut)}
-.vid video{width:100%;border-radius:16px;background:#000;display:block}
-.tomas{margin-top:0}.tl{display:flex;flex-direction:column;gap:5px;padding:0 4px 8px 0;max-height:290px;overflow:auto}
-.tchip{border:1px solid var(--line2);background:var(--card);border-radius:12px;padding:6px 10px;font-size:12px;cursor:pointer;text-align:left;min-width:0}
-.tchip{display:flex;gap:8px;align-items:baseline}.tchip b{flex:0 0 auto;font-size:12px}.tchip small{color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.tchip.on{border-color:var(--txt);box-shadow:0 0 0 2px var(--txt) inset}.tchip.ahora{background:var(--soft)}.tchip.marcada{border-color:var(--bad);background:var(--bad-bg)}
-.tpanel{border:1px solid var(--line);border-radius:16px;padding:12px;margin-top:6px;background:var(--soft)}
-.alts{display:flex;gap:8px;margin:8px 0}.alt{width:96px;cursor:pointer;border:2px solid transparent;border-radius:12px;overflow:hidden;background:#222;font-size:10px;color:#fff;text-align:center}
-.alt .th{width:96px;height:170px;background-repeat:no-repeat}.alt.sel{border-color:var(--ok)}.alt.sis{display:flex;align-items:center;justify-content:center;height:194px;background:var(--card);color:var(--txt);border:2px dashed var(--line2);padding:6px}
-.alt.sis.sel{border-color:var(--ok)}.tpend{font-size:12px;margin-top:6px;color:var(--bad)}
+.tl{display:flex;flex-direction:column}
+.trow{border-top:1px solid var(--line)}.trow:first-child{border-top:0}
+.tchip{display:grid;grid-template-columns:62px minmax(0,1fr) 18px;gap:8px;align-items:center;width:100%;border:0;background:transparent;padding:0 12px;min-height:38px;font-size:13px;cursor:pointer;text-align:left;color:var(--txt)}
+.tchip:hover{background:var(--soft)}
+.tchip b{font-size:11.5px;font-weight:600;color:var(--mut);font-variant-numeric:tabular-nums}
+.tchip small{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tchip i{font-style:normal;color:var(--mut2);font-size:12px;text-align:right}
+.trow.ahora .tchip{background:var(--soft)}.trow.ahora .tchip b{color:var(--txt)}
+.trow.on{background:var(--soft)}
+.trow.marcada .tchip{background:var(--bad-bg)}.trow.marcada .tchip b,.trow.marcada .tchip i{color:var(--bad)}
+.tpanel{padding:4px 12px 14px;background:var(--soft)}
+.tpanel .q{font-size:12px;color:var(--mut);margin-bottom:8px}
+.alts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:10px}
+.alt{cursor:pointer;border:2px solid transparent;border-radius:12px;overflow:hidden;background:#222;font-size:10.5px;color:#fff;text-align:center;line-height:1.3}
+.alt .th{width:96px;height:170px;background-repeat:no-repeat;margin:0 auto;transform-origin:top center}
+.alt span{display:block;padding:5px 4px;background:#1d1916}
+.alt.sel{border-color:var(--ok);box-shadow:0 0 0 2px var(--ok-bg)}
+.alt.sis{display:flex;align-items:center;justify-content:center;background:var(--card);color:var(--mut);border:2px dashed var(--line2);padding:8px;font-size:12px;font-weight:600}
+.alt.sis.sel{border-color:var(--ok);color:var(--ok)}
+.tpanel input{width:100%;border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:13px;background:var(--card)}
+.tpanel .acciones{margin-top:8px}
+.tpanel .btn{min-height:36px;padding:7px 14px;font-size:12.5px}
+.barra{border-top:1px solid var(--line);padding-top:16px;display:flex;flex-direction:column;gap:10px}
+.barra .fila{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.barra .fila .sp{flex:1}
+.barra .resumen{font-size:12.5px;color:var(--bad);font-weight:500}
+.btn.link{border:0;background:transparent;color:var(--bad);padding:10px 6px;font-weight:500}
+.btn.link:hover{text-decoration:underline}
+.aud{border:1px solid var(--line);border-radius:14px;background:var(--soft);font-size:12.5px;color:var(--mut)}
+.aud summary{cursor:pointer;padding:10px 14px;font-weight:600;color:var(--warn);list-style:none}
+.aud summary::-webkit-details-marker{display:none}
+.aud summary:after{content:"Ver";float:right;font-weight:500;color:var(--mut2)}
+.aud[open] summary:after{content:"Ocultar"}
+.aud ul{padding:0 14px 12px 30px;max-height:180px;overflow:auto}
+.aud li{margin:3px 0}
+.hist{font-size:12.5px;color:var(--mut);background:var(--soft);border-radius:14px;padding:10px 14px}
 </style>
 </head>
 <body>
@@ -230,46 +259,59 @@ function tarjeta(id,it){
     : verId
     ? `<iframe src="https://drive.google.com/file/d/${esc(verId)}/preview" allow="autoplay" loading="lazy"></iframe>`
     : `<div class="ph">${it.estado==="revisar"?"El video se está subiendo… recargá en un minuto":"Editándose…"}</div>`;
-  const fecha = (it.fechaCrudo||"").slice(0,10).split("-").reverse().join("/");
+  const fecha = (it.fechaCrudo||"").slice(0,10).split("-").reverse().slice(0,2).join("/");
   const subs = (it.pantallas||[]).map((t,i)=>`<label><span>${i+1}</span><input data-i="${i}" value="${esc(t)}" data-orig="${esc(t)}"></label>`).join("");
   const editable = it.estado==="revisar";
   const rehacible = ["subido","aprobado"].includes(it.estado);   // Nacho 12/10: rehacer un aprobado con una nota
+  const conTomas = editable && it.vistaUrl && (it.tomasLinea||[]).length;
+  const estado = (ESTADOS.find(e=>e[0]===it.estado)||[,it.estado])[1];
+  const links = [it.driveId?`<a href="https://drive.google.com/file/d/${esc(it.driveId)}/view" target="_blank" rel="noopener">Drive</a>`:"",
+                 it.crudoLink?`<a href="${esc(it.crudoLink)}" target="_blank" rel="noopener">Crudo</a>`:""].filter(Boolean).join(" · ");
+  // los avisos del control automático vienen en una sola línea con " | ": van plegados, uno por renglón
+  const nota = it.nota||"", esAviso = /control marcó/i.test(nota);
+  const avisos = esAviso ? [...new Set(nota.replace(/^.*?control marcó:\s*/i,"").split(/\s*\|\s*/).filter(Boolean))] : [];
   return `<div class="item" id="it-${esc(id)}">
     <div class="vid">${vid}</div>
-    <div>
-      <div class="meta"><span class="pill m">${esc(it.marcaNombre||it.marca)}</span><span class="pill">Guion ${esc(it.guion||"—")}</span><span class="pill">${esc(it.creadora||"")}</span><span class="pill">${fecha}</span><span class="pill e-${esc(it.estado)}">${esc((ESTADOS.find(e=>e[0]===it.estado)||[,it.estado])[1])}</span></div>
-      ${it.driveId?`<div class="links"><a href="https://drive.google.com/file/d/${esc(it.driveId)}/view" target="_blank" rel="noopener">Abrir en Drive</a> · <a href="${esc(it.crudoLink)}" target="_blank" rel="noopener">Ver el crudo</a></div>`:""}
+    <div class="ws">
+      <div class="cab">
+        <div><div class="tt">${esc(it.creadora||"Sin creadora")} · Guion ${esc(it.guion||"—")}</div>
+          <div class="st">${esc(it.marcaNombre||it.marca)}${fecha?` · ${fecha}`:""}${it.version>1?` · versión ${it.version}`:""}${links?` · ${links}`:""}</div></div>
+        <span class="pill e-${esc(it.estado)}">${esc(estado)}</span>
+      </div>
       ${it.error?`<div class="err">${esc(it.error)}</div>`:""}
-      <div class="cols ${editable && it.vistaUrl && (it.tomasLinea||[]).length?"":"solo"}">
-      ${subs?`<div><h3>Subtítulos ${editable||rehacible?"· tocá uno para corregirlo":""}</h3><div class="subs">${subs}</div></div>`:""}
-      ${editable && it.vistaUrl && (it.tomasLinea||[]).length?`
-      <div class="tomas"><h3>Tomas de b-roll · tocá la que no te guste</h3>
-        <div class="tl">${it.tomasLinea.map((t,i)=>`<button class="tchip" data-k="${i}" data-t0="${t.t0}" data-t1="${t.t1}"><b>${i+1} · ${Number(t.t0).toFixed(1)}s</b><small>${esc(t.frase||t.clip)}</small></button>`).join("")}</div>
-        <div class="tpanel" hidden></div>
-        <div class="tpend"></div>
-        <div class="acciones"><button class="btn dark cambiar-tomas" disabled>Cambiar las tomas marcadas</button></div>
-        <p class="ayuda">Se cambia solo esa toma (sin re-editar) y vuelve en unos minutos como versión nueva.</p>
-      </div>`:""}
+      <div class="cols ${conTomas?"":"solo"}">
+        ${subs?`<div><h3>Subtítulos <small>${editable||rehacible?"tocá uno para corregirlo":""}</small></h3><div class="lst subs">${subs}</div></div>`:""}
+        ${conTomas?`<div class="tomas"><h3>Tomas de b-roll <small>tocá la que no te guste</small></h3>
+          <div class="lst tl">${it.tomasLinea.map((t,i)=>`<div class="trow" data-k="${i}" data-t0="${t.t0}" data-t1="${t.t1}"><button class="tchip"><b>${Number(t.t0).toFixed(1)} s</b><small>${esc(t.frase||t.clip)}</small><i>›</i></button></div>`).join("")}</div>
+        </div>`:""}
       </div>
+      ${avisos.length?`<details class="aud"><summary>⚠️ El control automático marcó ${avisos.length} ${avisos.length===1?"cosa":"cosas"} para mirar</summary><ul>${avisos.map(a=>`<li>${esc(a)}</li>`).join("")}</ul></details>`:""}
+      ${nota && !esAviso?`<div class="hist">${esc(nota)}</div>`:""}
+      ${(it.notas||[]).length?`<div class="hist"><b>Correcciones pedidas antes:</b> ${(it.notas||[]).map(esc).join(" · ")}</div>`:""}
       ${editable?`
-      <h3 style="margin-top:16px">Qué hay que cambiar</h3>
-      <textarea class="nota" rows="3" placeholder="Ej.: seg 23 el b-roll no tiene que ver, poné algo de enzimas · seg 50 sacá el del cinturón"></textarea>
-      <label class="chk"><input type="checkbox" class="otro-broll"> Elegir todo el b-roll de nuevo</label>
-      <div class="acciones">
-        <button class="btn ok aprobar">Aprobar</button>
-        <button class="btn dark corregir" disabled>Mandar correcciones</button>
-        <button class="btn no rechazar" title="Solo si el crudo no sirve: audio cortado, mal grabado">Rechazar el crudo</button>
-      </div>
-      <p class="ayuda">Las correcciones vuelven editadas en ~20 min. "Rechazar el crudo" es solo si hay que volver a grabarlo.</p>`:""}
+      <div class="barra">
+        <h3>Qué hay que cambiar <small>opcional</small></h3>
+        <textarea class="nota" rows="2" placeholder="Ej.: seg 23 el b-roll no tiene que ver, poné algo de enzimas"></textarea>
+        <div class="fila">
+          <label class="chk" style="margin:0"><input type="checkbox" class="otro-broll"> Elegir todo el b-roll de nuevo</label>
+          <span class="sp"></span><span class="resumen tpend"></span>
+        </div>
+        <div class="fila">
+          <button class="btn link rechazar" title="Solo si el crudo no sirve: audio cortado, mal grabado">Rechazar el crudo</button>
+          <span class="sp"></span>
+          <button class="btn dark corregir" disabled>Mandar correcciones</button>
+          <button class="btn ok aprobar">Aprobar</button>
+        </div>
+        <p class="ayuda" style="margin:0">Si marcás solo tomas, se cambian esas y vuelve en minutos. Con texto o subtítulos, vuelve re-editado en ~20 min.</p>
+      </div>`:""}
       ${rehacible?`
-      <h3 style="margin-top:16px">Rehacer este video</h3>
-      <textarea class="nota" rows="3" placeholder="Opcional. Ej.: rehacelo con las reglas nuevas · seg 12 poné el frasco · más corto el arranque"></textarea>
-      <label class="chk"><input type="checkbox" class="otro-broll rh" checked> Elegir todo el b-roll de nuevo</label>
-      <div class="acciones"><button class="btn dark corregir rehacer">Rehacer</button></div>
-      <p class="ayuda">Vuelve a "Para revisar" en ~20 min con las reglas de hoy. Hasta que lo apruebes de nuevo, la app sigue con la versión anterior.</p>`:""}
+      <div class="barra">
+        <h3>Rehacer este video <small>opcional</small></h3>
+        <textarea class="nota" rows="2" placeholder="Ej.: seg 12 poné el frasco · más corto el arranque"></textarea>
+        <div class="fila"><label class="chk" style="margin:0"><input type="checkbox" class="otro-broll rh" checked> Elegir todo el b-roll de nuevo</label><span class="sp"></span><button class="btn dark corregir rehacer">Rehacer</button></div>
+        <p class="ayuda" style="margin:0">Vuelve a "Para revisar" en ~20 min. Hasta que lo apruebes de nuevo, la app sigue con la versión anterior.</p>
+      </div>`:""}
       ${it.estado==="error"?`<div class="acciones"><button class="btn reintentar">Volver a intentar</button></div>`:""}
-      ${it.nota?`<div class="hist">Nota: ${esc(it.nota)}</div>`:""}
-      ${(it.notas||[]).length?`<div class="hist"><b>Versión ${it.version||1}.</b> Correcciones pedidas: ${(it.notas||[]).map(esc).join(" · ")}</div>`:""}
     </div></div>`;
 }
 
@@ -278,7 +320,7 @@ function conectar(id){
   const corr = el.querySelector(".corregir"), ob = el.querySelector(".otro-broll");
   const nt = el.querySelector(".nota");
   const esRehacer = !!el.querySelector(".rehacer");
-  const hayCambios = () => esRehacer || [...el.querySelectorAll(".subs input")].some(i=>i.value!==i.dataset.orig) || (ob && ob.checked) || (nt && nt.value.trim());
+  const hayCambios = () => esRehacer || Object.keys(marcadasDe[id]||{}).length || [...el.querySelectorAll(".subs input")].some(i=>i.value!==i.dataset.orig) || (ob && ob.checked) || (nt && nt.value.trim());
   nt && nt.addEventListener("input", () => { nt.classList.toggle("cambio", !!nt.value.trim()); corr.disabled = !hayCambios(); });
   el.querySelectorAll(".subs input").forEach(i => i.addEventListener("input", () => { i.classList.toggle("cambio", i.value!==i.dataset.orig); if(corr) corr.disabled=!hayCambios(); }));
   ob && ob.addEventListener("change", () => { corr.disabled = !hayCambios(); });
@@ -292,7 +334,12 @@ function conectar(id){
       if(!confirm("¿Rehacer este video? Vuelve a Para revisar; la app sigue con el aprobado hasta que apruebes el nuevo.")) return;
       return marcar({estado:"corregir", pedido:{pantallas, broll:!!(ob&&ob.checked), nota:(nt?nt.value.trim():""), por:quien, rehacer:true}}, "Listo: se rehace y vuelve a Para revisar en ~20 min");
     }
-    marcar({estado:"corregir", pedido:{pantallas, broll:!!(ob&&ob.checked), nota:(nt?nt.value.trim():""), por:quien}}, "Listo: vuelve editado en ~20 min · la skill aprende de esto");
+    const tomas = Object.values(marcadasDe[id]||{}).map(m => ({t: m.t, ...(m.clip ? {clip: m.clip} : {}), ...(m.nota ? {nota: m.nota} : {})}));
+    const otros = [...el.querySelectorAll(".subs input")].some(i=>i.value!==i.dataset.orig) || (ob && ob.checked) || (nt && nt.value.trim());
+    if(tomas.length && !otros)
+      return marcar({estado:"corregir", pedido:{tomas, por:quien}}, `Listo: se ${tomas.length===1?"cambia esa toma":"cambian esas "+tomas.length+" tomas"} y vuelve en unos minutos`);
+    const extra = tomas.length ? " | Cambiar las tomas de los seg " + tomas.map(m=>m.t.toFixed(1)+(m.nota?" ("+m.nota+")":"")).join(", ") : "";
+    marcar({estado:"corregir", pedido:{pantallas, broll:!!(ob&&ob.checked), nota:((nt?nt.value.trim():"")+extra).replace(/^ \| /,""), por:quien}}, "Listo: vuelve editado en ~20 min · la skill aprende de esto");
   });
   el.querySelector(".rechazar")?.addEventListener("click", () => {
     const n = el.querySelector(".nota").value.trim();
@@ -301,37 +348,40 @@ function conectar(id){
     marcar({estado:"rechazado", nota:n}, "Rechazado");
   });
   el.querySelector(".reintentar")?.addEventListener("click", () => marcar({estado:"corregir", pedido:{}}, "Se vuelve a intentar"));
-  // revisión por tomas (tipo Frame.io, Nacho 24/10): tocar una toma → ver 3 reemplazos → marcar → "Cambiar las tomas marcadas"
-  const it = items[id] || {}, lin = it.tomasLinea || [], video = el.querySelector("video.rv"), panel = el.querySelector(".tpanel");
-  if(!panel || !lin.length) return;
-  const marcadas = {}; let abierta = null;
-  const pend = () => { const n = Object.keys(marcadas).length; el.querySelector(".cambiar-tomas").disabled = !n;
+  // revisión por tomas (tipo Frame.io, Nacho 24/10): tocar una toma → se abre ahí mismo con 3 reemplazos → marcar.
+  // "Mandar correcciones" manda las tomas marcadas (solo cambio de toma) o, si además hay texto/subtítulos, todo junto.
+  const it = items[id] || {}, lin = it.tomasLinea || [], video = el.querySelector("video.rv");
+  marcadasDe[id] = {};
+  if(!lin.length || !el.querySelector(".trow")) return;
+  const marcadas = marcadasDe[id];
+  const pend = () => { const n = Object.keys(marcadas).length;
     el.querySelector(".tpend").textContent = n ? `${n} ${n===1?"toma marcada":"tomas marcadas"} para cambiar` : "";
-    el.querySelectorAll(".tchip").forEach(c => c.classList.toggle("marcada", c.dataset.k in marcadas)); };
+    el.querySelectorAll(".trow").forEach(c => c.classList.toggle("marcada", c.dataset.k in marcadas));
+    if(corr) corr.disabled = !hayCambios(); };
+  const cerrar = () => { el.querySelectorAll(".tpanel").forEach(x=>x.remove()); el.querySelectorAll(".trow").forEach(c=>c.classList.remove("on")); };
   const abrir = k => {
-    abierta = k; const t = lin[k]; el.querySelectorAll(".tchip").forEach(c => c.classList.toggle("on", c.dataset.k == k));
+    const row = el.querySelector(`.trow[data-k="${k}"]`), yaAbierta = row.classList.contains("on");
+    cerrar(); if(yaAbierta) return;
+    const t = lin[k]; row.classList.add("on");
     if(video){ video.currentTime = Number(t.t0) + 0.05; }
     const m = marcadas[k] || {};
-    const cel = (a,j) => `<div class="alt ${m.clip===a.clip?"sel":""}" data-clip="${esc(a.clip)}" title="${esc(a.desc)}"><div class="th" style="background-image:url('${esc(it.tomasGrilla||"")}');background-size:288px auto;background-position:-${j*96}px -${(t.fila*170.4).toFixed(1)}px"></div>${esc((a.desc||"").slice(0,28))}</div>`;
-    panel.hidden = false;
-    panel.innerHTML = `<b>Toma ${Number(k)+1}</b> · ${Number(t.t0).toFixed(1)}–${Number(t.t1).toFixed(1)} s · «${esc(t.frase||"")}»
-      <div class="alts">${(t.alts||[]).map(cel).join("")}<div class="alt sis ${m && !m.clip && (k in marcadas)?"sel":""}" data-clip="">Que elija el sistema</div></div>
-      <input class="tnota" placeholder="Opcional: qué querés ver acá (ej. el frasco, una panza, sin cara)" value="${esc(m.nota||"")}" style="width:100%">
-      <div class="acciones"><button class="btn ok tmarcar">${k in marcadas?"Actualizar":"Marcar para cambiar"}</button>${k in marcadas?'<button class="btn tquitar">Dejarla como está</button>':""}</div>`;
+    const cel = (a,j) => `<div class="alt ${m.clip===a.clip?"sel":""}" data-clip="${esc(a.clip)}" title="${esc(a.desc)}"><div class="th" style="background-image:url('${esc(it.tomasGrilla||"")}');background-size:288px auto;background-position:-${j*96}px -${(t.fila*170.4).toFixed(1)}px"></div><span>${esc((a.desc||"").slice(0,26))}</span></div>`;
+    const panel = document.createElement("div"); panel.className = "tpanel";
+    panel.innerHTML = `<div class="q">${Number(t.t0).toFixed(1)}–${Number(t.t1).toFixed(1)} s · «${esc(t.frase||"")}» · elegí con qué reemplazarla</div>
+      <div class="alts">${(t.alts||[]).map(cel).join("")}<div class="alt sis ${(k in marcadas) && !m.clip?"sel":""}" data-clip="">Que elija el sistema</div></div>
+      <input class="tnota" placeholder="Opcional: qué querés ver acá (ej. el frasco, una panza, sin cara)" value="${esc(m.nota||"")}">
+      <div class="acciones"><button class="btn dark tmarcar">${k in marcadas?"Actualizar":"Marcar para cambiar"}</button>${k in marcadas?'<button class="btn tquitar">Dejarla como está</button>':""}</div>`;
+    row.appendChild(panel);
     let elegido = m.clip ?? null;
     panel.querySelectorAll(".alt").forEach(a => a.onclick = () => { panel.querySelectorAll(".alt").forEach(x=>x.classList.remove("sel")); a.classList.add("sel"); elegido = a.dataset.clip; });
-    panel.querySelector(".tmarcar").onclick = () => { marcadas[k] = {t: Number(t.t0) + 0.1, clip: elegido || "", nota: panel.querySelector(".tnota").value.trim()}; pend(); abrir(k); };
-    const q = panel.querySelector(".tquitar"); if(q) q.onclick = () => { delete marcadas[k]; pend(); abrir(k); };
+    panel.querySelector(".tmarcar").onclick = () => { marcadas[k] = {t: Number(t.t0) + 0.1, clip: elegido || "", nota: panel.querySelector(".tnota").value.trim()}; pend(); cerrar(); };
+    const q = panel.querySelector(".tquitar"); if(q) q.onclick = () => { delete marcadas[k]; pend(); cerrar(); };
   };
-  el.querySelectorAll(".tchip").forEach(c => c.onclick = () => abrir(c.dataset.k));
+  el.querySelectorAll(".tchip").forEach(c => c.onclick = () => abrir(c.parentElement.dataset.k));
   if(video) video.addEventListener("timeupdate", () => { const s = video.currentTime;
-    el.querySelectorAll(".tchip").forEach(c => c.classList.toggle("ahora", s >= Number(c.dataset.t0) && s < Number(c.dataset.t1))); });
-  el.querySelector(".cambiar-tomas").onclick = () => {
-    const tomas = Object.values(marcadas).map(m => ({t: m.t, ...(m.clip ? {clip: m.clip} : {}), ...(m.nota ? {nota: m.nota} : {})}));
-    if(!tomas.length) return;
-    marcar({estado:"corregir", pedido:{tomas, por:quien}}, `Listo: se ${tomas.length===1?"cambia esa toma":"cambian esas "+tomas.length+" tomas"} y vuelve en unos minutos`);
-  };
+    el.querySelectorAll(".trow").forEach(c => c.classList.toggle("ahora", s >= Number(c.dataset.t0) && s < Number(c.dataset.t1))); });
 }
+const marcadasDe = {};
 
 if(quien) arrancar();
 </script>
