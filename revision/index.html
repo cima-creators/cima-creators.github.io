@@ -181,8 +181,26 @@ function pintar(){
   const editando = [...document.querySelectorAll("#lista .cambio, #lista .otro-broll:checked:not(.rh)")].length || (document.activeElement && document.activeElement.closest("#lista input, #lista textarea"));
   if(editando){ pendiente = true; return; }
   pendiente = false;
-  $("#lista").innerHTML = lista.map(([id,it]) => tarjeta(id,it)).join("");
-  lista.forEach(([id]) => conectar(id));
+  // 23/10 (Nacho: "cuando estoy viendo uno me recarga y me reinicia todo"): la cola cambia a cada rato por OTROS videos que
+  // se editan; antes se redibujaba toda la lista y el video que estabas mirando volvía a cero. Ahora solo se rehace la
+  // tarjeta de un video que cambió DE VERDAD (versión, estado o archivo); las demás quedan intactas, con su video andando.
+  const caja = $("#lista");
+  caja.querySelectorAll(".vacio").forEach(x => x.remove());
+  const firma = it => [it.estado, it.version, it.vistaId, it.driveId, it.archivo, (it.notas||[]).length, it.nota].join("|");
+  const quedan = new Set(lista.map(([id]) => "it-" + id));
+  [...caja.children].forEach(el => { if(!quedan.has(el.id)) el.remove(); });
+  let antes = null;
+  lista.forEach(([id,it]) => {
+    let el = document.getElementById("it-" + id);
+    if(!el || el.dataset.firma !== firma(it)){
+      const t = document.createElement("div"); t.innerHTML = tarjeta(id,it).trim();
+      const nuevo = t.firstElementChild; nuevo.dataset.firma = firma(it);
+      if(el) el.replaceWith(nuevo); else caja.appendChild(nuevo);
+      el = nuevo; conectar(id);
+    }
+    if(antes ? antes.nextElementSibling !== el : caja.firstElementChild !== el) (antes ? antes.after(el) : caja.prepend(el));
+    antes = el;
+  });
 }
 let pendiente = false;
 document.addEventListener("focusout", () => setTimeout(() => { if(pendiente && !document.querySelector("#lista .cambio, #lista .otro-broll:checked:not(.rh)")) pintar(); }, 200));
