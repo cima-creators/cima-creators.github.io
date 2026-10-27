@@ -228,10 +228,11 @@ const $ = s => document.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const hoy = () => new Date().toLocaleDateString("sv-SE");
 const fFecha = f => { if (!f) return ""; const [y,m,d] = f.split("-"); return f === hoy() ? "Hoy" : `${+d}/${+m}`; };
-let quien = null, items = {}, tab = "elegir", filtroDia = "todas", filtroTipo = "todas", fb = null;
+let quien = null, items = {}, tab = "elegir", filtroDia = "todas", filtroTipo = "todas", filtroMarca = "todas", fb = null;
+const MARCA_REF = d => String(d.ref?.m || "").replace(/\s*\(.*\)\s*$/, "").trim() || "Otra";
 const TIPO = d => d.ref?.nicho === "top" ? "top" : d.ref?.nicho === "otro" ? "otro" : "cafe";
 const ORDEN_TIPO = {cafe:0, top:1, otro:2};
-try { quien = CLAVES[localStorage.getItem(LS+"clave")] || null; tab = localStorage.getItem(LS+"tab") || "elegir"; } catch(e) {}
+try { filtroMarca = localStorage.getItem(LS+"marca") || "todas"; quien = CLAVES[localStorage.getItem(LS+"clave")] || null; tab = localStorage.getItem(LS+"tab") || "elegir"; } catch(e) {}
 
 function toast(t){ const el=$("#toast"); el.textContent=t; el.classList.add("on"); clearTimeout(toast.t); toast.t=setTimeout(()=>el.classList.remove("on"),2400); }
 function zoom(src){ $("#lb img").src = src; $("#lb").classList.add("on"); }
@@ -395,8 +396,10 @@ function pillsRef(r){
 function vElegir(lista, hechasHoy, enCola){
   const dias = [...new Set(lista.map(d => d.fecha))].sort().reverse();
   filtroDia = "todas";                    // Nacho 10/10: sin separar por día; las nuevas arriba de todo
+  if (filtroMarca !== "todas" && !lista.some(d => MARCA_REF(d) === filtroMarca)) filtroMarca = "todas";
   const vis = (filtroDia === "todas" ? lista : lista.filter(d => d.fecha === filtroDia))
     .filter(d => filtroTipo === "todas" || TIPO(d) === filtroTipo)
+    .filter(d => filtroMarca === "todas" || MARCA_REF(d) === filtroMarca)
     .sort((a,b) => (b.fecha||"").localeCompare(a.fecha||"") || ORDEN_TIPO[TIPO(a)] - ORDEN_TIPO[TIPO(b)] || (b.ref?.senal||0) - (a.ref?.senal||0) || (b.ref?.d||0) - (a.ref?.d||0));
   const pct = Math.min(100, hechasHoy / PIEZAS_DIA * 100);
   $("#vista").innerHTML = `
@@ -406,9 +409,13 @@ function vElegir(lista, hechasHoy, enCola){
       <div class="sub" style="max-width:440px;margin:0">Anuncios de otras marcas que llevan 30 días o más al aire (si siguen prendidos, venden). Tocá <b>La quiero</b> y la hacemos con el pack oficial de Pulso en 4 opciones, una por ángulo (deshinchazón · energía · foco · estrés), cada una con un dolor del VOC. Lo que pase de ${PIEZAS_DIA} por día queda en cola para mañana.</div></div>
     <div class="filtros">
       ${[["todas","Todas"],["cafe","Café y funcional"],["top","Marcas top"],["otro","Otros rubros"]].map(([k,t]) => { const delDia = filtroDia === "todas" ? lista : lista.filter(d=>d.fecha===filtroDia); const n = k === "todas" ? delDia.length : delDia.filter(d=>TIPO(d)===k).length; return n || k === "todas" ? `<button class="chip ${filtroTipo===k?"on":""}" data-tipo="${k}">${t} · ${n}</button>` : ""; }).join("")}</div>
+    <div class="filtros"><label class="sub" style="margin:0;display:flex;align-items:center;gap:8px">Marca
+      <select id="fMarca" class="campo" style="width:auto;padding:7px 10px;font-size:13px">${(() => { const c = {}; lista.filter(d => filtroTipo === "todas" || TIPO(d) === filtroTipo).forEach(d => c[MARCA_REF(d)] = (c[MARCA_REF(d)] || 0) + 1);
+        return `<option value="todas">Todas · ${Object.values(c).reduce((a,b)=>a+b,0)}</option>` + Object.entries(c).sort((a,b) => b[1]-a[1] || a[0].localeCompare(b[0])).map(([k,n]) => `<option value="${esc(k)}" ${filtroMarca===k?"selected":""}>${esc(k)} · ${n}</option>`).join(""); })()}</select></label></div>
     ${vis.length ? `<div class="grid">${vis.map(cardElegir).join("")}</div>` : `<div class="vacio">No hay referencias nuevas. Todos los días a las 7:10 h llegan 30 más.</div>`}`;
   $("#vista").querySelectorAll("[data-f]").forEach(b => b.onclick = () => { filtroDia = b.dataset.f; pintar(); });
-  $("#vista").querySelectorAll("[data-tipo]").forEach(b => b.onclick = () => { filtroTipo = b.dataset.tipo; pintar(); });
+  $("#vista").querySelectorAll("[data-tipo]").forEach(b => b.onclick = () => { filtroTipo = b.dataset.tipo; filtroMarca = "todas"; pintar(); });
+  $("#fMarca").onchange = e => { filtroMarca = e.target.value; try { localStorage.setItem(LS+"marca", filtroMarca); } catch(_) {} pintar(); };
   $("#vista").querySelectorAll(".card").forEach(c => {
     const id = c.dataset.id;
     c.querySelector(".img").onclick = () => ficha(id);
