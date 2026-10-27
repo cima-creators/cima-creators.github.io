@@ -466,7 +466,7 @@ function abrirPlan(id){
   $("#planSi").textContent = "Producir";
   const f = d.formato || "otro";
   $("#planImg").src = d.thumb || "";
-  $("#planMarca").textContent = `${d.marca} · ${f === "otro" ? "Otro formato" : f + " · " + FMT[f]}`;
+  $("#planMarca").textContent = `${d.marcaRef} · ${f === "otro" ? "Otro formato" : f + " · " + FMT[f]}`;
   $("#planIdea").textContent = "Referencia: " + (d.idea || d.hook || "");
   $("#angs").innerHTML = "";
   const angs = (d.angulos && d.angulos.length) ? d.angulos
@@ -484,7 +484,7 @@ function abrirIterar(id){
   $("#planT").textContent = "¿Cómo lo iteramos?";
   $("#planSi").textContent = "Producir iteraciones";
   $("#planImg").src = d.thumb || "";
-  $("#planMarca").textContent = `${d.codigo || ""} · ${d.marca}${d.anguloElegido ? " · " + d.anguloElegido : ""}`;
+  $("#planMarca").textContent = `${d.codigo || ""} · ${d.marcaRef}${d.anguloElegido ? " · " + d.anguloElegido : ""}`;
   $("#planIdea").textContent = "Tildá las que quieras: cada una sale como un video nuevo. El plan de cada una se puede editar.";
   $("#angs").innerHTML = "";
   const tit = t => { const h = document.createElement("div"); h.className = "ayuda"; h.innerHTML = `<b>${t}</b>`; $("#angs").appendChild(h); };
