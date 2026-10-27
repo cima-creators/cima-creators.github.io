@@ -124,6 +124,15 @@ tr:hover td,tr:hover td:first-child{background:#fafafa}
 .barrita{height:6px;border-radius:3px;background:var(--chip);overflow:hidden;min-width:80px}
 .barrita i{display:block;height:100%;background:#818cf8}
 .sugerencia{font-size:12.5px;color:#3f3f46;background:var(--side);border-radius:8px;padding:6px 10px;margin-top:6px}
+.tabs{display:flex;gap:4px;flex-wrap:wrap;border-bottom:1px solid var(--line);margin:18px 0 16px}
+.tabs button{border:0;background:none;padding:8px 12px;cursor:pointer;font-size:13px;color:var(--sub);border-bottom:2px solid transparent;margin-bottom:-1px}
+.tabs button.on{color:var(--txt);font-weight:600;border-color:var(--txt)}
+.tabs small{background:var(--chip);border-radius:9px;padding:0 6px;margin-left:4px;font-size:11px}
+.que{font-weight:600;font-size:12.5px;white-space:nowrap}.que.corta{color:#b91c1c}.que.escala{color:#15803d}.que.aguanta{color:#a16207}
+.por{font-size:12px;color:var(--sub);white-space:normal;max-width:420px}
+.chispa{display:inline-flex;gap:2px;align-items:flex-end;height:22px}.chispa i{width:6px;border-radius:2px;background:#d4d4d8}
+.chispa i.b{background:#86efac}.chispa i.m{background:#fca5a5}
+.nota{font-size:12.5px;color:var(--sub);margin:6px 0 14px}
 .matriz td,.matriz th{text-align:center;font-size:12px;padding:7px 9px}
 .matriz th:first-child,.matriz td:first-child{text-align:left}
 @media (max-width:900px){
@@ -296,7 +305,7 @@ function marco(contenido, titulo) {
   return `<div class="app">
   <aside id="lado">
     <div class="marca"><i>${esc(nombre[0] || "R").toUpperCase()}</i><span>${esc(nombre)}</span></div>
-    ${navBtn("home", "🏠", "Home")}${navBtn("leaderboard", "🏅", "Leaderboard")}${navBtn("temas", "💬", "Temas de mensaje")}
+    ${navBtn("home", "🏠", "Home")}${navBtn("optimizador", "🧮", "Optimizador")}${navBtn("leaderboard", "🏅", "Leaderboard")}${navBtn("temas", "💬", "Temas de mensaje")}
     <div class="grupo">Reportes</div>
     ${Object.entries(REPORTES).map(([k, r]) => navBtn("r:" + k, r.e, r.t)).join("")}
     <div class="grupo">Patrones creativos</div>
@@ -402,6 +411,92 @@ function pantallaLeaderboard() {
       <td class="num">${fmtM(x.spend)}</td><td class="num ${sombra("roas", x.roas, [])}">${METRICAS.roas.f(x.roas)}</td><td class="num">${fmtM(x.cpa)}</td><td class="texto" style="font-size:12.5px;color:#3f3f46">${sugerencia(x) || ""}</td></tr>`; }).join("")}
     </tbody></table></div></div>
     ${pausados.length ? `<h2>Pausados hace poco</h2><p class="desc">Gastaron en los ${n} días anteriores y en este período no.</p><div class="box">${pausados.slice(0, 12).map(x => `<div class="fila"><img class="mini" src="${esc(x.mini)}" onerror="this.style.visibility='hidden'"><span class="n">${esc(x.nombre)}</span><span class="v">gastó ${fmtM(x.spend)} · ROAS ${METRICAS.roas.f(div(x.value, x.spend))}</span></div>`).join("")}</div>` : ""}`;
+}
+
+// ── Optimizador (solo recomienda: Radar lee, no toca la cuenta) ─────
+const xbF = v => v == null ? "—" : fmtN(v, 2) + "×";
+const xbClase = v => v == null ? "" : v < 1 ? "rojo" : v > 1.3 ? "verde3" : "verde1";
+function pantallaOptimizador() {
+  const o = est.opt?.opt;
+  if (!o) return `<h1>🧮 Optimizador</h1><div class="vacio">Todavía no hay datos: tocá ↻ arriba a la derecha.</div>`;
+  if (o.error) return `<h1>🧮 Optimizador</h1><div class="aviso">No se pudo calcular: ${esc(o.error)}</div>`;
+  const tab = est.optTab || "hacer", be = o.be;
+  const apagar = o.decisiones.filter(d => d.que === "Apagar"), escalar = o.decisiones.filter(d => d.que === "Escalar");
+  const T = [["hacer", "Para hacer", apagar.length + escalar.length], ["campanas", "Campañas", o.campanas.length], ["apagados", "Apagados", o.apagadosResumen.mal],
+    ["nuevos", "Creativos nuevos", o.nuevos.length], ["plan", "Plan del mes"], ["escala", "Escala"], ["fanpages", "Fanpages y landings"]];
+  const r6 = o.v6.roas, sobre = r6 != null ? (r6 / be - 1) * 100 : null;
+  const cab = `<h1>🧮 Optimizador</h1>
+    <p class="desc">Breakeven <b>${fmtN(be, 2)}</b>${o.cpaEq ? ` · CPA de equilibrio <b>${fmtM(o.cpaEq)}</b>` : ""} · últimos 6 días · ${hace(est.opt.actualizado)}. Radar <b>recomienda</b>: los cambios los hacés vos en el Administrador de anuncios.</p>${avisos()}
+    <div class="kpis">
+      <div class="kpi ${r6 == null ? "" : r6 >= be ? "verde1" : "rojo"}">ROAS de 6 días<b>${METRICAS.roas.f(r6)}</b><small>${sobre == null ? "" : `<span class="${sobre >= 0 ? "sube" : "cae"}">${fmtN(Math.abs(sobre), 0)} % ${sobre >= 0 ? "arriba" : "abajo"}</span> del equilibrio`}${o.activosRoas != null ? ` · lo prendido hoy rinde ${fmtN(o.activosRoas, 2)}` : ""}</small></div>
+      <div class="kpi">Gasto por día<b>${fmtM(o.v6.spend / 6)}</b><small>${fmtM(o.v6.spend)} en 6 días</small></div>
+      <div class="kpi">Compras en 6 días<b>${fmtN(o.v6.comp, 0)}</b><small>${o.v6.comp ? `cada una costó ${fmtM(o.v6.spend / o.v6.comp)}${o.cpaEq ? " " + delta(o.v6.spend / o.v6.comp, o.cpaEq, true) + " vs. el equilibrio" : ""}` : ""}</small></div>
+      <div class="kpi ${apagar.length ? "rojo" : ""}">Para apagar<b>${apagar.length}</b><small>${apagar.length ? fmtM(apagar.reduce((a, d) => a + d.spend, 0)) + " gastados en 6 días" : "Nada para apagar hoy"}</small></div>
+      <div class="kpi">Prendido ahora<b>${o.prendidos.ads} anuncios</b><small>en ${o.prendidos.campanas} campañas</small></div>
+    </div>
+    <div class="nota">Ayer la cuenta ${o.ganancia.ayer >= 0 ? "ganó" : "perdió"} <b>${fmtM(Math.abs(o.ganancia.ayer))}</b>. En los últimos 3 días: <b>${o.ganancia.d3 >= 0 ? "+" : "−"}${fmtM(Math.abs(o.ganancia.d3))}</b> · en 7 días: <b>${o.ganancia.d7 >= 0 ? "+" : "−"}${fmtM(Math.abs(o.ganancia.d7))}</b>. <span title="Con ROAS igual al breakeven la ganancia es cero">(después de publicidad y costos, con tu breakeven)</span></div>
+    <div class="tabs">${T.map(([k, n, c]) => `<button class="${tab === k ? "on" : ""}" onclick="est.optTab='${k}';dibujar()">${n}${c != null ? `<small>${c}</small>` : ""}</button>`).join("")}</div>`;
+  const filaAd = d => `<tr><td><div class="crea"><img class="mini" loading="lazy" src="${esc(d.mini)}" onerror="this.style.visibility='hidden'"><div style="min-width:0"><div class="n" title="${esc(d.nombre)}">${esc(d.nombre)}</div><div class="s">${esc(d.campana || "")}</div></div></div></td>
+    <td class="num">${fmtM(d.spend)}</td><td class="num">${fmtN(d.comp, 0)}</td><td class="num">${METRICAS.roas.f(d.roas)}</td><td class="num ${xbClase(d.xb)}">${xbF(d.xb)}</td>
+    <td><span class="que ${d.clase || ""}">${esc(d.que)}</span><div class="por">${esc(d.porque)}</div></td></tr>`;
+  const tablaAds = l => l.length ? `<div class="caja"><div class="scroll"><table><thead><tr><th>Anuncio</th><th class="num">Gasto 6 d</th><th class="num">Compras</th><th class="num">ROAS</th><th class="num">× BEP</th><th>Qué hacer</th></tr></thead><tbody>${l.map(filaAd).join("")}</tbody></table></div></div>` : `<div class="vacio">Nada acá.</div>`;
+  let cuerpo = "";
+  if (tab === "hacer") {
+    cuerpo = `<p class="nota">Bandas contra el breakeven en 6 días: <b>menos de 1,00× se corta</b> · 1,00–1,30× aguanta · <b>más de 1,30× escala</b>. No se corta lo que todavía no gastó lo que cuesta una venta (piso ${fmtM(o.piso)}), ni campañas de menos de 5 días, ni conjuntos en aprendizaje (7 días). Si está arriba por un solo día, no se escala.</p>
+      ${apagar.length || escalar.length ? `<h2>Apagar (${apagar.length})</h2>${tablaAds(apagar)}<h2>Escalar (${escalar.length})</h2>${tablaAds(escalar)}` : `<div class="vacio">Todo en orden: nada para hacer en esta cuenta. Lo demás se deja como está.</div>`}
+      <h2>El resto de lo prendido</h2>${tablaAds(o.decisiones.filter(d => d.que !== "Apagar" && d.que !== "Escalar"))}`;
+  } else if (tab === "campanas") {
+    cuerpo = `<div class="caja"><div class="scroll"><table><thead><tr><th>Campaña</th><th class="num">Presupuesto</th><th class="num">Gasto 6 d</th><th class="num">Compras</th><th class="num">ROAS</th><th class="num">× BEP</th><th>Últimos 6 días</th><th>Qué hacer</th></tr></thead><tbody>
+      ${o.campanas.map(c => `<tr><td><div class="n" style="font-weight:500;max-width:340px;overflow:hidden;text-overflow:ellipsis">${esc(c.nombre)}</div><div class="s" style="font-size:11.5px;color:var(--sub)">${c.estado === "ACTIVE" ? "Activa" : "Pausada"} · ${c.nAds} anuncio${c.nAds === 1 ? "" : "s"} prendido${c.nAds === 1 ? "" : "s"}</div></td>
+        <td class="num">${c.ppto ? fmtM(c.ppto) + "/día" : "ABO"}</td><td class="num">${fmtM(c.spend)}</td><td class="num">${fmtN(c.comp, 0)}</td><td class="num">${METRICAS.roas.f(c.roas)}</td><td class="num ${xbClase(c.xb)}">${xbF(c.xb)}</td>
+        <td><span class="chispa">${c.serie.map(v => `<i class="${v == null ? "" : v >= 1 ? "b" : "m"}" style="height:${v == null ? 3 : Math.max(3, Math.min(22, v * 11))}px" title="${v == null ? "sin gasto" : fmtN(v, 2) + "× bep"}"></i>`).join("")}</span></td>
+        <td><span class="que ${c.que.startsWith("Escalar") ? "escala" : c.que.startsWith("Cortar") ? "corta" : c.que === "Bien" ? "aguanta" : ""}">${esc(c.que)}</span><div class="por">${esc(c.porque)}</div></td></tr>`).join("")}
+    </tbody></table></div></div>`;
+  } else if (tab === "apagados") {
+    const r = o.apagadosResumen;
+    cuerpo = `<p class="nota">Todo lo que hoy no entrega y gastó en los últimos 30 días, juzgado con los <b>6 días que terminan en su último día con gasto</b> contra el breakeven. Se apagaron mal <b>${r.mal}</b> (estaban arriba del breakeven sin depender de un solo día) · dudosos ${r.dudosos} · bien apagados ${r.bien}. Los que gastaron poco o tenían 0-1 ventas no se juzgan.</p>
+      ${o.apagados.length ? `<div class="caja"><div class="scroll"><table><thead><tr><th>Anuncio</th><th>Último día</th><th class="num">Gasto</th><th class="num">Compras</th><th class="num">× BEP</th><th>Veredicto</th></tr></thead><tbody>
+      ${o.apagados.map(a => `<tr><td><div class="crea"><img class="mini" src="${esc(a.mini)}" onerror="this.style.visibility='hidden'"><div class="n">${esc(a.nombre)}</div></div></td><td>${fechaCorta(a.ultimo)}</td><td class="num">${fmtM(a.spend)}</td><td class="num">${a.comp}</td><td class="num ${xbClase(a.xb)}">${xbF(a.xb)}</td>
+        <td><span class="que ${a.veredicto === "Se apagó mal" ? "escala" : a.veredicto.startsWith("Dudoso") ? "aguanta" : ""}">${esc(a.veredicto)}</span>${a.veredicto === "Se apagó mal" ? `<div class="por">Volvé a prenderlo o duplicalo en una campaña nueva.</div>` : ""}</td></tr>`).join("")}</tbody></table></div></div>` : `<div class="vacio">No hay apagados con señal para juzgar.</div>`}`;
+  } else if (tab === "nuevos") {
+    cuerpo = `<p class="nota">Creativos lanzados en los últimos 7 días y en qué andan.</p>${o.nuevos.length ? `<div class="caja"><div class="scroll"><table><thead><tr><th>Creativo</th><th>Lanzado</th><th>Campaña</th><th class="num">Gasto</th><th class="num">Compras</th><th class="num">ROAS</th><th>Estado</th></tr></thead><tbody>
+      ${o.nuevos.map(n => `<tr><td><div class="crea"><img class="mini" src="${esc(n.mini)}" onerror="this.style.visibility='hidden'"><div class="n">${esc(n.nombre)}</div></div></td><td>${fecha(n.creado)}</td><td class="por">${esc(n.campana)}</td><td class="num">${n.spend ? fmtM(n.spend) : "Sin gasto"}</td><td class="num">${n.comp}</td><td class="num">${METRICAS.roas.f(n.roas)}</td><td>${esc(n.que)}</td></tr>`).join("")}</tbody></table></div></div>` : `<div class="vacio">No se lanzó nada en los últimos 7 días.</div>`}`;
+  } else if (tab === "escala") {
+    const t = o.tendencia, est_ = t.r7 == null ? "sin datos" : t.r7 / be > 1.15 && t.r4 >= t.r7 * 0.9 ? "estable arriba: se puede escalar lo que pase su vara" : t.r7 >= be ? "justo arriba: escalar de a poco (20 % por día)" : "abajo del equilibrio: no escalar, primero cortar lo que pierde";
+    cuerpo = `<div class="kpis"><div class="kpi">ROAS 4 días<b>${METRICAS.roas.f(t.r4)}</b></div><div class="kpi ${xbClase(t.r7 == null ? null : t.r7 / be)}">ROAS 7 días<b>${METRICAS.roas.f(t.r7)}</b><small>contra ${fmtN(be, 2)}</small></div><div class="kpi">ROAS 14 días<b>${METRICAS.roas.f(t.r14)}</b></div><div class="kpi">Gasta por día<b>${fmtM(t.gastoDia)}</b></div></div>
+      <p class="nota">Semana contra la anterior: gasto ${t.dGasto == null ? "—" : (t.dGasto >= 0 ? "+" : "") + fmtN(t.dGasto * 100, 0) + " %"} · compras ${t.dComp == null ? "—" : (t.dComp >= 0 ? "+" : "") + fmtN(t.dComp * 100, 0) + " %"} · ROAS ${t.dRoas == null ? "—" : (t.dRoas >= 0 ? "+" : "") + fmtN(t.dRoas * 100, 1) + " %"}. <b>Cuenta ${est_}.</b></p>
+      <h2>Videos que se bancaron el gasto</h2><p class="nota">Gastaron 3 veces el CPA de equilibrio en 7 días con ROAS 1,3× el breakeven o más: son los candidatos para duplicar en una campaña de escala.</p>
+      ${o.bancaron.length ? `<div class="box">${o.bancaron.map(b => `<div class="fila"><span class="n">${esc(b.nombre)}</span><span class="v">${fmtM(b.spend)} · ROAS ${fmtN(b.roas, 2)} · ${b.comp} compras</span></div>`).join("")}</div>` : `<div class="vacio">Ninguno todavía.</div>`}
+      ${o.enCamino.length ? `<p class="nota"><b>En camino</b> (rinden pero les falta gasto): ${o.enCamino.map(esc).join(", ")}</p>` : ""}`;
+  } else if (tab === "plan") {
+    const p = o.plan, total = Math.max(20, Math.round(p.lanzados90 / 3));
+    const rep = (tit, l) => l.length ? `<div class="box"><h3>${tit}</h3>${l.map(x => `<div class="fila" style="cursor:default"><span class="n">${esc(x.k === "video" ? "Video" : x.k === "imagen" ? "Imagen" : x.k)}</span><span class="v"><b>${Math.round(x.share * total * 0.8)}</b> piezas · ${fmtN(x.share * 100, 0)} %</span></div>`).join("")}</div>` : "";
+    cuerpo = `<p class="nota">Cuánto lanzar y de qué, según lo que <b>ganó</b> en los últimos 90 días (${p.ganadores} creativos arriba del breakeven). Se reparte el <b>80 %</b> como lo que gana y el <b>20 %</b> para probar cosas nuevas. Base: ${total} piezas por mes (tu ritmo de los últimos 90 días).</p>
+      ${p.ganadores ? `<div class="grid3">${rep("Por tipo de anuncio", p.porFormato)}${rep("Por tipo de pieza", p.porPieza)}${rep("Por tema de mensaje", p.porTema)}${rep("Por nivel de conciencia", p.porNivel)}</div>
+      <p class="nota">+ <b>${Math.round(total * 0.2)}</b> piezas para probar ángulos o formatos que todavía no ganaron (mirá "sin probar" en Temas de mensaje).</p>` : `<div class="vacio">Todavía no hay creativos arriba del breakeven en 90 días para armar el plan.</div>`}`;
+  } else if (tab === "fanpages") {
+    const tabla = (tit, l, col) => `<h2>${tit}</h2>${l.length ? `<div class="caja"><div class="scroll"><table><thead><tr><th>${col}</th><th class="num">Gasto 7 d</th><th class="num">Compras 7 d</th><th class="num">× BEP 7 d</th><th class="num">× BEP semana anterior</th><th class="num">Gasto 30 d</th><th class="num">× BEP 30 d</th></tr></thead><tbody>
+      ${l.map(x => `<tr><td class="texto" style="max-width:380px;word-break:break-all">${esc(x.nombre)}</td><td class="num">${fmtM(x.spend7)}</td><td class="num">${x.comp7}</td><td class="num ${xbClase(x.xb7)}">${xbF(x.xb7)}</td><td class="num">${xbF(x.xbAnt)} ${x.xb7 != null && x.xbAnt ? delta(x.xb7, x.xbAnt) : ""}</td><td class="num">${fmtM(x.spend30)}</td><td class="num ${xbClase(x.xb30)}">${xbF(x.xb30)}</td></tr>`).join("")}</tbody></table></div></div>` : `<div class="vacio">Sin datos.</div>`}`;
+    const nb = { baja: "Baja · gente nueva", media: "Media", alta: "Alta · cierre" };
+    cuerpo = `<h2 style="margin-top:0">Embudo por frecuencia (7 días)</h2><p class="nota">Frecuencia diaria de cada anuncio cada día: baja (menos de 1,3) = gente nueva · media (1,3 a 1,7) · alta (más de 1,7) = los que ya vieron, para cerrar. Lo alto tiene que gastar menos y rendir más.</p>
+      <div class="kpis">${o.frecuencia.map(f => `<div class="kpi ${xbClase(f.xb)}">${nb[f.banda]}<b>${fmtN(f.share * 100, 1)} %</b><small>del gasto (${fmtM(f.spend)}) · ${xbF(f.xb)} el breakeven</small></div>`).join("")}</div>
+      ${tabla("Fanpages (quién publica el anuncio)", o.fanpages, "Fanpage")}${tabla("Landings y listicles", o.landings, "Página de destino")}`;
+  }
+  return cab + cuerpo;
+}
+function demoOpt() {
+  const d = (n, c, xb, que, clase, porque) => ({ id: n, nombre: n, campana: c, mini: "https://picsum.photos/seed/" + n.length + "/80", spend: 50000 + n.length * 3000, comp: Math.round(xb * 4), roas: xb * 2, xb, que, clase, porque, edad: 12 });
+  return { be: 2, aov: 90000, cpaEq: 45000, piso: 27000, v6: { spend: 1800000, comp: 42, val: 4500000, roas: 2.5 }, activosRoas: 2.9, ganancia: { ayer: 270000, d3: 690000, d7: 1410000 },
+    tendencia: { r4: 2.7, r7: 2.54, r14: 2.63, gastoDia: 300000, dGasto: .54, dComp: .39, dRoas: -.077 }, prendidos: { ads: 52, campanas: 6 },
+    decisiones: [d("NioTap03 · OV", "ABO TESTEO", 0.62, "Apagar", "corta", "0,62× el breakeven en 6 días con 2 compras y 61.000 gastados"), d("FABI 81 · LW", "CBO MADRE", 1.45, "Escalar", "escala", "1,45× el breakeven con 9 compras: aguanta más presupuesto"), d("LUCÍA L1 · PF", "CBO MADRE", 1.12, "Aguanta", "aguanta", "1,12× el breakeven: se aguanta")],
+    campanas: [{ nombre: "CBO MADRE CREADORAS", estado: "ACTIVE", ppto: 420000, nAds: 12, spend: 2300000, comp: 61, roas: 2.81, xb: 1.31, que: "Escalar", porque: "1,31× bep con 61 compras", serie: [1.2, 1.4, 1.1, 1.5, 1.3, 1.4] },
+      { nombre: "ABO MADRE TESTEO", estado: "ACTIVE", ppto: null, nAds: 30, spend: 928000, comp: 17, roas: 1.96, xb: 0.92, que: "Se deja (la salvan)", porque: "0,92× bep, pero 7 anuncio(s) adentro están arriba del breakeven", serie: [0.8, 1.1, 0.7, 0.9, 1.0, 0.9] }],
+    apagados: [{ nombre: "Trio25 Comparativa", ultimo: "2026-10-20", spend: 210000, comp: 6, roas: 2.6, xb: 1.3, veredicto: "Se apagó mal", mini: "" }], apagadosResumen: { mal: 1, dudosos: 0, bien: 12 },
+    nuevos: [{ nombre: "Nio005Swap", creado: new Date().toISOString(), campana: "ABO TESTEO", spend: 0, comp: 0, roas: null, que: "Activo pero no gastó todavía", mini: "" }],
+    bancaron: [{ nombre: "FABI 81 · LW", spend: 900000, roas: 3.1, comp: 30 }], enCamino: ["T22 V4 Dani"],
+    fanpages: [{ nombre: "Lagos Laboratorios", spend7: 900000, comp7: 20, xb7: 1.35, xbAnt: 1.2, spend30: 3000000, xb30: 1.3 }], landings: [{ nombre: "https://lagoslab.com/pages/verano-sin-taparme", spend7: 200000, comp7: 5, xb7: 1.25, xbAnt: 1.5, spend30: 900000, xb30: 1.2 }],
+    frecuencia: [{ banda: "baja", share: .92, spend: 1600000, xb: 1.16 }, { banda: "media", share: .06, spend: 110000, xb: 1.58 }, { banda: "alta", share: .02, spend: 30000, xb: 1.33 }],
+    plan: { lanzados90: 120, ganadores: 14, porFormato: [{ k: "video", share: .7 }, { k: "imagen", share: .3 }], porPieza: [{ k: "Video UGC", share: .6 }, { k: "Estático", share: .4 }], porTema: [{ k: "Celulitis y flacidez", share: .55 }, { k: "Promoción 3x2", share: .45 }], porNivel: [{ k: "Consciente del problema", share: 1 }] } };
 }
 
 // ── agrupar (temas, copies, tipos, landings, patrones) ─────────────
@@ -606,6 +701,7 @@ function dibujar() {
   let html, titulo;
   if (p === "home") { html = pantallaHome(); titulo = "Home"; }
   else if (p === "leaderboard") { html = pantallaLeaderboard(); titulo = "Leaderboard"; }
+  else if (p === "optimizador") { html = pantallaOptimizador(); titulo = "Optimizador"; }
   else if (p === "temas") { html = pantallaTemas(); titulo = "Temas de mensaje"; }
   else if (p.startsWith("p:") && PATRONES[p.slice(2)]) { html = pantallaPatron(p.slice(2)); titulo = PATRONES[p.slice(2)].t; }
   else if (p.startsWith("r:") && REPORTES[p.slice(2)]) { html = pantallaReporte(p.slice(2)); titulo = REPORTES[p.slice(2)].t; }
@@ -631,13 +727,14 @@ async function cambiarPreset(p) { est.preset = p; guardar("preset", p); await ca
 async function refrescar() {
   if (DEMO) return;
   const b = $("#refrescar"); b.disabled = true; b.textContent = "Actualizando…";
-  try { const r = await api("actualizar"); if (r.esperar) alert("Se actualizó hace menos de 30 minutos. Ya tenés lo último."); est.cache = {}; await cargarDatos(); dibujar(); }
+  try { const r = await api("actualizar"); if (r.esperar) alert("Se actualizó hace menos de 30 minutos. Ya tenés lo último."); est.cache = {}; est.opt = null; await cargarDatos(); dibujar(); }
   catch (e) { alert("No se pudo actualizar: " + e.message); b.disabled = false; b.textContent = "↻"; }
 }
 async function cargarDatos() {
   const traer = async p => est.cache[p] = est.cache[p] || (DEMO ? demoDatos(p) : await api("datos", { preset: p }));
   est.datos = await traer(est.preset);
   if (est.pantalla === "r:lanzamientos") await traer("last_90d");
+  if (est.pantalla === "optimizador" && !est.opt) est.opt = DEMO ? { opt: demoOpt() } : await api("optimizador");
 }
 
 // ── conexión ───────────────────────────────────────────────────────
