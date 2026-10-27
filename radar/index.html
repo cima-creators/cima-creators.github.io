@@ -8,45 +8,48 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#fff;--side:#fafafa;--txt:#18181b;--sub:#71717a;--line:#e4e4e7;--chip:#f4f4f5;--acc:#18181b;--ok:#16a34a;--bad:#dc2626;
-  --g1:#f0fdf4;--g2:#dcfce7;--g3:#bbf7d0;--g4:#86efac;--r1:#fef2f2;--r2:#fee2e2;--blue:#2563eb}
+  --g1:#f0fdf4;--g2:#dcfce7;--g3:#bbf7d0;--g4:#86efac;--r1:#fef2f2;--blue:#2563eb;--bar:#a5b4fc}
 *{box-sizing:border-box}html,body{margin:0;height:100%}
 body{font:14px/1.45 Inter,system-ui,sans-serif;color:var(--txt);background:var(--bg)}
 button,select,input{font:inherit;color:inherit}
 a{color:inherit}
 .app{display:flex;min-height:100vh}
-aside{width:236px;flex:none;background:var(--side);border-right:1px solid var(--line);padding:12px 10px;display:flex;flex-direction:column;gap:2px;position:sticky;top:0;height:100vh;overflow:auto}
+aside{width:240px;flex:none;background:var(--side);border-right:1px solid var(--line);padding:12px 10px;display:flex;flex-direction:column;gap:1px;position:sticky;top:0;height:100vh;overflow:auto}
 .marca{display:flex;align-items:center;gap:8px;padding:6px 8px 12px;font-weight:600;font-size:13px}
-.marca i{width:22px;height:22px;border-radius:6px;background:#c7d2fe;color:#3730a3;display:grid;place-items:center;font-style:normal;font-size:12px}
-.nav{display:flex;align-items:center;gap:9px;word-spacing:3px;padding:6px 10px;border-radius:7px;color:#3f3f46;cursor:pointer;text-decoration:none;font-size:13.5px;border:0;background:none;width:100%;text-align:left}
+.marca i{width:22px;height:22px;border-radius:6px;background:#c7d2fe;color:#3730a3;display:grid;place-items:center;font-style:normal;font-size:12px;flex:none}
+.marca span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nav{display:flex;align-items:center;gap:8px;padding:5px 10px;border-radius:7px;color:#3f3f46;cursor:pointer;font-size:13px;border:0;background:none;width:100%;text-align:left}
 .nav:hover{background:#f0f0f1}.nav.on{background:#ececee;font-weight:600;color:var(--txt)}
+.nav .e{width:18px;text-align:center;flex:none}
 .nav small{margin-left:auto;font-size:10.5px;color:var(--sub);background:var(--chip);border-radius:9px;padding:1px 6px}
 .grupo{font-size:12px;color:var(--sub);padding:14px 10px 4px}
 .pie{margin-top:auto;padding:10px 8px 2px;font-size:12px;color:var(--sub);border-top:1px solid var(--line)}
 main{flex:1;min-width:0}
 .top{height:52px;display:flex;align-items:center;gap:10px;padding:0 20px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--bg);z-index:5}
 .top .t{font-size:14px}.top .sp{flex:1}.top .muted{font-size:12px;color:var(--sub)}
-.btn{border:1px solid var(--line);background:#fff;border-radius:8px;padding:6px 12px;cursor:pointer;font-size:13px;font-weight:500;display:inline-flex;align-items:center;gap:6px}
-.btn:hover{background:#f7f7f8}.btn.neg{background:var(--acc);border-color:var(--acc);color:#fff}.btn.neg:hover{background:#000}
+.btn{border:1px solid var(--line);background:#fff;border-radius:8px;padding:6px 12px;cursor:pointer;font-size:13px;font-weight:500;display:inline-flex;align-items:center;gap:6px;text-decoration:none}
+.btn:hover{background:#f7f7f8}.btn.neg{background:var(--acc);border-color:var(--acc);color:#fff}
 .btn:disabled{opacity:.5;cursor:default}
 .hambur{display:none}
 .cuerpo{padding:28px 28px 60px;max-width:1500px}
 h1{font-size:26px;margin:6px 0 4px;letter-spacing:-.01em}
-.desc{color:var(--sub);margin:0 0 20px}
+h2{font-size:18px;margin:30px 0 6px}
+.desc{color:var(--sub);margin:0 0 18px}
 .filtros{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
 .chip{border:1px solid var(--line);border-radius:8px;background:#fff;padding:6px 10px;font-size:13px;display:inline-flex;align-items:center;gap:6px;cursor:pointer;position:relative}
-.chip b{font-weight:600}.chip.gris{background:var(--chip)}
+.chip b{font-weight:600}.chip.gris{background:var(--chip);cursor:default}
 .chip select{border:0;background:transparent;font-weight:600;cursor:pointer;padding:0;appearance:none;-webkit-appearance:none}
-.menu{position:absolute;top:calc(100% + 4px);left:0;background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 30px rgba(0,0,0,.08);padding:6px;z-index:20;min-width:200px;display:none}
+.menu{position:absolute;top:calc(100% + 4px);left:0;background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 30px rgba(0,0,0,.08);padding:6px;z-index:20;min-width:210px;display:none;max-height:360px;overflow:auto}
 .menu.on{display:block}
 .menu label{display:flex;gap:8px;align-items:center;padding:6px 8px;border-radius:6px;cursor:pointer;white-space:nowrap}
 .menu label:hover{background:var(--chip)}
-.caja{border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.caja{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fff}
 .barra{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid var(--line)}
 .barra .sp{flex:1}
 .vistas{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
 .vistas button{border:0;background:#fff;padding:6px 9px;cursor:pointer;line-height:0}
 .vistas button.on{background:var(--chip)}
-.buscar{border:1px solid var(--line);border-radius:8px;padding:6px 10px;width:200px;font-size:13px}
+.buscar{border:1px solid var(--line);border-radius:8px;padding:6px 10px;width:210px;font-size:13px}
 .scroll{overflow:auto;max-height:calc(100vh - 250px)}
 table{border-collapse:separate;border-spacing:0;width:100%;font-size:13px;white-space:nowrap}
 th{position:sticky;top:0;background:#fff;z-index:2;text-align:left;font-weight:500;color:var(--sub);padding:10px 12px;border-bottom:1px solid var(--line);cursor:pointer;user-select:none}
@@ -55,18 +58,19 @@ th.ord{color:var(--txt);font-weight:600}
 th:first-child,td:first-child{position:sticky;left:0;background:#fff;z-index:1}
 th:first-child{z-index:3}
 td{padding:9px 12px;border-bottom:1px solid #f1f1f3;font-variant-numeric:tabular-nums}
-tr:hover td{background:#fafafa}
-tr:hover td:first-child{background:#fafafa}
-.crea{display:flex;align-items:center;gap:10px;min-width:280px;max-width:340px;cursor:pointer}
+tr:hover td,tr:hover td:first-child{background:#fafafa}
+.crea{display:flex;align-items:center;gap:10px;min-width:260px;max-width:340px;cursor:pointer}
 .mini{width:38px;height:38px;border-radius:7px;object-fit:cover;background:var(--chip);flex:none}
 .crea .n{font-weight:500;overflow:hidden;text-overflow:ellipsis;max-width:280px}
 .crea .s{font-size:11.5px;color:var(--sub);display:flex;gap:6px;align-items:center}
-.pill{font-size:11px;border-radius:999px;padding:1px 8px;background:var(--chip);color:#3f3f46;font-weight:500}
+.texto{max-width:420px;white-space:normal;line-height:1.35}
+.pill{font-size:11px;border-radius:999px;padding:1px 8px;background:var(--chip);color:#3f3f46;font-weight:500;white-space:nowrap}
 .pill.test{background:#dbeafe;color:#1d4ed8}.pill.esc{background:#dcfce7;color:#15803d}.pill.baja{background:#fee2e2;color:#b91c1c}
-.tag{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;border:1px solid var(--line);border-radius:6px;padding:2px 7px;color:#3f3f46;max-width:200px;overflow:hidden;text-overflow:ellipsis}
+.tag{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;border:1px solid var(--line);border-radius:6px;padding:2px 7px;color:#3f3f46;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .mas{font-size:11px;color:var(--sub);margin-left:4px}
 .verde1{background:var(--g1)!important}.verde2{background:var(--g2)!important}.verde3{background:var(--g3)!important}.verde4{background:var(--g4)!important}
 .rojo{background:var(--r1)!important;color:#991b1b}
+.sube{color:var(--ok);font-weight:500}.cae{color:var(--bad);font-weight:500}
 .tarjetas{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px;padding:14px}
 .tar{border:1px solid var(--line);border-radius:12px;overflow:hidden;cursor:pointer;background:#fff;transition:box-shadow .15s}
 .tar:hover{box-shadow:0 6px 24px rgba(0,0,0,.07)}
@@ -76,38 +80,61 @@ tr:hover td:first-child{background:#fafafa}
 .tar .info{padding:10px 12px}
 .tar .n{font-weight:600;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .tar .met{display:grid;grid-template-columns:1fr 1fr;gap:6px 10px;margin:9px 0}
-.tar .met div{font-size:11.5px;color:var(--sub)}.tar .met b{display:block;font-size:14px;color:var(--txt)}
+.tar .met div{font-size:11.5px;color:var(--sub);border-radius:6px;padding:2px 4px}.tar .met b{display:block;font-size:14px;color:var(--txt)}
 .tar .tags{display:flex;flex-wrap:wrap;gap:4px}
-.vacio{padding:60px 20px;text-align:center;color:var(--sub)}
+.vacio{padding:50px 20px;text-align:center;color:var(--sub)}
 .centro{max-width:520px;margin:9vh auto;padding:0 16px;text-align:center}
 .centro h1{font-size:28px}.centro p{color:var(--sub)}
 .fb{background:#1877f2;border-color:#1877f2;color:#fff;font-size:15px;padding:11px 20px;border-radius:10px}
-.fb:hover{background:#166fe0}
 .pasos{text-align:left;margin:26px auto 0;max-width:420px;color:#3f3f46;font-size:13.5px}
 .pasos li{margin:6px 0}
 .cuentas{display:flex;flex-direction:column;gap:8px;margin-top:20px;text-align:left}
 .cuentas button{text-align:left;align-items:center;border:1px solid var(--line);border-radius:10px;padding:12px 14px;background:#fff;cursor:pointer;display:flex;justify-content:space-between;gap:10px}
-.cuentas button:hover{border-color:#a1a1aa}
 .panel{position:fixed;inset:0;background:rgba(0,0,0,.35);display:none;z-index:50}
 .panel.on{display:block}
-.hoja{position:absolute;right:0;top:0;bottom:0;width:min(560px,100%);background:#fff;overflow:auto;padding:22px}
+.hoja{position:absolute;right:0;top:0;bottom:0;width:min(580px,100%);background:#fff;overflow:auto;padding:22px}
 .hoja img{width:100%;border-radius:10px;background:var(--chip)}
 .hoja h2{font-size:18px;margin:14px 0 4px;word-break:break-word}
-.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:16px 0}
-.kpis div{border:1px solid var(--line);border-radius:10px;padding:10px;font-size:12px;color:var(--sub)}
-.kpis b{display:block;font-size:17px;color:var(--txt)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin:14px 0}
+.kpi{border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:12.5px;color:var(--sub);background:#fff}
+.kpi b{display:block;font-size:20px;color:var(--txt);margin:2px 0;letter-spacing:-.01em}
+.kpi small{font-size:12px}
+.puntajes{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0}
+.punt{border:1px solid var(--line);border-radius:10px;padding:8px;text-align:center;font-size:11.5px;color:var(--sub)}
+.punt b{display:block;font-size:20px;color:var(--txt)}
 .copy{white-space:pre-wrap;background:var(--side);border-radius:10px;padding:12px;font-size:13px;color:#3f3f46}
 .cerrar{float:right}
 .aviso{background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:10px 14px;margin-bottom:14px;font-size:13px}
-.cargando{color:var(--sub);font-size:12px}
-@media (max-width:860px){
-  aside{position:fixed;left:-260px;z-index:40;transition:left .2s;box-shadow:0 0 40px rgba(0,0,0,.1)}
+.grid2{display:grid;grid-template-columns:1.4fr 1fr;gap:16px;align-items:start}
+.grid3{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.box{border:1px solid var(--line);border-radius:12px;padding:16px;background:#fff}
+.box h3{margin:0 0 10px;font-size:14px}
+.fila{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f1f1f3;cursor:pointer}
+.fila:last-child{border-bottom:0}
+.fila .n{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}
+.fila .v{font-size:12.5px;color:var(--sub);text-align:right;white-space:nowrap}
+.rank{width:22px;text-align:center;font-weight:600;color:var(--sub)}
+.mov{width:30px;font-size:11.5px;text-align:center}
+.atajos{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px}
+.atajo{border:1px solid var(--line);border-radius:12px;padding:14px;cursor:pointer;background:#fff}
+.atajo:hover{box-shadow:0 4px 18px rgba(0,0,0,.06)}
+.atajo div{font-size:22px}.atajo b{display:block;margin-top:6px;font-size:13px}
+.leyenda{font-size:12px;color:var(--sub);display:flex;gap:14px;margin-top:6px}
+.leyenda i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.barrita{height:6px;border-radius:3px;background:var(--chip);overflow:hidden;min-width:80px}
+.barrita i{display:block;height:100%;background:#818cf8}
+.sugerencia{font-size:12.5px;color:#3f3f46;background:var(--side);border-radius:8px;padding:6px 10px;margin-top:6px}
+.matriz td,.matriz th{text-align:center;font-size:12px;padding:7px 9px}
+.matriz th:first-child,.matriz td:first-child{text-align:left}
+@media (max-width:900px){
+  aside{position:fixed;left:-270px;z-index:40;transition:left .2s;box-shadow:0 0 40px rgba(0,0,0,.1)}
   aside.on{left:0}
   .hambur{display:inline-flex}
   .cuerpo{padding:18px 16px 50px}
   .top{padding:0 12px}.top .muted{display:none}
   .buscar{width:100%}
   .scroll{max-height:none}
+  .grid2{grid-template-columns:1fr}
   .tarjetas{grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;padding:10px}
 }
 </style>
@@ -124,38 +151,72 @@ const guardar = (k, v) => { try { localStorage.setItem("radar_" + k, JSON.string
 const leer = (k, d) => { try { const v = localStorage.getItem("radar_" + k); return v ? JSON.parse(v) : d; } catch (_) { return d; } };
 
 const PRESETS = { last_7d: "Últimos 7 días", last_14d: "Últimos 14 días", last_30d: "Últimos 30 días", last_90d: "Últimos 90 días" };
+const DIAS = { last_7d: 7, last_14d: 14, last_30d: 30, last_90d: 90 };
 const FORMATOS = { video: "Video", imagen: "Imagen", carrusel: "Carrusel", flexible: "Flexible", post: "Post", catalogo: "Catálogo", otro: "Otro" };
+const pct = v => v == null ? "—" : fmtN(v, 2) + " %";
 const METRICAS = {
   roas: { n: "ROAS", f: v => v == null ? "—" : fmtN(v, 2) + "×" },
   spend: { n: "Gasto", f: v => fmtM(v) },
   purchase_value: { n: "Facturación", f: v => fmtM(v) },
   purchases: { n: "Compras", f: v => fmtN(v, 0) },
-  ctr_link: { n: "CTR (enlace)", f: v => v == null ? "—" : fmtN(v, 2) + " %" },
-  cpc_link: { n: "CPC (enlace)", f: v => v == null ? "—" : fmtM(v), menor: true },
-  cpa: { n: "CPA", f: v => v == null ? "—" : fmtM(v), menor: true },
+  cpa: { n: "CPA", f: v => fmtM(v), menor: true },
+  aov: { n: "Ticket promedio", f: v => fmtM(v) },
+  ctr_link: { n: "CTR (enlace)", f: pct },
+  cpc_link: { n: "CPC (enlace)", f: v => fmtM(v), menor: true },
+  clicks: { n: "Clics", f: v => fmtN(v, 0) },
+  cpm: { n: "CPM", f: v => fmtM(v), menor: true },
   impressions: { n: "Impresiones", f: v => fmtN(v, 0) },
-  aov: { n: "Ticket promedio", f: v => v == null ? "—" : fmtM(v) },
+  frecuencia: { n: "Frecuencia", f: v => v == null ? "—" : fmtN(v, 2) },
+  hook_rate: { n: "Hook rate", f: pct, d: "Vistas de 3 s / impresiones" },
+  hold_rate: { n: "Retención", f: pct, d: "ThruPlay / vistas de 3 s" },
+  r25: { n: "Ve 25 %", f: pct }, r50: { n: "Ve 50 %", f: pct }, r75: { n: "Ve 75 %", f: pct }, r100: { n: "Ve 100 %", f: pct },
+  atc: { n: "Carritos", f: v => fmtN(v, 0) },
+  costo_atc: { n: "Costo por carrito", f: v => fmtM(v), menor: true },
+  ic: { n: "Checkouts", f: v => fmtN(v, 0) },
+  conv_clic: { n: "Compra / clic", f: pct },
+  seg: { n: "Duración", f: v => v == null ? "—" : v + " s" },
 };
-const TAGS = { formato_visual: "Formato visual", tema_mensaje: "Tema de mensaje", publico: "Público" };
+const TAGS = { tipo_pieza: "Tipo de pieza", formato_visual: "Formato visual", tema_mensaje: "Tema de mensaje", tactica_hook: "Táctica de hook",
+  tactica_titular: "Táctica de titular", publico: "Público", estacionalidad: "Estacionalidad", tipo_oferta: "Tipo de oferta",
+  quien_habla: "Quién habla", angulo: "Ángulo", nivel_conciencia: "Nivel de conciencia" };
+const TAGS_TARJETA = ["formato_visual", "tema_mensaje", "publico"];
+
+// Reportes: mismas pantallas que Radar. g = agrupar por; f = filtro; o = orden; m = métricas
+const BASE = ["roas", "spend", "purchase_value", "purchases", "ctr_link", "cpc_link", "cpa", "impressions", "aov"];
+const REPORTES = {
+  mejores: { e: "🏆", t: "Mejores creativos", d: "Tus creativos con mejor rendimiento, para ver rápido qué está funcionando.", o: "roas", m: BASE },
+  activos: { e: "🟢", t: "Anuncios activos", d: "Lo que está prendido hoy y cómo viene en el período.", f: x => x.activos > 0, o: "spend", m: BASE },
+  lanzamientos: { e: "🚀", t: "Lanzamientos nuevos", d: "Lo que salió en el período y cómo le está yendo. Abajo, la tasa de acierto de cada semana.", lanz: true, o: "lanzado", m: BASE },
+  hooks: { e: "🪝", t: "Mejores hooks", d: "Videos que más frenan el scroll: vistas de 3 segundos sobre impresiones.", f: x => x.formato === "video" || x.v3 > 0, o: "hook_rate", m: ["hook_rate", "hold_rate", "ctr_link", "spend", "roas", "impressions"], hook: true },
+  clics: { e: "👆", t: "Más clics", d: "Los creativos que más mandan gente a la tienda.", o: "ctr_link", m: ["ctr_link", "cpc_link", "clicks", "spend", "roas", "conv_clic"] },
+  copies: { e: "🖋️", t: "Mejores copies", d: "El mismo texto en distintos creativos, sumado.", g: x => (x.copy || "").trim().slice(0, 160) || "(sin texto)", gn: "Copy", o: "roas", m: ["roas", "spend", "purchases", "ctr_link", "cpa"] },
+  tipos: { e: "📊", t: "Tipos de anuncio", d: "Video, imagen, carrusel, flexible: cuál rinde mejor en tu cuenta.", g: x => FORMATOS[x.formato] || x.formato, gn: "Tipo", o: "spend", m: ["spend", "roas", "purchases", "cpa", "ctr_link", "cpm"] },
+  landings: { e: "🛬", t: "Análisis de landings", d: "A qué página manda cada anuncio y cuánto vende cada una.", g: x => x.link || "(sin link)", gn: "Landing", o: "spend", m: ["spend", "roas", "purchases", "conv_clic", "ctr_link", "costo_atc"] },
+  videos: { e: "📽️", t: "Análisis de videos", d: "Cuánto enganchan y hasta dónde los miran.", f: x => x.formato === "video" || x.v3 > 0, o: "spend", m: ["spend", "roas", "hook_rate", "hold_rate", "r25", "r50", "r75", "r100", "ctr_link"] },
+  estaticos: { e: "📸", t: "Análisis de estáticos", d: "Imágenes y carruseles.", f: x => ["imagen", "carrusel"].includes(x.formato) || (x.formato === "flexible" && !x.v3), o: "roas", m: ["roas", "spend", "ctr_link", "cpc_link", "cpa", "cpm"] },
+  duracion: { e: "⏳", t: "Duración de videos", d: "¿Rinden mejor los cortos o los largos?", f: x => x.formato === "video", g: x => tramo(x.seg), gn: "Duración", o: "orden", m: ["spend", "roas", "hook_rate", "hold_rate", "ctr_link", "cpa"] },
+  tendencia: { e: "📅", t: "Tendencia semanal", d: "Gasto, ROAS y CPA de la cuenta semana a semana.", especial: "tendencia" },
+};
+const PATRONES = Object.fromEntries(["tipo_pieza", "formato_visual", "tema_mensaje", "tactica_hook", "tactica_titular", "publico", "estacionalidad", "tipo_oferta", "quien_habla", "angulo", "nivel_conciencia"]
+  .map(k => [k, { e: { tipo_pieza: "🖼️", formato_visual: "📐", tema_mensaje: "💬", tactica_hook: "🪝", tactica_titular: "📰", publico: "👥", estacionalidad: "🗓️", tipo_oferta: "🤑", quien_habla: "🎙️", angulo: "🧭", nivel_conciencia: "🧠" }[k], t: TAGS[k] }]));
+function tramo(s) { if (s == null) return "Sin dato"; return s < 15 ? "0-15 s" : s < 30 ? "15-30 s" : s < 45 ? "30-45 s" : s < 60 ? "45-60 s" : "60 s o más"; }
 
 let est = {
-  preset: leer("preset", "last_14d"), vista: leer("vista", "tabla"),
+  pantalla: leer("pantalla", "home"), preset: leer("preset", "last_14d"), vista: leer("vista", "tabla"),
   formatos: leer("formatos", ["video", "imagen", "carrusel", "flexible", "post", "otro"]),
-  metricas: leer("metricas", Object.keys(METRICAS)), tarjeta: ["roas", "spend", "cpa", "ctr_link"],
-  orden: leer("orden", { m: "roas", dir: "desc" }), buscar: "", minGasto: leer("minGasto", 0),
-  conexion: null, datos: null, cache: {}, reporte: leer("reporte", "mejores"), datos90: null,
+  metricasExtra: leer("metricasExtra", {}), orden: null, buscar: "", minGasto: leer("minGasto", 0),
+  conexion: null, datos: null, cache: {},
 };
-let moneda = "";
 function fmtN(v, d) { return Number(v || 0).toLocaleString("es-AR", { minimumFractionDigits: d, maximumFractionDigits: d }); }
-function fmtM(v) {
-  if (v == null) return "—";
-  const d = Math.abs(v) >= 1000 ? 0 : 2;
-  return "$ " + fmtN(v, d);
-}
-function fecha(iso) { if (!iso) return "—"; const d = new Date(iso); const m = ["ene","feb","mar","abr","may","jun","jul","ago","sept","oct","nov","dic"][d.getMonth()]; return `${d.getDate()} ${m} ${d.getFullYear()}`; }
-function hace(ms) {
-  if (!ms) return "nunca"; const m = Math.round((Date.now() - ms) / 60000);
-  if (m < 2) return "este minuto"; if (m < 60) return `hace ${m} min`; const h = Math.round(m / 60); if (h < 24) return `hace ${h} h`; return `hace ${Math.round(h / 24)} días`;
+function fmtM(v) { if (v == null || !isFinite(v)) return "—"; return "$ " + fmtN(v, Math.abs(v) >= 1000 ? 0 : 2); }
+const MESES = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sept", "oct", "nov", "dic"];
+function fecha(iso) { if (!iso) return "—"; const d = new Date(iso); return `${d.getDate()} ${MESES[d.getMonth()]} ${d.getFullYear()}`; }
+function fechaCorta(iso) { const d = new Date(iso + (iso.length === 10 ? "T12:00" : "")); return `${d.getDate()} ${MESES[d.getMonth()]}`; }
+function hace(ms) { if (!ms) return "nunca"; const m = Math.round((Date.now() - ms) / 60000); if (m < 2) return "este minuto"; if (m < 60) return `hace ${m} min`; const h = Math.round(m / 60); return h < 24 ? `hace ${h} h` : `hace ${Math.round(h / 24)} días`; }
+function delta(a, b, menor) {
+  if (b == null || !isFinite(b) || b === 0 || a == null) return "";
+  const d = (a - b) / Math.abs(b) * 100, bien = menor ? d < 0 : d > 0;
+  return `<span class="${Math.abs(d) < 0.5 ? "" : bien ? "sube" : "cae"}">${d > 0 ? "+" : ""}${fmtN(d, Math.abs(d) >= 100 ? 0 : 1)} %</span>`;
 }
 async function api(accion, extra) {
   const u = new URL(FN); u.searchParams.set("accion", accion); u.searchParams.set("marca", MARCA); u.searchParams.set("k", K);
@@ -165,205 +226,359 @@ async function api(accion, extra) {
   return j;
 }
 
-// ── derivar métricas y estado ──────────────────────────────────────
-function derivar(filas, be) {
-  const total = filas.reduce((s, f) => s + f.spend, 0) || 1;
-  return filas.map(f => {
-    const x = Object.assign({}, f);
-    x.purchase_value = f.value;
-    x.roas = f.spend > 0 ? f.value / f.spend : null;
-    x.ctr_link = f.impressions > 0 ? f.clicks / f.impressions * 100 : null;
-    x.cpc_link = f.clicks > 0 ? f.spend / f.clicks : null;
-    x.cpa = f.purchases > 0 ? f.spend / f.purchases : null;
-    x.aov = f.purchases > 0 ? f.value / f.purchases : null;
-    const dias = f.lanzado ? (Date.now() - new Date(f.lanzado)) / 864e5 : 99, share = f.spend / total;
-    x.estado = dias < 7 ? ["Testing", "test"] : share < 0.01 ? ["Low impact", ""] : (x.roas || 0) >= be && share >= 0.05 ? ["Escalando", "esc"]
-      : (x.roas || 0) < be * 0.6 && share >= 0.03 ? ["Bajando", "baja"] : ["Estable", ""];
-    return x;
-  });
+// ── métricas derivadas, estado y puntajes ──────────────────────────
+const div = (a, b) => b > 0 ? a / b : null;
+function calcular(x) {
+  x.purchase_value = x.value;
+  x.roas = div(x.value, x.spend); x.cpa = div(x.spend, x.purchases); x.aov = div(x.value, x.purchases);
+  x.ctr_link = div(x.clicks, x.impressions) == null ? null : x.clicks / x.impressions * 100;
+  x.cpc_link = div(x.spend, x.clicks); x.cpm = x.impressions ? x.spend / x.impressions * 1000 : null;
+  x.frecuencia = div(x.impressions, x.reach);
+  x.hook_rate = x.v3 && x.impressions ? x.v3 / x.impressions * 100 : null;
+  x.hold_rate = x.v3 ? x.thru / x.v3 * 100 : null;
+  for (const p of [25, 50, 75, 100]) x["r" + p] = x.v3 ? x["p" + p] / x.v3 * 100 : null;
+  x.costo_atc = div(x.spend, x.atc); x.conv_clic = x.clicks ? x.purchases / x.clicks * 100 : null;
+  return x;
 }
-function filtradas() {
-  if (!est.datos) return [];
-  const be = est.conexion?.breakEven || 2, b = est.buscar.trim().toLowerCase();
-  let fs = derivar(est.datos.filas, be).filter(f => est.formatos.includes(f.formato) && f.spend >= est.minGasto);
-  if (est.reporte === "lanzamientos") {
-    const dias = { last_7d: 7, last_14d: 14, last_30d: 30, last_90d: 90 }[est.preset], desde = Date.now() - dias * 864e5;
-    fs = fs.filter(f => f.lanzado && new Date(f.lanzado).getTime() >= desde);
+function derivar(filas) {
+  const be = est.conexion?.breakEven || 2, total = filas.reduce((s, f) => s + f.spend, 0) || 1;
+  const out = filas.map(f => calcular(Object.assign({}, f)));
+  for (const x of out) {
+    const dias = x.lanzado ? (Date.now() - new Date(x.lanzado)) / 864e5 : 99, share = x.spend / total;
+    const sube = x.prev && x.prev.spend ? (x.spend - x.prev.spend) / x.prev.spend : null;
+    x.share = share;
+    x.estado = dias < 7 ? ["Testing", "test"]
+      : share < 0.01 ? ["Low impact", ""]
+      : (x.roas || 0) >= be && (sube == null || sube > 0.2) && share >= 0.03 ? ["Escalando", "esc"]
+      : (x.roas || 0) < be * 0.7 && share >= 0.03 ? ["Bajando", "baja"] : ["Estable", ""];
   }
-  if (b) fs = fs.filter(f => (f.nombre + " " + Object.values(f.tags || {}).join(" ")).toLowerCase().includes(b));
-  const { m, dir } = est.orden, s = dir === "desc" ? -1 : 1;
-  fs.sort((a, c) => { const x = a[m], y = c[m]; if (x == null && y == null) return 0; if (x == null) return 1; if (y == null) return -1; return (x > y ? 1 : x < y ? -1 : 0) * s; });
-  return fs.slice(0, 300);
+  // Puntajes 0-100 por percentil dentro de la cuenta (como Radar: Hook / Watch / Click / Convert)
+  const conMuestra = out.filter(x => x.impressions >= 1000);
+  for (const [k, m] of [["sHook", "hook_rate"], ["sWatch", "hold_rate"], ["sClick", "ctr_link"], ["sConvert", "roas"]]) {
+    const vals = conMuestra.map(x => x[m]).filter(v => v != null).sort((a, b) => a - b);
+    for (const x of out) x[k] = x[m] == null || vals.length < 3 || x.impressions < 1000 ? null : Math.round(vals.filter(v => v <= x[m]).length / vals.length * 100);
+  }
+  return out;
+}
+function sugerencia(x) {
+  const be = est.conexion?.breakEven || 2;
+  if (x.sHook >= 70 && x.sWatch != null && x.sWatch <= 30) return "Engancha pero se van antes: rehacé el cuerpo y dejá el hook.";
+  if (x.sHook != null && x.sHook <= 30 && x.sConvert >= 60) return "Vende bien pero engancha poco: probá hooks nuevos con este mismo cuerpo.";
+  if (x.sClick >= 70 && (x.roas || 0) < be) return "Hacen clic pero no compran: revisá la landing o la oferta.";
+  if ((x.roas || 0) >= be * 1.4 && x.share < 0.05 && x.spend > 0) return "Rinde muy arriba del break-even y gasta poco: subile presupuesto.";
+  if ((x.roas || 0) < be * 0.6 && x.share >= 0.1) return "Se lleva mucho gasto y queda debajo del break-even: bajalo o apagalo.";
+  return "";
 }
 function sombra(m, v, fs) {
   if (v == null) return "";
   const be = est.conexion?.breakEven || 2;
   if (m === "roas") { if (v < be) return "rojo"; return v >= be * 2 ? "verde4" : v >= be * 1.5 ? "verde3" : v >= be * 1.2 ? "verde2" : "verde1"; }
+  if (!METRICAS[m] || ["spend", "impressions", "seg", "clicks", "purchases", "atc", "ic"].includes(m)) return "";
   const vals = fs.map(f => f[m]).filter(x => x != null).sort((a, b) => a - b);
   if (vals.length < 5) return "";
-  const p = vals.findIndex(x => x >= v) / vals.length, top = METRICAS[m].menor ? 1 - p : p;
+  const p = vals.filter(x => x <= v).length / vals.length, top = METRICAS[m].menor ? 1 - p : p;
   return top >= .9 ? "verde3" : top >= .75 ? "verde2" : top >= .6 ? "verde1" : "";
 }
+function sumar(lista) {
+  const t = { spend: 0, value: 0, purchases: 0, impressions: 0, reach: 0, clicks: 0, atc: 0, ic: 0, v3: 0, thru: 0, p25: 0, p50: 0, p75: 0, p100: 0 };
+  for (const x of lista) for (const k in t) t[k] += x[k] || 0;
+  return calcular(t);
+}
+function base() {
+  if (!est.datos) return [];
+  return derivar(est.datos.filas).filter(f => est.formatos.includes(f.formato) && f.spend >= est.minGasto);
+}
 
-// ── pantallas ──────────────────────────────────────────────────────
+// ── marco ──────────────────────────────────────────────────────────
+function navBtn(id, e, t) { return `<button class="nav ${est.pantalla === id ? "on" : ""}" onclick="ir('${id}')"><span class="e">${e}</span>${t}</button>`; }
 function marco(contenido, titulo) {
   const nombre = est.conexion?.cuentaNombre || MARCA || "Radar";
   return `<div class="app">
   <aside id="lado">
     <div class="marca"><i>${esc(nombre[0] || "R").toUpperCase()}</i><span>${esc(nombre)}</span></div>
-    <button class="nav ${est.reporte === "mejores" ? "on" : ""}" onclick="irA('mejores')">🏆 Mejores creativos</button>
-    <button class="nav ${est.reporte === "lanzamientos" ? "on" : ""}" onclick="irA('lanzamientos')">🚀 Lanzamientos nuevos</button>
-    <div class="grupo">Pronto</div>
-    <button class="nav" disabled>🟢 Anuncios activos <small>pronto</small></button>
-    <button class="nav" disabled>🪝 Mejores hooks <small>pronto</small></button>
-    <button class="nav" disabled>💬 Temas de mensaje <small>pronto</small></button>
-    <button class="nav" disabled>🏅 Leaderboard <small>pronto</small></button>
+    ${navBtn("home", "🏠", "Home")}${navBtn("leaderboard", "🏅", "Leaderboard")}${navBtn("temas", "💬", "Temas de mensaje")}
+    <div class="grupo">Reportes</div>
+    ${Object.entries(REPORTES).map(([k, r]) => navBtn("r:" + k, r.e, r.t)).join("")}
+    <div class="grupo">Patrones creativos</div>
+    ${Object.entries(PATRONES).map(([k, r]) => navBtn("p:" + k, r.e, r.t)).join("")}
     <div class="grupo">Cuenta</div>
-    <button class="nav" onclick="ajustes()">⚙️ Ajustes</button>
+    <button class="nav" onclick="ajustes()"><span class="e">⚙️</span>Ajustes</button>
+    <button class="nav" disabled><span class="e">🧲</span>Embudo de la tienda <small>pronto</small></button>
     <div class="pie">${est.conexion?.usuario ? "Conectado como <b>" + esc(est.conexion.usuario) + "</b><br>" : ""}Radar · CIMA UGC</div>
   </aside>
   <main>
     <div class="top"><button class="btn hambur" onclick="$('#lado').classList.toggle('on')">☰</button>
       <span class="t">${esc(titulo)}</span><span class="sp"></span>
-      <span class="muted" id="cuando">${est.datos ? "Actualizado " + hace(est.datos.actualizado) : ""}</span>
+      <span class="muted">${est.datos ? "Actualizado " + hace(est.datos.actualizado) : ""}</span>
       <button class="btn" id="refrescar" onclick="refrescar()" title="Traer datos nuevos de Meta">↻</button>
     </div>
     <div class="cuerpo">${contenido}</div>
   </main></div>
   <div class="panel" id="panel" onclick="if(event.target.id==='panel')this.classList.remove('on')"><div class="hoja" id="hoja"></div></div>`;
 }
-
-function pantallaSinLink() {
-  $("#raiz").innerHTML = `<div class="centro"><h1>Radar</h1><p>Este link está incompleto. Pedile a CIMA el link de tu marca.</p></div>`;
+function selectorPeriodo() {
+  return `<label class="chip"><select onchange="cambiarPreset(this.value)">${Object.entries(PRESETS).map(([k, v]) => `<option value="${k}" ${k === est.preset ? "selected" : ""}>${v}</option>`).join("")}</select> ▾</label>`;
 }
-function pantallaConectar(error) {
-  const href = `${FN}?accion=conectar&marca=${encodeURIComponent(MARCA)}&k=${encodeURIComponent(K)}`;
-  $("#raiz").innerHTML = `<div class="centro">
-    <div style="font-size:42px">📡</div>
-    <h1>Conectá tu cuenta de Meta</h1>
-    <p>Un clic y ves todos tus anuncios ordenados por lo que vende: ROAS, CPA, CTR y qué tipo de creativo funciona.</p>
-    ${error ? `<div class="aviso">No se completó la conexión. Probá de nuevo.</div>` : ""}
-    <a class="btn fb" href="${href}">Conectar con Facebook</a>
-    <ol class="pasos">
-      <li>Entrás con tu Facebook (el que administra la cuenta publicitaria).</li>
-      <li>Aceptás que Radar <b>lea</b> tus anuncios. Solo lectura: no puede crear, cambiar ni gastar nada.</li>
-      <li>Elegís la cuenta publicitaria y listo. Se actualiza solo cada 6 horas.</li>
-    </ol>
-    <p style="font-size:12px;margin-top:24px"><a href="https://cima-creators.github.io/privacidad/">Privacidad</a></p></div>`;
-}
-function pantallaCuentas() {
-  const cs = (est.conexion.cuentas || []).slice().sort((a, b) => b.activa - a.activa);
-  $("#raiz").innerHTML = `<div class="centro"><h1>¿Qué cuenta querés ver?</h1>
-    <p>Encontramos ${cs.length} cuentas publicitarias en tu Facebook.</p>
-    <div class="cuentas">${cs.map(c => `<button onclick="elegir('${esc(c.id)}',this)"><span><b>${esc(c.nombre)}</b><br><small style="color:var(--sub)">${esc(c.id)} · ${esc(c.moneda)}</small></span><span>${c.activa ? "Activa" : "Inactiva"}</span></button>`).join("")}</div></div>`;
-}
-async function elegir(id, b) {
-  document.querySelectorAll(".cuentas button").forEach(x => x.disabled = true);
-  b.innerHTML = "<span>Trayendo tus anuncios… puede tardar un minuto</span>";
-  try { await api("elegir", { cuenta: id }); location.replace(`?m=${MARCA}&k=${encodeURIComponent(K)}`); }
-  catch (e) { alert("No se pudo: " + e.message); pantallaCuentas(); }
-}
-
-function pantallaReporte() {
-  const fs = filtradas(), ms = est.metricas;
+function chipsFiltro() {
   const nFmt = est.formatos.length, todos = Object.keys(FORMATOS).length;
-  const contenido = `
-    ${est.reporte === "lanzamientos" ? `<h1>🚀 Lanzamientos nuevos</h1>
-    <p class="desc">Lo que salió en el período y cómo le está yendo. Abajo, la tasa de acierto de cada semana.</p>` : `<h1>🏆 Mejores creativos</h1>
-    <p class="desc">Tus creativos con mejor rendimiento, para ver rápido qué está funcionando.</p>`}
-    ${est.conexion?.error ? `<div class="aviso">La última actualización falló: ${esc(est.conexion.error)}. Si dice "token", volvé a conectar.</div>` : ""}
-    ${est.conexion?.tokenVence && est.conexion.tokenVence - Date.now() < 7 * 864e5 ? `<div class="aviso">La conexión con Meta vence pronto. <a href="${FN}?accion=conectar&marca=${MARCA}&k=${K}">Renovar</a></div>` : ""}
-    <div class="filtros">
-      <label class="chip"><select onchange="cambiarPreset(this.value)">${Object.entries(PRESETS).map(([k, v]) => `<option value="${k}" ${k === est.preset ? "selected" : ""}>${v}</option>`).join("")}</select> ▾</label>
-      <span class="chip gris">Agrupar por <b>Creativo</b></span>
-      <span class="chip gris" onclick="abrir(event,'mfmt')">Tipo de anuncio ${nFmt === todos ? "<b>todos</b>" : est.formatos.includes("catalogo") ? `<b>${nFmt} de ${todos}</b>` : "no es <b>Catálogo</b>"} ▾
-        <div class="menu" id="mfmt" onclick="event.stopPropagation()">${Object.entries(FORMATOS).map(([k, v]) => `<label><input type="checkbox" ${est.formatos.includes(k) ? "checked" : ""} onchange="togFmt('${k}',this.checked)"> ${v}</label>`).join("")}</div></span>
-      <span class="chip" onclick="abrir(event,'mgasto')">Gasto mínimo <b>${est.minGasto ? fmtM(est.minGasto) : "sin mínimo"}</b> ▾
-        <div class="menu" id="mgasto" onclick="event.stopPropagation()">${[0, 1000, 10000, 50000, 100000, 500000].map(v => `<label><input type="radio" name="mg" ${est.minGasto === v ? "checked" : ""} onchange="setGasto(${v})"> ${v ? fmtM(v) : "Sin mínimo"}</label>`).join("")}</div></span>
-    </div>
-    <div class="caja">
-      <div class="barra">
-        <input class="buscar" placeholder="Buscar creativo o etiqueta" value="${esc(est.buscar)}" oninput="est.buscar=this.value;dibujarCuerpo()">
-        <span class="chip" onclick="abrir(event,'mmet')">＋ Métrica
-          <div class="menu" id="mmet" onclick="event.stopPropagation()">${Object.entries(METRICAS).map(([k, v]) => `<label><input type="checkbox" ${ms.includes(k) ? "checked" : ""} onchange="togMet('${k}',this.checked)"> ${v.n}</label>`).join("")}</div></span>
-        <span class="chip gris">✦ Etiquetas IA</span>
-        <span class="sp"></span>
-        <span class="cargando" id="cuenta">${fs.length} creativos</span>
-        <div class="vistas">
-          <button class="${est.vista === "tarjetas" ? "on" : ""}" title="Tarjetas" onclick="setVista('tarjetas')"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="5" height="5" rx="1"/><rect x="9" y="2" width="5" height="5" rx="1"/><rect x="2" y="9" width="5" height="5" rx="1"/><rect x="9" y="9" width="5" height="5" rx="1"/></svg></button>
-          <button class="${est.vista === "tabla" ? "on" : ""}" title="Tabla" onclick="setVista('tabla')"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2.5" width="12" height="11" rx="1.5"/><path d="M2 6.5h12M6 6.5v7"/></svg></button>
-        </div>
-      </div>
-      <div id="cuerpo"></div>
-    </div>
-    ${est.reporte === "lanzamientos" ? semanas() : ""}`;
-  $("#raiz").innerHTML = marco(contenido, est.reporte === "lanzamientos" ? "Lanzamientos nuevos" : "Mejores creativos");
-  dibujarCuerpo();
+  return `${selectorPeriodo()}
+    <span class="chip" onclick="abrir(event,'mfmt')">Tipo de anuncio ${nFmt === todos ? "<b>todos</b>" : est.formatos.includes("catalogo") ? `<b>${nFmt} de ${todos}</b>` : "no es <b>Catálogo</b>"} ▾
+      <div class="menu" id="mfmt" onclick="event.stopPropagation()">${Object.entries(FORMATOS).map(([k, v]) => `<label><input type="checkbox" ${est.formatos.includes(k) ? "checked" : ""} onchange="togFmt('${k}',this.checked)"> ${v}</label>`).join("")}</div></span>
+    <span class="chip" onclick="abrir(event,'mgasto')">Gasto mínimo <b>${est.minGasto ? fmtM(est.minGasto) : "sin mínimo"}</b> ▾
+      <div class="menu" id="mgasto" onclick="event.stopPropagation()">${[0, 1000, 10000, 50000, 100000, 500000].map(v => `<label><input type="radio" name="mg" ${est.minGasto === v ? "checked" : ""} onchange="setGasto(${v})"> ${v ? fmtM(v) : "Sin mínimo"}</label>`).join("")}</div></span>`;
+}
+function avisos() {
+  const c = est.conexion || {};
+  return (c.error ? `<div class="aviso">La última actualización falló: ${esc(c.error)}. Si dice "token", volvé a conectar.</div>` : "")
+    + (c.tokenVence && c.tokenVence - Date.now() < 7 * 864e5 ? `<div class="aviso">La conexión con Meta vence pronto. <a href="${FN}?accion=conectar&marca=${MARCA}&k=${K}">Renovar</a></div>` : "");
 }
 
-// Launch analysis: por semana de lanzamiento (con los 90 días, que cubren la vida entera del creativo)
+// ── Home ───────────────────────────────────────────────────────────
+function grafico(dias) {
+  if (!dias.length) return `<div class="vacio">Sin datos diarios todavía.</div>`;
+  const W = 640, H = 190, max = Math.max(...dias.map(d => d.spend)) || 1, rmax = Math.max(3, ...dias.map(d => d.spend ? d.value / d.spend : 0));
+  const bw = W / dias.length;
+  const barras = dias.map((d, i) => { const h = d.spend / max * (H - 20); return `<rect x="${i * bw + 1}" y="${H - h}" width="${Math.max(1, bw - 2)}" height="${h}" rx="2" fill="var(--bar)"><title>${fechaCorta(d.d)}: ${fmtM(d.spend)} · ROAS ${d.spend ? fmtN(d.value / d.spend, 2) : "—"}</title></rect>`; }).join("");
+  const pts = dias.map((d, i) => `${i * bw + bw / 2},${H - (d.spend ? d.value / d.spend : 0) / rmax * (H - 20)}`).join(" ");
+  const be = est.conexion?.breakEven || 2, yb = H - be / rmax * (H - 20);
+  return `<svg viewBox="0 0 ${W} ${H + 18}" style="width:100%;height:auto">${barras}
+    <line x1="0" x2="${W}" y1="${yb}" y2="${yb}" stroke="#f59e0b" stroke-dasharray="4 4" stroke-width="1"/>
+    <polyline points="${pts}" fill="none" stroke="#16a34a" stroke-width="2"/>
+    <text x="0" y="${H + 14}" font-size="11" fill="#71717a">${fechaCorta(dias[0].d)}</text><text x="${W}" y="${H + 14}" font-size="11" fill="#71717a" text-anchor="end">${fechaCorta(dias[dias.length - 1].d)}</text></svg>
+    <div class="leyenda"><span><i style="background:var(--bar)"></i>Gasto por día</span><span><i style="background:#16a34a"></i>ROAS</span><span><i style="background:#f59e0b"></i>Break-even ${fmtN(be, 2)}</span></div>`;
+}
+function pantallaHome() {
+  const fs = base(), t = sumar(fs), a = est.datos?.totalAntes ? calcular(Object.assign({}, est.datos.totalAntes)) : null;
+  const be = est.conexion?.breakEven || 2, n = DIAS[est.preset];
+  const k = (tit, v, m, menor) => `<div class="kpi">${tit}<b>${v}</b><small>${a ? delta(t[m], a[m], menor) + " vs. los " + n + " días anteriores" : "&nbsp;"}</small></div>`;
+  const desde = Date.now() - n * 864e5, lanzados = fs.filter(f => f.lanzado && new Date(f.lanzado) >= desde);
+  const top = fs.slice().sort((x, y) => y.spend - x.spend)[0];
+  const temas = agruparPor(fs, x => x.tags?.tema_mensaje).filter(g => g.clave !== "(sin etiqueta)").sort((x, y) => y.spend - x.spend).slice(0, 6);
+  const dias = (est.datos?.diaria || []).slice(-n);
+  const atajos = ["mejores", "activos", "lanzamientos", "hooks", "clics", "copies"];
+  return `<h1>Home</h1><p class="desc">${PRESETS[est.preset]} de un vistazo.</p>${avisos()}
+    <div class="filtros">${selectorPeriodo()}</div>
+    <div class="kpis">${k("Gasto total", fmtM(t.spend), "spend")}${k("Facturación", fmtM(t.value), "value")}
+      <div class="kpi ${t.roas != null ? (t.roas >= be ? "verde1" : "rojo") : ""}">ROAS<b>${METRICAS.roas.f(t.roas)}</b><small>${a ? delta(t.roas, a.roas) + " · break-even " + fmtN(be, 2) : "break-even " + fmtN(be, 2)}</small></div>
+      ${k("CPA", fmtM(t.cpa), "cpa", true)}${k("Compras", fmtN(t.purchases, 0), "purchases")}${k("CTR (enlace)", pct(t.ctr_link), "ctr_link")}${k("CPM", fmtM(t.cpm), "cpm", true)}
+      <div class="kpi">Creativos lanzados<b>${lanzados.length}</b><small>${fs.length} con gasto en el período</small></div></div>
+    <div class="grid2">
+      <div class="box"><h3>Gasto y ROAS por día</h3>${grafico(dias)}</div>
+      <div class="box"><h3>El creativo de más gasto</h3>${top ? `<div class="fila" onclick='detalleId(${JSON.stringify(top.id)})'><img class="mini" src="${esc(top.mini)}" onerror="this.style.visibility='hidden'"><span class="n">${esc(top.nombre)}</span></div>
+        <div class="kpis" style="grid-template-columns:1fr 1fr"><div class="kpi">Gasto<b>${fmtM(top.spend)}</b><small>${delta(top.spend, top.prev?.spend)}</small></div>
+        <div class="kpi ${sombra("roas", top.roas, [])}">ROAS<b>${METRICAS.roas.f(top.roas)}</b><small>${top.prev ? delta(top.roas, div(top.prev.value, top.prev.spend)) : ""}</small></div></div>
+        ${sugerencia(top) ? `<div class="sugerencia">💡 ${sugerencia(top)}</div>` : ""}
+        <p style="margin:12px 0 0"><button class="btn" onclick="ir('leaderboard')">Ver el Leaderboard →</button></p>` : `<div class="vacio">Sin gasto en el período.</div>`}</div>
+    </div>
+    <h2>Temas de mensaje que estás probando</h2><p class="desc">Lo agrupa la IA mirando cada creativo. Acierto = creativos con ROAS arriba del break-even.</p>
+    ${temas.length ? `<div class="grid3">${temas.map(g => `<div class="box" style="cursor:pointer" onclick="ir('temas')"><h3>${esc(g.clave)}</h3>
+      <div class="v" style="color:var(--sub);font-size:12.5px">${g.n} creativo${g.n === 1 ? "" : "s"} · ${fmtN(g.acierto * 100, 0)} % de acierto</div>
+      <div style="display:flex;gap:16px;margin-top:8px"><span>Gasto <b>${fmtM(g.spend)}</b></span><span class="${sombra("roas", g.roas, [])}" style="border-radius:6px;padding:0 6px">ROAS <b>${METRICAS.roas.f(g.roas)}</b></span></div></div>`).join("")}</div>`
+      : `<div class="vacio">Las etiquetas de la IA aparecen después de la primera actualización.</div>`}
+    <h2>Tus reportes</h2><div class="atajos">${atajos.map(r => `<div class="atajo" onclick="ir('r:${r}')"><div>${REPORTES[r].e}</div><b>${REPORTES[r].t}</b></div>`).join("")}</div>`;
+}
+
+// ── Leaderboard ────────────────────────────────────────────────────
+function pantallaLeaderboard() {
+  const fs = base(), be = est.conexion?.breakEven || 2, n = DIAS[est.preset];
+  const desde = Date.now() - n * 864e5;
+  const esc_ = fs.filter(x => x.estado[0] === "Escalando"), baja = fs.filter(x => x.estado[0] === "Bajando");
+  const nuevos = fs.filter(x => x.lanzado && new Date(x.lanzado) >= desde), pausados = est.datos?.pausados || [];
+  const movers = fs.filter(x => x.prev && x.prev.spend > 0).map(x => Object.assign(x, { dSpend: (x.spend - x.prev.spend) / x.prev.spend }))
+    .sort((a, b) => b.spend * Math.max(0, b.dSpend) - a.spend * Math.max(0, a.dSpend)).slice(0, 4);
+  const ranking = fs.slice().sort((a, b) => b.spend - a.spend).slice(0, 25);
+  const antes = fs.filter(x => x.prev).sort((a, b) => b.prev.spend - a.prev.spend).map(x => x.id);
+  const premio = (m, t) => { const x = fs.filter(f => f[m] != null && f.impressions >= 1000).sort((a, b) => b[m] - a[m])[0]; return x ? `<div class="box"><h3>${t}</h3><div class="fila" onclick='detalleId(${JSON.stringify(x.id)})'><img class="mini" src="${esc(x.mini)}" onerror="this.style.visibility='hidden'"><span class="n">${esc(x.nombre)}</span><span class="v">${METRICAS[m].f(x[m])}</span></div></div>` : ""; };
+  const tarjetaMov = x => `<div class="box" style="cursor:pointer" onclick='detalleId(${JSON.stringify(x.id)})'><div class="fila" style="border:0;padding-top:0"><img class="mini" src="${esc(x.mini)}" onerror="this.style.visibility='hidden'"><span class="n">${esc(x.nombre)}</span></div>
+    <div style="display:flex;gap:18px;font-size:12.5px;color:var(--sub)"><span>Gasto<br><b style="color:var(--txt);font-size:14px">${fmtM(x.spend)}</b> ${delta(x.spend, x.prev.spend)}</span><span>ROAS<br><b style="color:var(--txt);font-size:14px">${METRICAS.roas.f(x.roas)}</b> ${delta(x.roas, div(x.prev.value, x.prev.spend))}</span></div></div>`;
+  return `<h1>🏅 Leaderboard</h1><p class="desc">Cambios de rendimiento y creativos top contra los ${n} días anteriores.</p>${avisos()}
+    <div class="filtros">${chipsFiltro()}</div>
+    <div class="kpis"><div class="kpi">Escalando<b>${esc_.length}</b></div><div class="kpi">Bajando<b>${baja.length}</b></div><div class="kpi">Recién lanzados<b>${nuevos.length}</b></div><div class="kpi">Pausados hace poco<b>${pausados.length}</b></div></div>
+    <h2>Los que más crecieron</h2>${movers.length ? `<div class="grid3">${movers.map(tarjetaMov).join("")}</div>` : `<div class="vacio">Todavía no hay período anterior para comparar.</div>`}
+    <h2>Premios del período</h2><div class="grid3">${premio("hook_rate", "🪝 Mejor hook")}${premio("hold_rate", "👀 Mejor retención")}${premio("ctr_link", "👆 Más clics")}${premio("roas", "💰 Mejor ROAS")}</div>
+    <h2>Ranking de creativos</h2><div class="caja"><div class="scroll"><table><thead><tr><th>#</th><th>Creativo</th><th class="num">Gasto</th><th class="num">ROAS</th><th class="num">CPA</th><th>Qué hacer</th></tr></thead><tbody>
+    ${ranking.map((x, i) => { const pa = antes.indexOf(x.id), mv = pa < 0 ? `<span class="pill test">nuevo</span>` : pa > i ? `<span class="sube">▲${pa - i}</span>` : pa < i ? `<span class="cae">▼${i - pa}</span>` : "="; return `<tr><td><span class="rank">${i + 1}</span> <span class="mov">${mv}</span></td>
+      <td><div class="crea" onclick='detalleId(${JSON.stringify(x.id)})'><img class="mini" loading="lazy" src="${esc(x.mini)}" onerror="this.style.visibility='hidden'"><div style="min-width:0"><div class="n">${esc(x.nombre)}</div><div class="s">${x.ads} anuncio${x.ads === 1 ? "" : "s"} <span class="pill ${x.estado[1]}">${x.estado[0]}</span></div></div></div></td>
+      <td class="num">${fmtM(x.spend)}</td><td class="num ${sombra("roas", x.roas, [])}">${METRICAS.roas.f(x.roas)}</td><td class="num">${fmtM(x.cpa)}</td><td class="texto" style="font-size:12.5px;color:#3f3f46">${sugerencia(x) || ""}</td></tr>`; }).join("")}
+    </tbody></table></div></div>
+    ${pausados.length ? `<h2>Pausados hace poco</h2><p class="desc">Gastaron en los ${n} días anteriores y en este período no.</p><div class="box">${pausados.slice(0, 12).map(x => `<div class="fila"><img class="mini" src="${esc(x.mini)}" onerror="this.style.visibility='hidden'"><span class="n">${esc(x.nombre)}</span><span class="v">gastó ${fmtM(x.spend)} · ROAS ${METRICAS.roas.f(div(x.value, x.spend))}</span></div>`).join("")}</div>` : ""}`;
+}
+
+// ── agrupar (temas, copies, tipos, landings, patrones) ─────────────
+function agruparPor(fs, fnClave) {
+  const be = est.conexion?.breakEven || 2, total = fs.reduce((s, x) => s + x.spend, 0) || 1, g = {};
+  for (const x of fs) { const c = fnClave(x) || "(sin etiqueta)"; (g[c] = g[c] || []).push(x); }
+  return Object.entries(g).map(([clave, l]) => Object.assign(sumar(l), {
+    clave, items: l.sort((a, b) => b.spend - a.spend), n: l.length, share: l.reduce((s, x) => s + x.spend, 0) / total,
+    acierto: l.filter(x => (x.roas || 0) >= be && x.spend > 0).length / l.length,
+  }));
+}
+function tablaGrupos(grupos, nombreCol, metricas, totalCuenta) {
+  if (!grupos.length) return `<div class="vacio">Nada para mostrar con estos filtros.</div>`;
+  const th = (k, n) => `<th class="num ${est.orden?.m === k ? "ord" : ""}" onclick="ordenarG('${k}')">${n}${est.orden?.m === k ? (est.orden.dir === "desc" ? " ↓" : " ↑") : ""}</th>`;
+  return `<div class="caja"><div class="scroll"><table><thead><tr><th>${nombreCol}</th><th class="num">Creativos</th><th>Peso en el gasto</th>${metricas.map(m => th(m, METRICAS[m].n)).join("")}<th class="num">Acierto</th>${totalCuenta ? "<th class='num'>ROAS vs. cuenta</th>" : ""}</tr></thead><tbody>
+  ${grupos.map((g, i) => `<tr><td><div class="crea texto" style="max-width:420px" onclick="verGrupo(${i})"><div style="display:flex;margin-right:4px">${g.items.slice(0, 3).map(x => `<img class="mini" style="width:30px;height:30px;margin-right:-8px;border:2px solid #fff" src="${esc(x.mini)}" onerror="this.style.visibility='hidden'">`).join("")}</div><span style="margin-left:10px">${esc(g.clave)}</span></div></td>
+    <td class="num">${g.n}</td><td><div class="barrita"><i style="width:${Math.max(2, g.share * 100)}%"></i></div><span class="mas">${fmtN(g.share * 100, 0)} %</span></td>
+    ${metricas.map(m => `<td class="num ${sombra(m, g[m], grupos)}">${METRICAS[m].f(g[m])}</td>`).join("")}
+    <td class="num">${fmtN(g.acierto * 100, 0)} %</td>${totalCuenta ? `<td class="num">${delta(g.roas, totalCuenta.roas)}</td>` : ""}</tr>`).join("")}
+  </tbody></table></div></div>`;
+}
+function ordenarGrupos(gs, def) {
+  const o = est.orden && est.orden.g ? est.orden : { m: def, dir: "desc" };
+  const s = o.dir === "desc" ? -1 : 1;
+  return gs.sort((a, b) => { if (o.m === "orden") return a.clave.localeCompare(b.clave, "es", { numeric: true }); const x = a[o.m], y = b[o.m]; if (x == null) return 1; if (y == null) return -1; return (x - y) * s; });
+}
+function ordenarG(m) { est.orden = est.orden?.m === m && est.orden.g ? { m, g: 1, dir: est.orden.dir === "desc" ? "asc" : "desc" } : { m, g: 1, dir: "desc" }; dibujar(); }
+function verGrupo(i) {
+  const g = window._grupos[i];
+  $("#hoja").innerHTML = `<button class="btn cerrar" onclick="$('#panel').classList.remove('on')">✕</button><h2>${esc(g.clave)}</h2>
+    <div style="color:var(--sub);font-size:12.5px">${g.n} creativo${g.n === 1 ? "" : "s"} · ${fmtN(g.share * 100, 0)} % del gasto · ${fmtN(g.acierto * 100, 0)} % de acierto</div>
+    <div class="kpis">${["spend", "roas", "purchases", "cpa", "ctr_link", "hook_rate"].map(m => `<div class="kpi ${m === "roas" ? sombra(m, g[m], []) : ""}">${METRICAS[m].n}<b>${METRICAS[m].f(g[m])}</b></div>`).join("")}</div>
+    <div class="box">${g.items.map(x => `<div class="fila" onclick='detalleId(${JSON.stringify(x.id)})'><img class="mini" src="${esc(x.mini)}" onerror="this.style.visibility='hidden'"><span class="n">${esc(x.nombre)}</span><span class="v">${fmtM(x.spend)} · ${METRICAS.roas.f(x.roas)}</span></div>`).join("")}</div>`;
+  $("#panel").classList.add("on");
+}
+
+// ── Temas de mensaje ───────────────────────────────────────────────
+function pantallaTemas() {
+  const fs = base(), total = sumar(fs);
+  const grupos = ordenarGrupos(agruparPor(fs, x => x.tags?.tema_mensaje), "spend"); window._grupos = grupos;
+  // Matriz tema × tipo de pieza: dónde todavía no probaste
+  const temas = grupos.filter(g => g.clave !== "(sin etiqueta)").slice(0, 8).map(g => g.clave);
+  const piezas = agruparPor(fs, x => x.tags?.tipo_pieza).filter(g => g.clave !== "(sin etiqueta)").sort((a, b) => b.spend - a.spend).slice(0, 6).map(g => g.clave);
+  const celda = (t, p) => { const l = fs.filter(x => x.tags?.tema_mensaje === t && x.tags?.tipo_pieza === p); if (!l.length) return `<td style="color:#a1a1aa">sin probar</td>`; const s = sumar(l); return `<td class="${sombra("roas", s.roas, [])}">${METRICAS.roas.f(s.roas)}<br><span class="mas">${l.length} · ${fmtM(s.spend)}</span></td>`; };
+  return `<h1>💬 Temas de mensaje</h1><p class="desc">El problema o la promesa de cada creativo, según la IA. Cuánto gastás en cada tema y cuál vende.</p>${avisos()}
+    <div class="filtros">${chipsFiltro()}</div>${tablaGrupos(grupos, "Tema", ["spend", "roas", "purchases", "cpa", "ctr_link", "hook_rate"], total)}
+    ${temas.length && piezas.length ? `<h2>Tema × tipo de pieza</h2><p class="desc">ROAS de cada combinación. Las que dicen "sin probar" son ideas para la próxima tanda.</p>
+      <div class="caja"><div class="scroll"><table class="matriz"><thead><tr><th>Tema</th>${piezas.map(p => `<th>${esc(p)}</th>`).join("")}</tr></thead><tbody>${temas.map(t => `<tr><td>${esc(t)}</td>${piezas.map(p => celda(t, p)).join("")}</tr>`).join("")}</tbody></table></div></div>` : ""}`;
+}
+
+// ── Patrones creativos ─────────────────────────────────────────────
+function pantallaPatron(dim) {
+  const fs = base(), total = sumar(fs), P = PATRONES[dim];
+  const grupos = ordenarGrupos(agruparPor(fs, x => x.tags?.[dim]), "spend"); window._grupos = grupos;
+  const conDatos = grupos.filter(g => g.clave !== "(sin etiqueta)" && g.spend > total.spend * 0.02 && g.roas != null);
+  const mejor = conDatos.slice().sort((a, b) => b.roas - a.roas)[0], peor = conDatos.slice().sort((a, b) => a.roas - b.roas)[0];
+  return `<h1>${P.e} ${P.t}</h1><p class="desc">Cada creativo etiquetado por la IA, sumado por ${P.t.toLowerCase()} y comparado con el promedio de la cuenta (ROAS ${METRICAS.roas.f(total.roas)}).</p>${avisos()}
+    <div class="filtros">${chipsFiltro()}</div>
+    ${mejor && peor && mejor !== peor ? `<div class="kpis"><div class="kpi verde1">Lo que mejor rinde<b style="font-size:16px">${esc(mejor.clave)}</b><small>ROAS ${METRICAS.roas.f(mejor.roas)} · ${delta(mejor.roas, total.roas)} vs. la cuenta</small></div>
+      <div class="kpi rojo">Lo que peor rinde<b style="font-size:16px">${esc(peor.clave)}</b><small>ROAS ${METRICAS.roas.f(peor.roas)} · ${fmtN(peor.share * 100, 0)} % del gasto</small></div></div>` : ""}
+    ${tablaGrupos(grupos, P.t, ["spend", "roas", "purchases", "cpa", "ctr_link", "hook_rate"], total)}`;
+}
+
+// ── Reportes ───────────────────────────────────────────────────────
+function filasReporte(R) {
+  let fs = base();
+  if (R.f) fs = fs.filter(R.f);
+  if (R.lanz) { const desde = Date.now() - DIAS[est.preset] * 864e5; fs = fs.filter(f => f.lanzado && new Date(f.lanzado) >= desde); }
+  const b = est.buscar.trim().toLowerCase();
+  if (b) fs = fs.filter(f => (f.nombre + " " + (f.copy || "") + " " + Object.values(f.tags || {}).join(" ")).toLowerCase().includes(b));
+  const o = est.orden && !est.orden.g ? est.orden : { m: R.o, dir: "desc" }, s = o.dir === "desc" ? -1 : 1;
+  fs.sort((a, c) => { const x = a[o.m], y = c[o.m]; if (x == null && y == null) return 0; if (x == null) return 1; if (y == null) return -1; return (x > y ? 1 : x < y ? -1 : 0) * s; });
+  return fs.slice(0, 300);
+}
+function metricasDe(id) { return est.metricasExtra[id] || REPORTES[id].m; }
+function pantallaReporte(id) {
+  const R = REPORTES[id];
+  if (R.especial === "tendencia") return pantallaTendencia();
+  const cab = `<h1>${R.e} ${R.t}</h1><p class="desc">${R.d}</p>${avisos()}<div class="filtros">${chipsFiltro()}${R.g ? "" : `<span class="chip gris">Agrupar por <b>Creativo</b></span>`}</div>`;
+  if (R.g) {
+    let fs = base(); if (R.f) fs = fs.filter(R.f);
+    const grupos = ordenarGrupos(agruparPor(fs, R.g), R.o); window._grupos = grupos;
+    const nota = id === "duracion" && grupos.length === 1 && grupos[0].clave === "Sin dato" ? `<div class="aviso">Meta no devuelve la duración de los videos subidos desde la página de Facebook o Instagram; solo de los cargados en la biblioteca de la cuenta publicitaria.</div>` : "";
+    return cab + nota + tablaGrupos(grupos, R.gn, metricasDe(id), sumar(fs));
+  }
+  const ms = metricasDe(id);
+  return cab + `<div class="caja"><div class="barra">
+      <input class="buscar" placeholder="Buscar creativo, copy o etiqueta" value="${esc(est.buscar)}" oninput="est.buscar=this.value;dibujarCuerpo()">
+      <span class="chip" onclick="abrir(event,'mmet')">＋ Métrica
+        <div class="menu" id="mmet" onclick="event.stopPropagation()">${Object.entries(METRICAS).map(([k, v]) => `<label><input type="checkbox" ${ms.includes(k) ? "checked" : ""} onchange="togMet('${k}',this.checked)"> ${v.n}</label>`).join("")}</div></span>
+      <span class="chip gris">✦ Etiquetas IA</span><span class="sp"></span>
+      <span class="mas" id="cuenta"></span>
+      <div class="vistas">
+        <button class="${est.vista === "tarjetas" ? "on" : ""}" title="Tarjetas" onclick="setVista('tarjetas')"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="5" height="5" rx="1"/><rect x="9" y="2" width="5" height="5" rx="1"/><rect x="2" y="9" width="5" height="5" rx="1"/><rect x="9" y="9" width="5" height="5" rx="1"/></svg></button>
+        <button class="${est.vista === "tabla" ? "on" : ""}" title="Tabla" onclick="setVista('tabla')"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2.5" width="12" height="11" rx="1.5"/><path d="M2 6.5h12M6 6.5v7"/></svg></button>
+      </div></div><div id="cuerpo"></div></div>${R.lanz ? semanas() : ""}`;
+}
+function tagsHtml(f, max) {
+  const t = f.tags; if (!t) return `<span class="mas">sin etiquetar</span>`;
+  const vals = TAGS_TARJETA.map(k => t[k]).filter(Boolean);
+  return vals.slice(0, max).map(v => `<span class="tag" title="${esc(v)}">▦ ${esc(v)}</span>`).join(" ") + (vals.length > max ? `<span class="mas">+${vals.length - max}</span>` : "");
+}
+function dibujarCuerpo() {
+  const id = est.pantalla.slice(2), R = REPORTES[id], c = $("#cuerpo"); if (!c || !R) return;
+  const fs = filasReporte(R), ms = metricasDe(id);
+  if ($("#cuenta")) $("#cuenta").textContent = fs.length + " creativos";
+  window._fs = fs;
+  if (!fs.length) { c.innerHTML = `<div class="vacio">${est.datos?.filas?.length ? "Ningún creativo con estos filtros." : "Todavía no hay datos. Tocá ↻ arriba a la derecha para traerlos de Meta."}</div>`; return; }
+  if (est.vista === "tarjetas") {
+    const tm = R.hook ? ["hook_rate", "hold_rate", "spend", "roas"] : ["roas", "spend", "cpa", "ctr_link"];
+    c.innerHTML = `<div class="tarjetas">${fs.map((f, i) => `<div class="tar" onclick="detalle(${i})">
+      <div class="img" style="background-image:url('${esc(f.mini)}')"><span class="fmt">${FORMATOS[f.formato] || f.formato}</span><span class="st pill ${f.estado[1]}">${f.estado[0]}</span></div>
+      <div class="info"><div class="n" title="${esc(f.nombre)}">${esc(f.nombre)}</div>
+      <div class="met">${tm.map(m => `<div class="${sombra(m, f[m], fs)}">${METRICAS[m].n}<b>${METRICAS[m].f(f[m])}</b></div>`).join("")}</div>
+      <div class="tags">${tagsHtml(f, 3)}</div></div></div>`).join("")}</div>`;
+    return;
+  }
+  const o = est.orden && !est.orden.g ? est.orden : { m: R.o, dir: "desc" };
+  const th = (k, n, num) => `<th class="${num ? "num" : ""} ${o.m === k ? "ord" : ""}" onclick="ordenar('${k}')">${n}${o.m === k ? (o.dir === "desc" ? " ↓" : " ↑") : ""}</th>`;
+  c.innerHTML = `<div class="scroll"><table><thead><tr>${th("nombre", "Creativo")}${th("lanzado", "Lanzamiento")}${R.hook ? "<th>Hook</th>" : "<th>Etiquetas</th>"}${ms.map(m => th(m, METRICAS[m].n, true)).join("")}</tr></thead><tbody>
+  ${fs.map((f, i) => `<tr><td><div class="crea" onclick="detalle(${i})"><img class="mini" loading="lazy" src="${esc(f.mini)}" onerror="this.style.visibility='hidden'"><div style="min-width:0"><div class="n" title="${esc(f.nombre)}">${esc(f.nombre)}</div>
+    <div class="s">${f.ads} anuncio${f.ads === 1 ? "" : "s"} <span class="pill ${f.estado[1]}">${f.estado[0]}</span></div></div></div></td>
+    <td>${fecha(f.lanzado)}</td><td>${R.hook ? `<span class="texto" style="display:block;max-width:300px;font-size:12.5px">${esc(f.tags?.hook || "—")}</span>` : tagsHtml(f, 1)}</td>
+    ${ms.map(m => `<td class="num ${sombra(m, f[m], fs)}">${METRICAS[m].f(f[m])}</td>`).join("")}</tr>`).join("")}
+  </tbody></table></div>`;
+}
+// Launch analysis: lanzados por semana → escalaron → ganadores (con los 90 días, que cubren la vida del creativo)
 function semanas() {
-  const d = est.datos90; if (!d || !d.filas.length) return "";
-  const be = est.conexion?.breakEven || 2, fs = derivar(d.filas, be).filter(f => f.lanzado && est.formatos.includes(f.formato));
+  const d = est.cache.last_90d; if (!d || !d.filas.length) return "";
+  const be = est.conexion?.breakEven || 2, fs = derivar(d.filas).filter(f => f.lanzado && est.formatos.includes(f.formato));
   const total = d.filas.reduce((s, f) => s + f.spend, 0) || 1, umbral = total * 0.02;
   const lunes = iso => { const x = new Date(iso); x.setHours(0, 0, 0, 0); x.setDate(x.getDate() - ((x.getDay() + 6) % 7)); return x.getTime(); };
   const desde = Date.now() - 84 * 864e5, g = {};
   for (const f of fs) { const w = lunes(f.lanzado); if (w < desde) continue; (g[w] = g[w] || []).push(f); }
   const filas = Object.entries(g).sort((a, b) => b[0] - a[0]).map(([w, l]) => {
-    const esc_ = l.filter(f => f.spend >= umbral), gan = esc_.filter(f => (f.roas || 0) >= be);
-    const spend = l.reduce((s, f) => s + f.spend, 0), value = l.reduce((s, f) => s + f.value, 0);
-    return { w: +w, n: l.length, esc: esc_.length, gan: gan.length, tasa: gan.length / l.length, spend, roas: spend ? value / spend : null, mejor: gan.sort((a, b) => b.spend - a.spend)[0] };
+    const e = l.filter(f => f.spend >= umbral), gan = e.filter(f => (f.roas || 0) >= be), s = sumar(l);
+    return { w: +w, n: l.length, esc: e.length, gan: gan.length, tasa: gan.length / l.length, spend: s.spend, roas: s.roas, mejor: gan.sort((a, b) => b.spend - a.spend)[0] };
   });
   if (!filas.length) return "";
   const tot = filas.reduce((a, f) => ({ n: a.n + f.n, gan: a.gan + f.gan }), { n: 0, gan: 0 });
-  return `<h2 style="font-size:18px;margin:34px 0 4px">Tasa de acierto por semana</h2>
-    <p class="desc">Escaló = gastó más de ${fmtM(umbral)} (2% del gasto de 90 días). Ganador = escaló y ROAS ≥ ${fmtN(be, 2)}. Últimas 12 semanas: <b>${tot.gan} ganadores de ${tot.n} lanzados (${fmtN(tot.gan / tot.n * 100, 0)} %)</b>.</p>
+  return `<h2>Tasa de acierto por semana</h2>
+    <p class="desc">Escaló = gastó más de ${fmtM(umbral)} (2 % del gasto de 90 días). Ganador = escaló y ROAS ≥ ${fmtN(be, 2)}. Últimas 12 semanas: <b>${tot.gan} ganadores de ${tot.n} lanzados (${fmtN(tot.gan / tot.n * 100, 0)} %)</b>.</p>
     <div class="caja"><div class="scroll"><table><thead><tr><th>Semana</th><th class="num">Lanzados</th><th class="num">Escalaron</th><th class="num">Ganadores</th><th class="num">Acierto</th><th class="num">Gasto</th><th class="num">ROAS</th><th>Mejor ganador</th></tr></thead><tbody>
-    ${filas.map(f => `<tr><td>${new Date(f.w).toLocaleDateString("es-AR", { day: "numeric", month: "short" }).replace(".", "")}</td><td class="num">${f.n}</td><td class="num">${f.esc}</td><td class="num">${f.gan}</td>
+    ${filas.map(f => `<tr><td>${fechaCorta(new Date(f.w).toISOString())}</td><td class="num">${f.n}</td><td class="num">${f.esc}</td><td class="num">${f.gan}</td>
       <td class="num ${f.tasa >= .2 ? "verde3" : f.tasa >= .1 ? "verde1" : ""}">${fmtN(f.tasa * 100, 0)} %</td><td class="num">${fmtM(f.spend)}</td><td class="num ${sombra("roas", f.roas, [])}">${METRICAS.roas.f(f.roas)}</td>
       <td>${f.mejor ? esc(f.mejor.nombre) : "—"}</td></tr>`).join("")}</tbody></table></div></div>`;
 }
-async function irA(r) {
-  est.reporte = r; guardar("reporte", r); $("#lado")?.classList.remove("on");
-  if (r === "lanzamientos") est.orden = { m: "lanzado", dir: "desc" };
-  else if (r === "mejores") est.orden = { m: "roas", dir: "desc" };
-  await cargarDatos(); pantallaReporte();
+function pantallaTendencia() {
+  const dias = est.datos?.diaria || [];
+  const lunes = s => { const x = new Date(s + "T12:00"); x.setDate(x.getDate() - ((x.getDay() + 6) % 7)); return x.toISOString().slice(0, 10); };
+  const g = {}; for (const d of dias) { const w = lunes(d.d); (g[w] = g[w] || []).push(d); }
+  const sem = Object.entries(g).sort().map(([w, l]) => { const s = sumar(l); s.w = w; s.dias = l.length; return s; });
+  return `<h1>📅 Tendencia semanal</h1><p class="desc">Gasto, ROAS y CPA de toda la cuenta, semana a semana (últimos 90 días).</p>${avisos()}
+    <div class="box"><h3>Gasto y ROAS por día</h3>${grafico(dias)}</div>
+    <h2>Por semana</h2><div class="caja"><div class="scroll"><table><thead><tr><th>Semana del</th><th class="num">Días</th><th class="num">Gasto</th><th class="num">Facturación</th><th class="num">ROAS</th><th class="num">Compras</th><th class="num">CPA</th><th class="num">CTR</th><th class="num">CPM</th></tr></thead><tbody>
+    ${sem.slice().reverse().map((s, i, arr) => `<tr><td>${fechaCorta(s.w)}</td><td class="num">${s.dias}</td><td class="num">${fmtM(s.spend)} ${arr[i + 1] ? delta(s.spend, arr[i + 1].spend) : ""}</td><td class="num">${fmtM(s.value)}</td>
+      <td class="num ${sombra("roas", s.roas, [])}">${METRICAS.roas.f(s.roas)}</td><td class="num">${fmtN(s.purchases, 0)}</td><td class="num">${fmtM(s.cpa)}</td><td class="num">${pct(s.ctr_link)}</td><td class="num">${fmtM(s.cpm)}</td></tr>`).join("")}
+    </tbody></table></div></div>`;
 }
-function tagsHtml(f, max) {
-  const t = f.tags; if (!t) return `<span class="mas">sin etiquetar</span>`;
-  const vals = Object.keys(TAGS).map(k => t[k]).filter(Boolean);
-  return vals.slice(0, max).map(v => `<span class="tag" title="${esc(v)}">▦ ${esc(v)}</span>`).join(" ") + (vals.length > max ? `<span class="mas">+${vals.length - max}</span>` : "");
-}
-function dibujarCuerpo() {
-  const fs = filtradas(), ms = est.metricas, c = $("#cuerpo");
-  if ($("#cuenta")) $("#cuenta").textContent = fs.length + " creativos";
-  if (!fs.length) { c.innerHTML = `<div class="vacio">${est.datos?.filas?.length ? "Ningún creativo con estos filtros." : "Todavía no hay datos. Tocá ↻ arriba a la derecha para traerlos de Meta."}</div>`; return; }
-  if (est.vista === "tarjetas") {
-    c.innerHTML = `<div class="tarjetas">${fs.map((f, i) => `<div class="tar" onclick="detalle(${i})">
-      <div class="img" style="background-image:url('${esc(f.mini)}')"><span class="fmt">${FORMATOS[f.formato] || f.formato}</span><span class="st pill ${f.estado[1]}">${f.estado[0]}</span></div>
-      <div class="info"><div class="n" title="${esc(f.nombre)}">${esc(f.nombre)}</div>
-      <div class="met">${est.tarjeta.map(m => `<div class="${m === "roas" ? sombra(m, f[m], fs) : ""}" style="border-radius:6px;padding:2px 4px">${METRICAS[m].n}<b>${METRICAS[m].f(f[m])}</b></div>`).join("")}</div>
-      <div class="tags">${tagsHtml(f, 3)}</div></div></div>`).join("")}</div>`;
-  } else {
-    const th = (k, n, num) => `<th class="${num ? "num" : ""} ${est.orden.m === k ? "ord" : ""}" onclick="ordenar('${k}')">${n}${est.orden.m === k ? (est.orden.dir === "desc" ? " ↓" : " ↑") : ""}</th>`;
-    c.innerHTML = `<div class="scroll"><table><thead><tr>${th("nombre", "Creativo")}${th("lanzado", "Lanzamiento")}<th>Etiquetas</th>${ms.map(m => th(m, METRICAS[m].n, true)).join("")}</tr></thead><tbody>
-    ${fs.map((f, i) => `<tr><td><div class="crea" onclick="detalle(${i})"><img class="mini" loading="lazy" src="${esc(f.mini)}" onerror="this.style.visibility='hidden'"><div style="min-width:0"><div class="n" title="${esc(f.nombre)}">${esc(f.nombre)}</div>
-      <div class="s">${f.ads} anuncio${f.ads === 1 ? "" : "s"} <span class="pill ${f.estado[1]}">${f.estado[0]}</span></div></div></div></td>
-      <td>${fecha(f.lanzado)}</td><td>${tagsHtml(f, 1)}</td>
-      ${ms.map(m => `<td class="num ${sombra(m, f[m], fs)}">${METRICAS[m].f(f[m])}</td>`).join("")}</tr>`).join("")}
-    </tbody></table></div>`;
-  }
-  window._fs = fs;
-}
+
+// ── detalle de un creativo ─────────────────────────────────────────
+function detalleId(id) { const x = derivar(est.datos.filas).find(f => f.id === id); if (x) { window._fs = [x]; detalle(0); } }
 function detalle(i) {
-  const f = window._fs[i];
-  const ver = f.video ? `<p><a class="btn" target="_blank" rel="noopener" href="https://www.facebook.com/watch/?v=${esc(f.video)}">▶ Ver el video</a></p>` : "";
+  const f = window._fs[i], t = f.tags || {};
+  const ver = f.video ? `<a class="btn" target="_blank" rel="noopener" href="https://www.facebook.com/watch/?v=${esc(f.video)}">▶ Ver el video</a>` : "";
+  const punt = (k, n) => `<div class="punt">${n}<b>${f[k] == null ? "—" : f[k]}</b></div>`;
   $("#hoja").innerHTML = `<button class="btn cerrar" onclick="$('#panel').classList.remove('on')">✕</button>
     <span class="pill ${f.estado[1]}">${f.estado[0]}</span> <span class="pill">${FORMATOS[f.formato] || f.formato}</span>
-    <h2>${esc(f.nombre)}</h2><div style="color:var(--sub);font-size:12.5px">${f.ads} anuncio${f.ads === 1 ? "" : "s"} · lanzado ${fecha(f.lanzado)} · ${f.activos ? f.activos + " activo" + (f.activos === 1 ? "" : "s") : "pausado"}</div>
-    <div class="kpis">${Object.keys(METRICAS).map(m => `<div class="${m === "roas" ? sombra(m, f[m], window._fs) : ""}">${METRICAS[m].n}<b>${METRICAS[m].f(f[m])}</b></div>`).join("")}</div>
-    ${f.mini ? `<img src="${esc(f.mini)}" alt="">` : ""}${ver}
-    ${f.tags ? `<h3 style="font-size:14px;margin:18px 0 8px">Etiquetas IA</h3>${Object.entries(TAGS).map(([k, n]) => f.tags[k] ? `<div style="margin:4px 0"><span style="color:var(--sub)">${n}:</span> ${esc(f.tags[k])}</div>` : "").join("")}` : ""}
+    <h2>${esc(f.nombre)}</h2><div style="color:var(--sub);font-size:12.5px">${f.ads} anuncio${f.ads === 1 ? "" : "s"} · lanzado ${fecha(f.lanzado)} · ${f.activos ? f.activos + " activo" + (f.activos === 1 ? "" : "s") : "pausado"}${f.seg ? " · " + f.seg + " s" : ""}</div>
+    ${sugerencia(f) ? `<div class="sugerencia">💡 ${sugerencia(f)}</div>` : ""}
+    ${t.compliance ? `<div class="aviso">⚠️ Compliance: ${esc(t.compliance)}</div>` : ""}
+    <div class="puntajes">${punt("sHook", "Hook")}${punt("sWatch", "Watch")}${punt("sClick", "Click")}${punt("sConvert", "Convert")}</div>
+    <div class="kpis">${["roas", "spend", "purchase_value", "purchases", "cpa", "ctr_link", "cpc_link", "cpm", "hook_rate", "hold_rate", "atc", "costo_atc"].map(m => `<div class="kpi ${m === "roas" ? sombra(m, f[m], []) : ""}">${METRICAS[m].n}<b style="font-size:17px">${METRICAS[m].f(f[m])}</b>${f.prev && ["spend", "purchases"].includes(m) ? `<small>${delta(f[m], f.prev[m])}</small>` : ""}</div>`).join("")}</div>
+    ${f.v3 ? `<h3 style="font-size:14px;margin:6px 0 8px">Hasta dónde lo miran</h3><div style="display:flex;gap:6px;align-items:flex-end;height:70px">${[["3 s", 100], ["25 %", f.r25], ["50 %", f.r50], ["75 %", f.r75], ["100 %", f.r100]].map(([n, v]) => `<div style="flex:1;text-align:center;font-size:11px;color:var(--sub)"><div style="background:#a5b4fc;border-radius:4px 4px 0 0;height:${Math.max(2, (v || 0) * 0.5)}px"></div>${n}<br><b style="color:var(--txt)">${v == null ? "—" : fmtN(v, 0) + "%"}</b></div>`).join("")}</div>` : ""}
+    ${f.mini ? `<img src="${esc(f.mini)}" alt="" style="margin-top:14px">` : ""}<p>${ver} ${f.link ? `<a class="btn" target="_blank" rel="noopener" href="${esc(f.link)}">🛬 Landing</a>` : ""}</p>
+    ${f.tags ? `<h3 style="font-size:14px;margin:18px 0 8px">Análisis IA</h3>${t.hook ? `<div class="copy" style="margin-bottom:8px">🪝 ${esc(t.hook)}</div>` : ""}${Object.entries(TAGS).map(([k, n]) => t[k] ? `<div style="margin:4px 0"><span style="color:var(--sub)">${n}:</span> ${esc(t[k])}</div>` : "").join("")}` : ""}
+    ${f.campanas?.length ? `<h3 style="font-size:14px;margin:18px 0 8px">Campañas</h3><div style="font-size:13px;color:#3f3f46">${f.campanas.map(esc).join("<br>")}</div>` : ""}
     ${f.titulo ? `<h3 style="font-size:14px;margin:18px 0 8px">Titular</h3><div class="copy">${esc(f.titulo)}</div>` : ""}
     ${f.copy ? `<h3 style="font-size:14px;margin:18px 0 8px">Copy</h3><div class="copy">${esc(f.copy)}</div>` : ""}`;
   $("#panel").classList.add("on");
@@ -373,7 +588,7 @@ function ajustes() {
   $("#hoja").innerHTML = `<button class="btn cerrar" onclick="$('#panel').classList.remove('on')">✕</button><h2>Ajustes</h2>
     <p style="color:var(--sub)">Cuenta: <b>${esc(c.cuentaNombre || "—")}</b> (${esc(c.cuenta || "")})<br>Conectado como ${esc(c.usuario || "—")} · vence ${c.tokenVence ? new Date(c.tokenVence).toLocaleDateString("es-AR") : "—"}</p>
     <label style="display:block;margin:18px 0 6px;font-weight:600">Break-even (ROAS)</label>
-    <p style="color:var(--sub);margin:0 0 8px;font-size:13px">Arriba de este número la marca gana plata: pinta el ROAS de verde o rojo.</p>
+    <p style="color:var(--sub);margin:0 0 8px;font-size:13px">Arriba de este número la marca gana plata: pinta el ROAS de verde o rojo y define qué es "acierto".</p>
     <input id="be" class="buscar" style="width:120px" value="${fmtN(c.breakEven || 2, 2)}"> <button class="btn neg" onclick="guardarBE()">Guardar</button>
     <p style="margin-top:26px"><a class="btn" href="${FN}?accion=conectar&marca=${MARCA}&k=${K}">Reconectar o cambiar de Facebook</a></p>
     ${(c.cuentas || []).length > 1 ? `<p><button class="btn" onclick="$('#panel').classList.remove('on');pantallaCuentas()">Cambiar de cuenta publicitaria</button></p>` : ""}`;
@@ -382,55 +597,109 @@ function ajustes() {
 async function guardarBE() {
   const v = $("#be").value.replace(",", ".");
   if (!DEMO) try { await api("breakeven", { valor: v }); } catch (e) { alert(e.message); return; }
-  est.conexion.breakEven = Number(v); $("#panel").classList.remove("on"); pantallaReporte();
+  est.conexion.breakEven = Number(v); $("#panel").classList.remove("on"); dibujar();
 }
 
-// ── acciones ───────────────────────────────────────────────────────
+// ── navegación y acciones ──────────────────────────────────────────
+function dibujar() {
+  const p = est.pantalla;
+  let html, titulo;
+  if (p === "home") { html = pantallaHome(); titulo = "Home"; }
+  else if (p === "leaderboard") { html = pantallaLeaderboard(); titulo = "Leaderboard"; }
+  else if (p === "temas") { html = pantallaTemas(); titulo = "Temas de mensaje"; }
+  else if (p.startsWith("p:") && PATRONES[p.slice(2)]) { html = pantallaPatron(p.slice(2)); titulo = PATRONES[p.slice(2)].t; }
+  else if (p.startsWith("r:") && REPORTES[p.slice(2)]) { html = pantallaReporte(p.slice(2)); titulo = REPORTES[p.slice(2)].t; }
+  else { est.pantalla = "home"; return dibujar(); }
+  const y = scrollY;
+  $("#raiz").innerHTML = marco(html, titulo);
+  if (p.startsWith("r:")) dibujarCuerpo();
+  scrollTo(0, y);
+}
+async function ir(p) {
+  est.pantalla = p; est.orden = null; est.buscar = ""; guardar("pantalla", p); $("#lado")?.classList.remove("on");
+  if (p === "leaderboard" && est.preset === "last_90d") { est.preset = "last_7d"; }
+  await cargarDatos(); dibujar(); scrollTo(0, 0);
+}
 function abrir(ev, id) { ev.stopPropagation(); const m = $("#" + id), on = m.classList.contains("on"); document.querySelectorAll(".menu").forEach(x => x.classList.remove("on")); if (!on) m.classList.add("on"); }
 document.addEventListener("click", () => document.querySelectorAll(".menu").forEach(x => x.classList.remove("on")));
-function togFmt(k, on) { est.formatos = on ? [...new Set([...est.formatos, k])] : est.formatos.filter(x => x !== k); guardar("formatos", est.formatos); refrescarChips(); }
-function togMet(k, on) { est.metricas = Object.keys(METRICAS).filter(m => m === k ? on : est.metricas.includes(m)); guardar("metricas", est.metricas); dibujarCuerpo(); }
-function setGasto(v) { est.minGasto = v; guardar("minGasto", v); refrescarChips(); }
-function refrescarChips() { const b = est.buscar; pantallaReporte(); est.buscar = b; }
-function setVista(v) { est.vista = v; guardar("vista", v); pantallaReporte(); }
-function ordenar(m) { est.orden = est.orden.m === m ? { m, dir: est.orden.dir === "desc" ? "asc" : "desc" } : { m, dir: m === "nombre" ? "asc" : "desc" }; guardar("orden", est.orden); dibujarCuerpo(); }
-async function cambiarPreset(p) { est.preset = p; guardar("preset", p); await cargarDatos(); pantallaReporte(); }
+function togFmt(k, on) { est.formatos = on ? [...new Set([...est.formatos, k])] : est.formatos.filter(x => x !== k); guardar("formatos", est.formatos); dibujar(); }
+function togMet(k, on) { const id = est.pantalla.slice(2), act = metricasDe(id); est.metricasExtra[id] = Object.keys(METRICAS).filter(m => m === k ? on : act.includes(m)); guardar("metricasExtra", est.metricasExtra); dibujarCuerpo(); }
+function setGasto(v) { est.minGasto = v; guardar("minGasto", v); dibujar(); }
+function setVista(v) { est.vista = v; guardar("vista", v); dibujar(); }
+function ordenar(m) { const o = est.orden && !est.orden.g ? est.orden : { m: REPORTES[est.pantalla.slice(2)].o, dir: "desc" }; est.orden = o.m === m ? { m, dir: o.dir === "desc" ? "asc" : "desc" } : { m, dir: m === "nombre" ? "asc" : "desc" }; dibujarCuerpo(); }
+async function cambiarPreset(p) { est.preset = p; guardar("preset", p); await cargarDatos(); dibujar(); }
 async function refrescar() {
   if (DEMO) return;
   const b = $("#refrescar"); b.disabled = true; b.textContent = "Actualizando…";
-  try { const r = await api("actualizar"); if (r.esperar) alert("Se actualizó hace menos de 30 minutos. Ya tenés lo último."); est.cache = {}; await cargarDatos(); pantallaReporte(); }
+  try { const r = await api("actualizar"); if (r.esperar) alert("Se actualizó hace menos de 30 minutos. Ya tenés lo último."); est.cache = {}; await cargarDatos(); dibujar(); }
   catch (e) { alert("No se pudo actualizar: " + e.message); b.disabled = false; b.textContent = "↻"; }
 }
 async function cargarDatos() {
-  const traer = async p => DEMO ? demoDatos(p) : (est.cache[p] = est.cache[p] || await api("datos", { preset: p }));
+  const traer = async p => est.cache[p] = est.cache[p] || (DEMO ? demoDatos(p) : await api("datos", { preset: p }));
   est.datos = await traer(est.preset);
-  if (est.reporte === "lanzamientos") est.datos90 = await traer("last_90d");
+  if (est.pantalla === "r:lanzamientos") await traer("last_90d");
 }
 
+// ── conexión ───────────────────────────────────────────────────────
+function pantallaSinLink() { $("#raiz").innerHTML = `<div class="centro"><h1>Radar</h1><p>Este link está incompleto. Pedile a CIMA el link de tu marca.</p></div>`; }
+function pantallaConectar(error) {
+  const href = `${FN}?accion=conectar&marca=${encodeURIComponent(MARCA)}&k=${encodeURIComponent(K)}`;
+  $("#raiz").innerHTML = `<div class="centro"><div style="font-size:42px">📡</div><h1>Conectá tu cuenta de Meta</h1>
+    <p>Un clic y ves todos tus anuncios ordenados por lo que vende: ROAS, CPA, CTR, hooks y qué tipo de creativo funciona.</p>
+    ${error ? `<div class="aviso">No se completó la conexión. Probá de nuevo.</div>` : ""}
+    <a class="btn fb" href="${href}">Conectar con Facebook</a>
+    <ol class="pasos"><li>Entrás con tu Facebook (el que administra la cuenta publicitaria).</li>
+      <li>Aceptás que Radar <b>lea</b> tus anuncios. Solo lectura: no puede crear, cambiar ni gastar nada.</li>
+      <li>Elegís la cuenta publicitaria y listo. Se actualiza solo cada 6 horas.</li></ol>
+    <p style="font-size:12px;margin-top:24px"><a href="https://cima-creators.github.io/privacidad/">Privacidad</a></p></div>`;
+}
+function pantallaCuentas() {
+  const cs = (est.conexion.cuentas || []).slice().sort((a, b) => b.activa - a.activa);
+  $("#raiz").innerHTML = `<div class="centro"><h1>¿Qué cuenta querés ver?</h1><p>Encontramos ${cs.length} cuentas publicitarias en tu Facebook.</p>
+    <div class="cuentas">${cs.map(c => `<button onclick="elegir('${esc(c.id)}',this)"><span><b>${esc(c.nombre)}</b><br><small style="color:var(--sub)">${esc(c.id)} · ${esc(c.moneda)}</small></span><span>${c.activa ? "Activa" : "Inactiva"}</span></button>`).join("")}</div></div>`;
+}
+async function elegir(id, b) {
+  document.querySelectorAll(".cuentas button").forEach(x => x.disabled = true);
+  b.innerHTML = "<span>Trayendo tus anuncios… puede tardar un par de minutos</span>";
+  try { await api("elegir", { cuenta: id }); location.replace(`?m=${MARCA}&k=${encodeURIComponent(K)}`); }
+  catch (e) { alert("No se pudo: " + e.message); pantallaCuentas(); }
+}
 async function iniciar() {
-  if (DEMO) { est.conexion = { cuentaNombre: "Marca demo", usuario: "Demo", breakEven: 2 }; await cargarDatos(); pantallaReporte(); return; }
+  if (DEMO) { est.conexion = { cuentaNombre: "Marca demo", usuario: "Demo", breakEven: 2 }; await cargarDatos(); dibujar(); return; }
   if (!MARCA || !K) return pantallaSinLink();
   $("#raiz").innerHTML = `<div class="centro"><p>Cargando…</p></div>`;
   try { est.conexion = await api("estado"); }
   catch (e) { $("#raiz").innerHTML = `<div class="centro"><h1>Radar</h1><p>${e.message === "link inválido" ? "Este link ya no sirve. Pedile uno nuevo a CIMA." : "No pudimos cargar: " + esc(e.message)}</p></div>`; return; }
   if (!est.conexion.conectada) return pantallaConectar(q.get("error"));
   if (!est.conexion.cuenta || q.get("elegir")) return pantallaCuentas();
-  await cargarDatos(); pantallaReporte();
+  await cargarDatos(); dibujar();
 }
 
-// Datos de ejemplo para ?demo=1 (ver la pantalla sin conectar nada)
+// Datos de ejemplo para ?demo=1
 function demoDatos(p) {
   const mult = { last_7d: .5, last_14d: 1, last_30d: 2.1, last_90d: 6 }[p];
   const nombres = ["Nio016", "Nmp008Tresxdos", "GEORGINA 119 · RB", "FABI 96 · HP4", "LUCÍA L1 · PF", "Trio25 Comparativa", "VIDEO 1 Cola", "Nio372 Captura de carrito", "T22 V4 Dani · Cuándo empezar", "S42 CBO4 G12", "Nmp052 Verano", "ad3", "JHONATAN J5", "Nio428 Manos maduras"];
   const fm = ["imagen", "imagen", "video", "video", "video", "carrusel", "video", "imagen", "video", "flexible", "imagen", "post", "video", "imagen"];
-  const tg = [["Foto de estudio de producto", "Promoción 3x2", "Mujeres 35-55"], ["Imagen con texto superpuesto", "Promoción 3x2", "Mujeres 35-55"], ["Video UGC con autógrafo", "Celulitis y flacidez", "Mujeres 40+ con celulitis"], ["Animación 3D anatómica", "Celulitis y flacidez", "Mujeres 45+"], ["Video UGC a cámara", "Rutina corporal simple", "Mamás ocupadas"]];
-  return { moneda: "ARS", actualizado: Date.now() - 4 * 60000, filas: nombres.map((n, i) => {
-    const spend = Math.round((3000 + i * i * 9000) * mult), roas = [42, 34, 16, 9.3, 9.2, 4.2, 2.4, 1.9, 3.4, 3.1, 1.85, 8.8, 1.46, 15][i];
-    const value = spend * roas, purchases = Math.max(1, Math.round(value / 119405));
-    return { id: "d" + i, nombre: n, formato: fm[i], ads: 1 + (i % 3), activos: i % 4 ? 1 : 0, mini: `https://picsum.photos/seed/cima${i}/300/375`,
-      lanzado: new Date(Date.now() - ((i * 5 + 2) % (p === "last_90d" ? 80 : 20)) * 864e5).toISOString(), spend, value, purchases, impressions: spend * 2.4, clicks: spend * 2.4 * (0.006 + i * 0.001),
-      tags: { formato_visual: tg[i % 5][0], tema_mensaje: tg[i % 5][1], publico: tg[i % 5][2] }, copy: "Probé de todo para la celulitis hasta que una amiga me pasó esto…", titulo: "3x2 solo esta semana" };
-  }) };
+  const tg = [["Estático", "Foto de estudio de producto", "Promoción 3x2", "Mujeres 35-55", "Oferta con precio", "2x1 / 3x2"], ["Estático", "Imagen con texto superpuesto", "Promoción 3x2", "Mujeres 35-55", "Urgencia", "2x1 / 3x2"],
+    ["Video UGC", "Video UGC con autógrafo", "Celulitis y flacidez", "Mujeres 40+ con celulitis", "Beneficio", "Sin oferta"], ["Animación", "Animación 3D anatómica", "Celulitis y flacidez", "Mujeres 45+", "Beneficio", "Sin oferta"],
+    ["Video UGC", "Video UGC a cámara", "Rutina corporal simple", "Mamás ocupadas", "Pregunta", "Regalo con compra"]];
+  const hooks = ["Probé de todo para la celulitis y nada.", "3x2 solo hasta el domingo", "Tengo 47 y esto me cambió las piernas", "Así se ve la grasa debajo de la piel", "Si no tenés tiempo, mirá esto"];
+  const filas = nombres.map((n, i) => {
+    const spend = Math.round((3000 + i * i * 9000) * mult), roas = [4.2, 3.4, 1.6, 2.9, 2.2, 4.2, 2.4, 1.9, 3.4, 3.1, 1.85, 2.8, 1.46, 1.5][i];
+    const value = spend * roas, purchases = Math.max(1, Math.round(value / 119405)), impressions = spend * 2.4, v3 = fm[i] === "video" ? impressions * (0.18 + i % 4 * 0.06) : 0;
+    const t = tg[i % 5];
+    return { id: "d" + i, nombre: n, formato: fm[i], ads: 1 + (i % 3), activos: i % 4 ? 1 : 0, mini: `https://picsum.photos/seed/cima${i}/300/375`, seg: fm[i] === "video" ? 12 + i * 4 : null,
+      lanzado: new Date(Date.now() - ((i * 5 + 2) % (p === "last_90d" ? 80 : 20)) * 864e5).toISOString(), spend, value, purchases, impressions, reach: impressions / 1.6,
+      clicks: impressions * (0.006 + i * 0.001), atc: purchases * 3, ic: purchases * 2, v3, thru: v3 * 0.3, p25: v3 * .6, p50: v3 * .4, p75: v3 * .25, p100: v3 * .12,
+      link: ["https://lagoslab.com/products/nio", "https://lagoslab.com/collections/3x2", "https://lagoslab.com/"][i % 3], campanas: ["CBO Escala", "ABO Testing"].slice(0, 1 + i % 2),
+      prev: i % 5 ? { spend: spend * (0.5 + i % 3 * 0.4), value: spend * roas * 0.8, purchases: purchases - 1, impressions, clicks: 0 } : null,
+      tags: { tipo_pieza: t[0], formato_visual: t[1], tema_mensaje: t[2], publico: t[3], tactica_titular: t[4], tipo_oferta: t[5], tactica_hook: ["Dolor en primera persona", "Oferta directa", "Dato sorprendente"][i % 3],
+        estacionalidad: i % 4 ? "Siempre" : "Verano", quien_habla: fm[i] === "video" ? "Creadora UGC" : "Nadie (solo texto)", angulo: ["Mecanismo explicado", "Prueba social"][i % 2], nivel_conciencia: "Consciente del problema", hook: hooks[i % 5], compliance: "" },
+      copy: "Probé de todo para la celulitis hasta que una amiga me pasó esto…", titulo: "3x2 solo esta semana" };
+  });
+  const dias = Array.from({ length: 90 }, (_, i) => { const s = 40000 + Math.sin(i / 6) * 12000 + i * 300; return { d: new Date(Date.now() - (90 - i) * 864e5).toISOString().slice(0, 10), spend: s, value: s * (2 + Math.sin(i / 9) * 0.6), purchases: Math.round(s / 30000), impressions: s * 2.4, clicks: s * 0.03 }; });
+  return { moneda: "ARS", actualizado: Date.now() - 4 * 60000, filas, diaria: dias, pausados: [{ id: "z1", nombre: "Nio001 viejo", mini: "https://picsum.photos/seed/z1/100", spend: 90000, value: 120000 }],
+    totalAntes: { spend: filas.reduce((s, f) => s + f.spend, 0) * 0.85, value: filas.reduce((s, f) => s + f.value, 0) * 0.8, purchases: 40, impressions: 900000, clicks: 9000, reach: 500000 } };
 }
 iniciar();
 </script>
