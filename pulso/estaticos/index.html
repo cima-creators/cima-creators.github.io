@@ -195,7 +195,7 @@ a.btn{display:inline-flex;align-items:center;justify-content:center;text-decorat
   <div style="display:flex;gap:14px;align-items:flex-start;margin-bottom:12px"><img id="itImg" alt="" style="width:96px;border-radius:12px;background:var(--soft)">
     <div><h3 style="font-size:19px;margin:0 0 4px">Iterar esta pieza</h3><p class="sub" style="margin:0" id="itCod"></p></div></div>
   <div class="tipo">
-    <label><input type="radio" name="itTipo" value="mismo" checked> <b>Más de lo mismo</b> <small>— 3 opciones nuevas con el mismo diseño y otros dolores del VOC</small></label>
+    <label><input type="radio" name="itTipo" value="mismo" checked> <b>Más de lo mismo</b> <small>— 4 opciones nuevas con el mismo diseño, una por ángulo</small></label>
     <label><input type="radio" name="itTipo" value="otra"> <b>Quiero otra cosa</b> <small>— escribí qué cambiar</small></label></div>
   <div class="lbl" style="margin-bottom:4px">Aclaración (opcional en «Más de lo mismo»)</div>
   <textarea id="itPedido" placeholder="Ej: que el título sea más corto · que una opción hable de la panza hinchada · fondo espresso"></textarea>
@@ -205,7 +205,7 @@ a.btn{display:inline-flex;align-items:center;justify-content:center;text-decorat
 </div></div>
 <div id="subir"><div class="sx">
   <h3 style="font-size:19px;margin:0 0 4px">Renovar una pieza</h3>
-  <p class="sub" style="margin:0 0 14px">Subí la imagen (foto o captura) o pegá un link. La hacemos con el pack de Pulso en 3 opciones y aparece en <b>Revisar</b>.</p>
+  <p class="sub" style="margin:0 0 14px">Subí la imagen (foto o captura) o pegá un link. La hacemos con el pack de Pulso en 4 opciones (deshinchazón · energía · foco · estrés) y aparece en <b>Revisar</b>.</p>
   <div class="tipo"><label><input type="radio" name="tipo" value="otra" checked> Es de otra marca <small>(copiamos el formato)</small></label>
     <label><input type="radio" name="tipo" value="propia"> Es un anuncio nuestro <small>(lo renovamos)</small></label></div>
   <label class="drop" id="drop" style="position:relative"><input type="file" id="archivo" accept="image/*" hidden><img id="prev" alt="" hidden><span id="dropTxt">Tocá para subir una foto o captura</span><button type="button" class="quitar" id="quitarPrev" hidden style="position:absolute;top:8px;right:8px">✕ Quitar</button></label>
@@ -322,7 +322,7 @@ $("#subirSi").onclick = async () => {
       ref: {id: "up" + ts, m: propia ? (NOMBRES[MARCA] || MARCA) : "Tu referencia", img, link, nicho: "subida", d: 0, dup: 0, senal: 0}});
     $("#subir").classList.remove("on"); archivoSubido = null; $("#archivo").value = ""; $("#prev").hidden = true; $("#dropTxt").hidden = false;
     $("#link").value = ""; $("#pedido").value = "";
-    tab = "proceso"; pintar(); toast("Listo: en un rato aparece en Revisar con 3 opciones");
+    tab = "proceso"; pintar(); toast("Listo: en un rato aparece en Revisar con 4 opciones");
   } catch (e) { $("#subirErr").textContent = "No se pudo mandar: " + e.message; }
   b.disabled = false; b.textContent = "Mandar";
 };
@@ -353,7 +353,7 @@ $("#itSi").onclick = async () => {
       prompt: itSel.prompt || d.prompt || "", usa: d.usa || ["pack"], nivel: d.nivel || 3, maqueta: !!d.maqueta,
       ref: {id: "it" + ts, m: NOMBRES[MARCA] || MARCA, img: itSel.url, link: "", nicho: "iteracion", d: 0, dup: 0, senal: 0, t: d.codigo || ""},
       refOriginal: d.ref || {}});
-    $("#iterar").classList.remove("on"); tab = "proceso"; pintar(); toast("Listo: en un rato aparecen 3 opciones nuevas en Revisar");
+    $("#iterar").classList.remove("on"); tab = "proceso"; pintar(); toast("Listo: en un rato aparecen 4 opciones nuevas en Revisar");
   } catch (e) { $("#itErr").textContent = "No se pudo: " + e.message; }
   b.disabled = false;
 };
@@ -403,7 +403,7 @@ function vElegir(lista, hechasHoy, enCola){
     <div class="banner"><div class="meter"><div class="lbl">Hoy · hasta ${PIEZAS_DIA} piezas y USD ${TOPE_USD}</div>
       <div style="font-size:14px;margin-top:2px"><b>${hechasHoy}</b> hechas hoy · <b>${enCola}</b> en cola</div>
       <div class="bar"><i style="width:${pct}%"></i></div></div>
-      <div class="sub" style="max-width:440px;margin:0">Anuncios de otras marcas que llevan 30 días o más al aire (si siguen prendidos, venden). Tocá <b>La quiero</b> y la hacemos con el pack oficial de Pulso en 3 opciones, cada una con un dolor del VOC. Lo que pase de ${PIEZAS_DIA} por día queda en cola para mañana.</div></div>
+      <div class="sub" style="max-width:440px;margin:0">Anuncios de otras marcas que llevan 30 días o más al aire (si siguen prendidos, venden). Tocá <b>La quiero</b> y la hacemos con el pack oficial de Pulso en 4 opciones, una por ángulo (deshinchazón · energía · foco · estrés), cada una con un dolor del VOC. Lo que pase de ${PIEZAS_DIA} por día queda en cola para mañana.</div></div>
     <div class="filtros">
       ${[["todas","Todas"],["cafe","Café y funcional"],["top","Marcas top"],["otro","Otros rubros"]].map(([k,t]) => { const delDia = filtroDia === "todas" ? lista : lista.filter(d=>d.fecha===filtroDia); const n = k === "todas" ? delDia.length : delDia.filter(d=>TIPO(d)===k).length; return n || k === "todas" ? `<button class="chip ${filtroTipo===k?"on":""}" data-tipo="${k}">${t} · ${n}</button>` : ""; }).join("")}</div>
     ${vis.length ? `<div class="grid">${vis.map(cardElegir).join("")}</div>` : `<div class="vacio">No hay referencias nuevas. Todos los días a las 7:10 h llegan 30 más.</div>`}`;
