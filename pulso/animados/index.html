@@ -166,7 +166,7 @@ summary{cursor:pointer;font-weight:600;font-size:13px}
   <header>
     <div>
       <h1><span class="logo">pulso</span> · animados que escalan</h1>
-      <p class="sub">Anuncios animados que siguen prendidos (la mitad de café, bebidas funcionales y suplementos); todos los días se suman 30 nuevos. Tocá <b>La quiero</b>: el video de Pulso se produce solo (<b>máximo 3 por día</b>, lo demás queda en fila para mañana) y aparece en <b>Producidos</b>. Tocá <b>No</b> en los que no.</p>
+      <p class="sub">Anuncios animados que siguen prendidos (la mitad de café, bebidas funcionales y suplementos); todos los días se suman 30 nuevos. Tocá <b>La quiero</b>: confirmás los ángulos (vienen los 4: Deshinchazón, Foco, Energía y Estrés = 4 videos, ~USD 18) y se producen solos, <b>hasta 12 videos por día</b> (lo demás queda en fila para mañana) y aparece en <b>Producidos</b>. Tocá <b>No</b> en los que no.</p>
     </div>
   </header>
   <div style="margin:-8px 0 16px"><a class="btn sm" id="carpetaDrive" href="https://drive.google.com/drive/folders/1d4cX1oeqTaiDiBAzGH0PeVNdNLK7Dn4-" target="_blank" rel="noopener">📁 Pulso · Bots en Drive</a></div>
@@ -217,13 +217,13 @@ summary{cursor:pointer;font-weight:600;font-size:13px}
 <div id="plan" role="dialog" aria-modal="true" aria-labelledby="planT"><div class="box">
   <h2 id="planT">¿Con qué ángulos lo hacemos?</h2>
   <div class="ref"><img id="planImg" alt=""><div><b id="planMarca"></b><p id="planIdea"></p></div></div>
-  <div class="ayuda">Tildá 1, 2 o 3: cada ángulo sale como un video aparte. El plan de cada uno se puede editar; el video se hace <b>exactamente</b> con eso.</div>
+  <div class="ayuda" id="planAyuda">Vienen los <b>4 ángulos tildados</b>: cada uno sale como un video aparte (~USD 4,50 c/u). Destildá los que no quieras. El plan de cada uno se puede editar; el video se hace <b>exactamente</b> con eso. <b>Nada se produce hasta que confirmes.</b></div>
   <div id="angs"></div>
   <div class="mas-angs">
     <select id="vocExtra"><option value="">+ Sumar un dolor del VOC para variar…</option></select>
     <button class="btn sm" id="angPropio">+ Escribir otro ángulo</button>
   </div>
-  <div class="acciones"><button class="btn" id="planNo">Cancelar</button><button class="btn dark" id="planSi">Producir</button></div>
+  <div class="acciones" style="align-items:center"><button class="btn" id="planNo">Cancelar</button><span id="planCosto" style="font-size:12.5px;font-weight:600;color:var(--acc);white-space:nowrap;padding:0 4px"></span><button class="btn dark" id="planSi">Producir</button></div>
 </div></div>
 <div class="toast" id="toast"></div>
 
@@ -233,7 +233,7 @@ const COL = "estaticos", MARCA = "pulso_animados";
 // estado lógico ⇄ el que acepta la regla de `estaticos` (ver diario.py → EST)
 const EST = {nueva:"elegir",elegida:"elegida",lista:"lista",produciendo:"generando",producido:"revisar",cambiar:"modificar",aprobado:"aprobada",fallo:"error",descartada:"descartada"};
 const EST_INV = Object.fromEntries(Object.entries(EST).map(([a,b]) => [b,a]));
-const TOPE = 3, MAX_CAMBIOS = 3;
+const TOPE = 12, MAX_CAMBIOS = 3, USD_VIDEO = 4.5;   // TOPE = videos por día (producir.py → TOPE_VIDEOS_DIA)
 const FMT = {A1:"Canción narrada",A2:"El problema habla",A3:"Experimento A vs B",A4:"Storytime con mentor",A5:"Experto + anatomía",A6:"X días en Y segundos",otro:"Otro formato"};
 const EN_CURSO = ["elegida","lista","produciendo","fallo","cambiar"];
 const META = 10;
@@ -295,7 +295,7 @@ function pintar(){
   $("#kEleg").textContent = curso.length;
   const hoyISO = new Date().toLocaleDateString("sv-SE");
   const hoyProd = docs.filter(d => (d.produciendoDesde || "").startsWith(hoyISO) && !d.iteracionCambio).length;
-  $("#kElegH").textContent = `tope ${TOPE} por día · hoy ${Math.min(hoyProd, TOPE)}`; $("#kHechos").textContent = hechos.length; $("#kDesc").textContent = descartadas.length;
+  $("#kElegH").textContent = `tope ${TOPE} videos por día · hoy ${Math.min(hoyProd, TOPE)}`; $("#kHechos").textContent = hechos.length; $("#kDesc").textContent = descartadas.length;
   $("#nAro").textContent = elegidasTot;
   $("#aro").setAttribute("stroke-dashoffset", 301.6 * (1 - Math.min(1, elegidasTot / META)));
   if (hoy) {
@@ -335,7 +335,7 @@ function desarmado(d){
 
 function estadoProd(d){
   if (d.estado === "elegida") return `<div class="aviso w">Desarmando la referencia…</div>`;
-  if (d.estado === "lista") return `<div class="aviso w">${d.turno === "mañana" ? "En fila: se produce mañana (tope de 3 por día)" : "En fila para producir"}</div>`;
+  if (d.estado === "lista") return `<div class="aviso w">${d.turno === "mañana" ? "En fila: se produce mañana (tope de 12 videos por día)" : "En fila para producir"}</div>`;
   if (d.estado === "produciendo") return `<div class="aviso w">Produciendo el video de Pulso… (alrededor de una hora)</div>`;
   if (d.estado === "cambiar") return `<div class="aviso w">Haciendo el cambio: ${esc(d.cambioNota || "")}</div>`;
   if (d.estado === "aprobado") return `<div class="aviso ok">${d.enDrive ? "✓ En Drive · " + esc(d.enDrive) : "✓ Aprobado · pasando a Drive…"}</div>`;
@@ -434,7 +434,7 @@ function planTexto(d, a){
     ``,
     `Formato: ${f === "otro" ? "el mismo de la referencia" : FMT[f]}, con la misma estructura y el mismo ritmo que la referencia.`,
     `Estilo: el mismo de la referencia${d.estilo ? " (" + d.estilo + ")" : ""}.`,
-    `Personaje: ${a.id === "panza" || /panza/i.test(a.nombre || "") ? "mujer de 28-45 argentina común" : "mujer u hombre de 28-45 argentino común"}, siempre el mismo en todo el video.`,
+    `Personaje: ${a.id === "deshinchazon" || /deshinch|panza/i.test(a.nombre || "") ? "mujer de 28-45 argentina común" : "mujer u hombre de 28-45 argentino común"}, siempre el mismo en todo el video.`,
     `Producto: pack OFICIAL «Café + Adaptogenos» con el león (p16-0 frente / p16-1 en manos, 22 × 15 cm) y la taza oficial. Se toma de la taza, nunca del paquete; nunca lata.`,
     ``,
     `Qué NO va: `,
@@ -444,6 +444,7 @@ function bloqueAng(d, a, on, propio, tipo, texto){
   const el = document.createElement("div");
   el.className = "ang" + (on ? " on" : "");
   el.dataset.nombre = a.nombre || "";
+  el.dataset.id = a.id || "";
   el.dataset.tipo = tipo || "";
   el.innerHTML = `<label class="cab"><input type="checkbox" ${on ? "checked" : ""}><div>
       ${propio ? `<input class="nom" placeholder="Nombre del ángulo (ej: el café me cae mal a la panza)">` : `<b>${esc(a.nombre)}</b>${a.enfoque ? ` <span class="fr">· ${esc(a.enfoque)}</span>` : ""}`}
@@ -451,13 +452,18 @@ function bloqueAng(d, a, on, propio, tipo, texto){
       ${a.frase ? `<div class="fr">«${esc(a.frase)}»${a.cuantas ? ` · ${esc(a.cuantas)} personas` : ""}</div>` : ""}
     </div></label><textarea>${esc(texto || (propio ? planTexto(d, {nombre: "", bajada: ""}) : planTexto(d, a)))}</textarea>`;
   const cb = el.querySelector("input[type=checkbox]");
-  cb.onchange = () => el.classList.toggle("on", cb.checked);
+  cb.onchange = () => { el.classList.toggle("on", cb.checked); costo(); };
   if (propio) el.querySelector(".nom").oninput = e => {
     el.dataset.nombre = e.target.value;
     const t = el.querySelector("textarea"); t.value = t.value.replace(/^Ángulo:.*$/m, "Ángulo: " + e.target.value);
   };
   $("#angs").appendChild(el);
+  costo();
   return el;
+}
+function costo(){
+  const n = document.querySelectorAll("#angs .ang.on").length;
+  $("#planCosto").textContent = n ? `${n} video${n > 1 ? "s" : ""} · ~USD ${Math.round(n * USD_VIDEO)}` : "";
 }
 function abrirPlan(id){
   const d = docs.find(x => x.id === id); if (!d) return;
@@ -470,8 +476,9 @@ function abrirPlan(id){
   $("#planIdea").textContent = "Referencia: " + (d.idea || d.hook || "");
   $("#angs").innerHTML = "";
   const angs = (d.angulos && d.angulos.length) ? d.angulos
-    : [{id: "panza", nombre: "Panza hinchada", tag: "Validado", frase: d.fraseVoc, cuantas: d.cuantasVoc, bajada: d.bajada}];
-  angs.forEach((a, i) => bloqueAng(d, a, i === 0));
+    : [{id: "deshinchazon", nombre: "Deshinchazón", tag: "Validado", frase: d.fraseVoc, cuantas: d.cuantasVoc, bajada: d.bajada}];
+  angs.forEach(a => bloqueAng(d, a, true));     // Nacho 27/10: los 4 ángulos tildados por defecto
+  $("#planSi").textContent = "Confirmar y producir";
   $("#vocExtra").value = "";
   $("#plan").classList.add("on");
 }
@@ -516,7 +523,8 @@ document.addEventListener("keydown", e => { if (e.key === "Escape" && planId) ce
 const slug = t => (t || "propio").toLowerCase().normalize("NFD").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 30) || "propio";
 $("#planSi").onclick = async () => {
   const id = planId, d = docs.find(x => x.id === id);
-  const elegidos = [...document.querySelectorAll("#angs .ang.on")].map(el => ({nombre: el.dataset.nombre, tipo: el.dataset.tipo, plan: el.querySelector("textarea").value.trim()}));
+  const elegidos = [...document.querySelectorAll("#angs .ang.on")].map(el => ({nombre: el.dataset.nombre, id: el.dataset.id, tipo: el.dataset.tipo, plan: el.querySelector("textarea").value.trim()}))
+    .sort((a, b) => (a.id === "deshinchazon" ? 0 : 1) - (b.id === "deshinchazon" ? 0 : 1));   // deshinchazón = el doc principal, se produce primero
   if (!elegidos.length) { toast("Tildá al menos una opción"); return; }
   if (elegidos.some(x => !x.plan)) { toast("Hay un plan vacío"); return; }
   const marca = {eligio: quien, eligioEn: new Date().toISOString()};
@@ -527,20 +535,20 @@ $("#planSi").onclick = async () => {
     try {
       for (const [k, x] of elegidos.entries()) {
         await fs.setDoc(fs.doc(fs.db, COL, `${id}__it-${slug(x.nombre)}-${Date.now() % 100000 + k}`),
-          {...base, marca: MARCA, estado: EST.lista, cambios: 0, reintentos: 0, plan: x.plan, anguloElegido: x.nombre, iteracion: {tipo: x.tipo || "otro_angulo", base: d.codigo, baseDoc: id}, ...marca});
+          {...base, marca: MARCA, estado: EST.lista, cambios: 0, reintentos: 0, plan: x.plan, anguloElegido: x.nombre, anguloId: x.id || "", iteracion: {tipo: x.tipo || "otro_angulo", base: d.codigo, baseDoc: id}, ...marca});
       }
       cerrarPlan(); toast(`${elegidos.length} iteraci${elegidos.length > 1 ? "ones" : "ón"} en producción ✓`);
     } catch (e) { toast("No se pudo guardar: " + e.code); }
     return;
   }
   try {
-    await fs.updateDoc(fs.doc(fs.db, COL, id), {estado: EST.elegida, plan: elegidos[0].plan, anguloElegido: elegidos[0].nombre, ...marca});
+    await fs.updateDoc(fs.doc(fs.db, COL, id), {estado: EST.elegida, plan: elegidos[0].plan, anguloElegido: elegidos[0].nombre, anguloId: elegidos[0].id || "", ...marca});
     const base = {...d}; delete base.id; base.estado = EST[base.estado] || base.estado;
     for (const [k, x] of elegidos.slice(1).entries()) {
       await fs.setDoc(fs.doc(fs.db, COL, `${id}__${slug(x.nombre)}-${k + 2}`),
-        {...base, marca: MARCA, estado: EST.elegida, plan: x.plan, anguloElegido: x.nombre, origen: id, ...marca});
+        {...base, marca: MARCA, estado: EST.elegida, plan: x.plan, anguloElegido: x.nombre, anguloId: x.id || "", origen: id, ...marca});
     }
-    cerrarPlan(); toast(elegidos.length > 1 ? `Elegida en ${elegidos.length} ángulos: ${elegidos.length} videos (máx. ${TOPE} por día) ✓` : "Elegida: se produce con tu plan ✓");
+    cerrarPlan(); toast(elegidos.length > 1 ? `Confirmado: ${elegidos.length} videos (~USD ${Math.round(elegidos.length * USD_VIDEO)}) · hasta ${TOPE} por día ✓` : "Elegida: se produce con tu plan ✓");
   } catch (e) { toast("No se pudo guardar: " + e.code); }
 };
 </script>
