@@ -230,8 +230,8 @@ const hoy = () => new Date().toLocaleDateString("sv-SE");
 const fFecha = f => { if (!f) return ""; const [y,m,d] = f.split("-"); return f === hoy() ? "Hoy" : `${+d}/${+m}`; };
 let quien = null, items = {}, tab = "elegir", filtroDia = "todas", filtroTipo = "todas", filtroMarca = "todas", fb = null;
 const MARCA_REF = d => String(d.ref?.m || "").replace(/\s*\(.*\)\s*$/, "").trim() || "Otra";
-const TIPO = d => d.ref?.nicho === "top" ? "top" : d.ref?.nicho === "otro" ? "otro" : "cafe";
-const ORDEN_TIPO = {cafe:0, top:1, otro:2};
+const TIPO = d => d.ref?.nicho === "radar" ? "radar" : d.ref?.nicho === "top" ? "top" : d.ref?.nicho === "otro" ? "otro" : "cafe";
+const ORDEN_TIPO = { radar: -1, cafe:0, top:1, otro:2};
 try { filtroMarca = localStorage.getItem(LS+"marca") || "todas"; quien = CLAVES[localStorage.getItem(LS+"clave")] || null; tab = localStorage.getItem(LS+"tab") || "elegir"; } catch(e) {}
 
 function toast(t){ const el=$("#toast"); el.textContent=t; el.classList.add("on"); clearTimeout(toast.t); toast.t=setTimeout(()=>el.classList.remove("on"),2400); }
@@ -390,7 +390,7 @@ function pillsRef(r){
     <span class="pill a">${"★".repeat(s)}${"☆".repeat(5-s)}</span>
         ${r.dup ? `<span class="pill">${esc(r.dup)} duplicados</span>` : ""}
     ${r.perf ? `<span class="pill">${esc(r.perf)}</span>` : ""}
-    ${r.nicho === "top" ? `<span class="pill a">Marca top${r.cat ? " · " + esc(r.cat) : ""}</span>` : `<span class="pill">${r.nicho === "otro" ? esc(r.cat || "Otro nicho") : "Café y funcional"}</span>`}</div>`;
+    ${r.nicho === "radar" ? `<span class="pill a">Ganador · ${esc(r.cat || "")}</span>` : r.nicho === "top" ? `<span class="pill a">Marca top${r.cat ? " · " + esc(r.cat) : ""}</span>` : `<span class="pill">${r.nicho === "otro" ? esc(r.cat || "Otro nicho") : "Café y funcional"}</span>`}</div>`;
 }
 
 function vElegir(lista, hechasHoy, enCola){
@@ -400,7 +400,7 @@ function vElegir(lista, hechasHoy, enCola){
   const vis = (filtroDia === "todas" ? lista : lista.filter(d => d.fecha === filtroDia))
     .filter(d => filtroTipo === "todas" || TIPO(d) === filtroTipo)
     .filter(d => filtroMarca === "todas" || MARCA_REF(d) === filtroMarca)
-    .sort((a,b) => (b.fecha||"").localeCompare(a.fecha||"") || ORDEN_TIPO[TIPO(a)] - ORDEN_TIPO[TIPO(b)] || (b.ref?.senal||0) - (a.ref?.senal||0) || (b.ref?.d||0) - (a.ref?.d||0));
+    .sort((a,b) => (b.fecha||"").localeCompare(a.fecha||"") || ORDEN_TIPO[TIPO(a)] - ORDEN_TIPO[TIPO(b)] || (TIPO(a)==="radar" ? (b.ref?.n||0) - (a.ref?.n||0) : 0) || (b.ref?.senal||0) - (a.ref?.senal||0) || (b.ref?.d||0) - (a.ref?.d||0));
   const pct = Math.min(100, hechasHoy / PIEZAS_DIA * 100);
   $("#vista").innerHTML = `
     <div class="banner"><div class="meter"><div class="lbl">Hoy · hasta ${PIEZAS_DIA} piezas y USD ${TOPE_USD}</div>
@@ -408,7 +408,7 @@ function vElegir(lista, hechasHoy, enCola){
       <div class="bar"><i style="width:${pct}%"></i></div></div>
       <div class="sub" style="max-width:440px;margin:0">Anuncios de otras marcas que llevan 30 días o más al aire (si siguen prendidos, venden). Tocá <b>La quiero</b> y la hacemos con el pack oficial de Pulso en 4 opciones, una por ángulo (deshinchazón · energía · foco · estrés), cada una con un dolor del VOC. Lo que pase de ${PIEZAS_DIA} por día queda en cola para mañana.</div></div>
     <div class="filtros">
-      ${[["todas","Todas"],["cafe","Café y funcional"],["top","Marcas top"],["otro","Otros rubros"]].map(([k,t]) => { const delDia = filtroDia === "todas" ? lista : lista.filter(d=>d.fecha===filtroDia); const n = k === "todas" ? delDia.length : delDia.filter(d=>TIPO(d)===k).length; return n || k === "todas" ? `<button class="chip ${filtroTipo===k?"on":""}" data-tipo="${k}">${t} · ${n}</button>` : ""; }).join("")}</div>
+      ${[["todas","Todas"],["radar","Ganadores del Radar"],["cafe","Café y funcional"],["top","Marcas top"],["otro","Otros rubros"]].map(([k,t]) => { const delDia = filtroDia === "todas" ? lista : lista.filter(d=>d.fecha===filtroDia); const n = k === "todas" ? delDia.length : delDia.filter(d=>TIPO(d)===k).length; return n || k === "todas" ? `<button class="chip ${filtroTipo===k?"on":""}" data-tipo="${k}">${t} · ${n}</button>` : ""; }).join("")}</div>
     <div class="filtros"><label class="sub" style="margin:0;display:flex;align-items:center;gap:8px">Marca
       <select id="fMarca" class="campo" style="width:auto;padding:7px 10px;font-size:13px">${(() => { const c = {}; lista.filter(d => filtroTipo === "todas" || TIPO(d) === filtroTipo).forEach(d => c[MARCA_REF(d)] = (c[MARCA_REF(d)] || 0) + 1);
         return `<option value="todas">Todas · ${Object.values(c).reduce((a,b)=>a+b,0)}</option>` + Object.entries(c).sort((a,b) => b[1]-a[1] || a[0].localeCompare(b[0])).map(([k,n]) => `<option value="${esc(k)}" ${filtroMarca===k?"selected":""}>${esc(k)} · ${n}</option>`).join(""); })()}</select></label></div>
@@ -431,7 +431,7 @@ function cardElegir(d){
   const r = d.ref || {};
   const nombre = String(r.m || "").replace(/\s*\(.*\)\s*$/, ""), pais = (String(r.m || "").match(/\(([^)]+)\)/) || [])[1];
   const s = r.senal ?? 0;
-  const tipo = r.nicho === "top" ? "Marca top" : r.nicho === "otro" ? (r.cat || "Otro rubro") : "Café y funcional";
+  const tipo = r.nicho === "radar" ? "Ganador del Radar" : r.nicho === "top" ? "Marca top" : r.nicho === "otro" ? (r.cat || "Otro rubro") : "Café y funcional";
   return `<div class="card c2" data-id="${esc(d.id)}">
     <div class="chead"><div class="av">${esc(nombre.charAt(0).toUpperCase())}</div>
       <div class="who"><b>${esc(nombre)}${pais ? ` <span style="color:var(--mut);font-weight:500">· ${esc(pais)}</span>` : ""}</b>
