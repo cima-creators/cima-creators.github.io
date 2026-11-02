@@ -260,7 +260,7 @@ function tarjeta(id,it){
     ? `<iframe src="https://drive.google.com/file/d/${esc(verId)}/preview" allow="autoplay" loading="lazy"></iframe>`
     : `<div class="ph">${it.estado==="revisar"?"El video se está subiendo… recargá en un minuto":"Editándose…"}</div>`;
   const fecha = (it.fechaCrudo||"").slice(0,10).split("-").reverse().slice(0,2).join("/");
-  const subs = (it.pantallas||[]).map((t,i)=>`<label><span>${i+1}</span><input data-i="${i}" value="${esc(t)}" data-orig="${esc(t)}"></label>`).join("");
+  const subs = (it.pantallas||[]).map(t=>(t && typeof t==="object")?(t.texto||""):t).map((t,i)=>`<label><span>${i+1}</span><input data-i="${i}" value="${esc(t)}" data-orig="${esc(t)}"></label>`).join("");
   const editable = it.estado==="revisar";
   const rehacible = ["subido","aprobado"].includes(it.estado);   // Nacho 12/10: rehacer un aprobado con una nota
   const conTomas = editable && it.vistaUrl && (it.tomasLinea||[]).length;
