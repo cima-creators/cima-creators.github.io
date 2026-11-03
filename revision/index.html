@@ -200,7 +200,8 @@ function pintar(){
   const todos = Object.entries(items).filter(([,it]) => it.marca !== "miluz");   // Mi Luz se revisa en /miluz/edicion (Luz)
   const marcas = [...new Set(todos.map(([,it])=>it.marca))].sort(); const nom = m => (todos.find(([,it])=>it.marca===m)||[,{}])[1].marcaNombre||m;
   const deMarca = todos.filter(([,it]) => marcaF==="todas" || it.marca===marcaF);
-  const cuenta = e => deMarca.filter(([,it])=>it.estado===e).length;
+  const tab = it => it.estado==="aprobado" ? "subido" : it.estado;   // 3/11: lo aprobado pasa a Aprobados al toque (el bot lo sube en ≤5 min)
+  const cuenta = e => deMarca.filter(([,it])=>tab(it)===e).length;
   const hora = new Date().toLocaleTimeString("es-AR",{hour:"2-digit",minute:"2-digit"});
   $("#resumen").textContent = `Hola ${quien} · actualizado ${hora} · datos en vivo`;
   const hoy = new Date().toISOString().slice(0,10);
@@ -222,7 +223,7 @@ function pintar(){
   $("#marcas").innerHTML = ["todas",...marcas].map(m=>`<button class="mt ${m===marcaF?"on":""}" data-m="${m}">${m==="todas"?"Todas las marcas":esc(nom(m))}${porRevisar(m)?`<b>${porRevisar(m)}</b>`:""}</button>`).join("");
   document.querySelectorAll("[data-e]").forEach(b=>b.onclick=()=>{filtro=b.dataset.e;pintar();});
   document.querySelectorAll("[data-m]").forEach(b=>b.onclick=()=>{marcaF=b.dataset.m; try{localStorage.setItem("revision_marca",marcaF)}catch(e){} pintar();});
-  const lista = deMarca.filter(([,it])=>it.estado===filtro).sort((a,b)=>(a[1].fechaCrudo||"").localeCompare(b[1].fechaCrudo||""));
+  const lista = deMarca.filter(([,it])=>tab(it)===filtro).sort((a,b)=>(a[1].fechaCrudo||"").localeCompare(b[1].fechaCrudo||""));
   if(!lista.length){ $("#lista").innerHTML = `<div class="vacio">${filtro==="revisar"?"No hay videos para revisar. Los de hoy aparecen solos cuando terminan de editarse.":"Nada por acá."}</div>`; return; }
   // si está escribiendo una corrección, no le borramos lo que tipeó: se repinta cuando suelta
   const editando = [...document.querySelectorAll("#lista .cambio, #lista .otro-broll:checked:not(.rh)")].length || (document.activeElement && document.activeElement.closest("#lista input, #lista textarea"));
