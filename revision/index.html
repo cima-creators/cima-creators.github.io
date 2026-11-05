@@ -113,6 +113,7 @@ h3 small{font-size:11px;font-weight:500;text-transform:none;letter-spacing:0;col
 .alt{cursor:pointer;border:2px solid transparent;border-radius:12px;overflow:hidden;background:#222;font-size:10.5px;color:#fff;text-align:center;line-height:1.3}
 .alt .th{width:96px;height:170px;background-repeat:no-repeat;margin:0 auto;transform-origin:top center}
 .alt span{display:block;padding:5px 4px;background:#1d1916}
+.alt .dc{display:block;font-size:9px;font-weight:700;letter-spacing:.3px;color:#8fe3a8;margin-bottom:2px}
 .alt.sel{border-color:var(--ok);box-shadow:0 0 0 2px var(--ok-bg)}
 .alt.sis{display:flex;align-items:center;justify-content:center;background:var(--card);color:var(--mut);border:2px dashed var(--line2);padding:8px;font-size:12px;font-weight:600}
 .alt.sis.sel{border-color:var(--ok);color:var(--ok)}
@@ -366,7 +367,7 @@ function conectar(id){
     const t = lin[k]; row.classList.add("on");
     if(video){ video.currentTime = Number(t.t0) + 0.05; }
     const m = marcadas[k] || {};
-    const cel = (a,j) => `<div class="alt ${m.clip===a.clip?"sel":""}" data-clip="${esc(a.clip)}" title="${esc(a.desc)}"><div class="th" style="background-image:url('${esc(it.tomasGrilla||"")}');background-size:288px auto;background-position:-${j*96}px -${(t.fila*170.4).toFixed(1)}px"></div><span>${esc((a.desc||"").slice(0,26))}</span></div>`;
+    const cel = (a,j) => `<div class="alt ${m.clip===a.clip?"sel":""}" data-clip="${esc(a.clip)}" title="${esc(a.desc)}"><div class="th" style="background-image:url('${esc(it.tomasGrilla||"")}');background-size:288px auto;background-position:-${j*96}px -${(t.fila*170.4).toFixed(1)}px"></div><span>${(a.clip||"").startsWith("PROPIO")?'<b class="dc">DE LA CREADORA</b>':""}${esc((a.desc||"").slice(0,26))}</span></div>`;
     const panel = document.createElement("div"); panel.className = "tpanel";
     panel.innerHTML = `<div class="q">${Number(t.t0).toFixed(1)}–${Number(t.t1).toFixed(1)} s · «${esc(t.frase||"")}» · elegí con qué reemplazarla</div>
       <div class="alts">${(t.alts||[]).map(cel).join("")}<div class="alt sis ${(k in marcadas) && !m.clip?"sel":""}" data-clip="">Que elija el sistema</div></div>
