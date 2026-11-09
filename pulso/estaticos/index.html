@@ -228,11 +228,20 @@ const $ = s => document.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const hoy = () => new Date().toLocaleDateString("sv-SE");
 const fFecha = f => { if (!f) return ""; const [y,m,d] = f.split("-"); return f === hoy() ? "Hoy" : `${+d}/${+m}`; };
-let quien = null, items = {}, tab = "elegir", filtroDia = "todas", filtroTipo = "todas", filtroMarca = "todas", fb = null;
-const MARCA_REF = d => String(d.ref?.m || "").replace(/\s*\(.*\)\s*$/, "").trim() || "Otra";
+let quien = null, items = {}, tab = "elegir", filtroDia = "todas", filtroTipo = "todas", filtroMarca = "todas", filtroDup = 0, filtroDias = 0, ordenElegir = "mejores", fb = null;
+const MARCA_REF = d => { const m = String(d.ref?.m || "").split(" · ")[0].replace(/\s*\(.*\)\s*$/, "").trim() || "Otra"; return /^ryze/i.test(m) ? "RYZE" : /^ag1/i.test(m) ? "AG1" : /^ritual/i.test(m) ? "Ritual" : m; };
 const TIPO = d => d.ref?.nicho === "radar" ? "radar" : d.ref?.nicho === "top" ? "top" : d.ref?.nicho === "otro" ? "otro" : "cafe";
 const ORDEN_TIPO = { radar: -1, cafe:0, top:1, otro:2};
-try { filtroMarca = localStorage.getItem(LS+"marca") || "todas"; quien = CLAVES[localStorage.getItem(LS+"clave")] || null; tab = localStorage.getItem(LS+"tab") || "elegir"; } catch(e) {}
+try { filtroDup = +localStorage.getItem(LS+"dup") || 0; filtroDias = +localStorage.getItem(LS+"dias") || 0; ordenElegir = localStorage.getItem(LS+"orden") || "mejores"; filtroMarca = localStorage.getItem(LS+"marca") || "todas"; quien = CLAVES[localStorage.getItem(LS+"clave")] || null; tab = localStorage.getItem(LS+"tab") || "elegir"; } catch(e) {}
+
+const R_ = (d, k) => +d.ref?.[k] || 0;
+const ORDENES = {   // Nacho 9/11: primero lo que tiene duplicados y muchos días
+  mejores: (a,b) => R_(b,"senal") - R_(a,"senal") || R_(b,"dup") - R_(a,"dup") || R_(b,"d") - R_(a,"d"),
+  dup: (a,b) => R_(b,"dup") - R_(a,"dup") || R_(b,"d") - R_(a,"d"),
+  dias: (a,b) => R_(b,"d") - R_(a,"d") || R_(b,"dup") - R_(a,"dup"),
+  gasto: (a,b) => (TIPO(b)==="radar") - (TIPO(a)==="radar") || (TIPO(a)==="radar" ? R_(b,"n") - R_(a,"n") : 0) || R_(b,"senal") - R_(a,"senal"),
+  nuevas: (a,b) => (b.fecha||"").localeCompare(a.fecha||"") || R_(b,"senal") - R_(a,"senal"),
+};
 
 function toast(t){ const el=$("#toast"); el.textContent=t; el.classList.add("on"); clearTimeout(toast.t); toast.t=setTimeout(()=>el.classList.remove("on"),2400); }
 function zoom(src){ $("#lb img").src = src; $("#lb").classList.add("on"); }
@@ -400,7 +409,8 @@ function vElegir(lista, hechasHoy, enCola){
   const vis = (filtroDia === "todas" ? lista : lista.filter(d => d.fecha === filtroDia))
     .filter(d => filtroTipo === "todas" || TIPO(d) === filtroTipo)
     .filter(d => filtroMarca === "todas" || MARCA_REF(d) === filtroMarca)
-    .sort((a,b) => (b.fecha||"").localeCompare(a.fecha||"") || ORDEN_TIPO[TIPO(a)] - ORDEN_TIPO[TIPO(b)] || (TIPO(a)==="radar" ? (b.ref?.n||0) - (a.ref?.n||0) : 0) || (b.ref?.senal||0) - (a.ref?.senal||0) || (b.ref?.d||0) - (a.ref?.d||0));
+    .filter(d => (+d.ref?.dup || 0) >= filtroDup && (+d.ref?.d || 0) >= filtroDias)
+    .sort(ORDENES[ordenElegir] || ORDENES.mejores);
   const pct = Math.min(100, hechasHoy / PIEZAS_DIA * 100);
   $("#vista").innerHTML = `
     <div class="banner"><div class="meter"><div class="lbl">Hoy · hasta ${PIEZAS_DIA} piezas y USD ${TOPE_USD}</div>
@@ -412,9 +422,20 @@ function vElegir(lista, hechasHoy, enCola){
     <div class="filtros"><label class="sub" style="margin:0;display:flex;align-items:center;gap:8px">Marca
       <select id="fMarca" class="campo" style="width:auto;padding:7px 10px;font-size:13px">${(() => { const c = {}; lista.filter(d => filtroTipo === "todas" || TIPO(d) === filtroTipo).forEach(d => c[MARCA_REF(d)] = (c[MARCA_REF(d)] || 0) + 1);
         return `<option value="todas">Todas · ${Object.values(c).reduce((a,b)=>a+b,0)}</option>` + Object.entries(c).sort((a,b) => b[1]-a[1] || a[0].localeCompare(b[0])).map(([k,n]) => `<option value="${esc(k)}" ${filtroMarca===k?"selected":""}>${esc(k)} · ${n}</option>`).join(""); })()}</select></label></div>
+    <div class="filtros"><span class="sub" style="margin:0">Duplicados</span>
+      ${[[0,"Todos"],[5,"+5"],[20,"+20"],[50,"+50"],[100,"+100"]].map(([v,t]) => `<button class="chip ${filtroDup===v?"on":""}" data-dup="${v}">${t} · ${lista.filter(d=>(+d.ref?.dup||0)>=v).length}</button>`).join("")}</div>
+    <div class="filtros"><span class="sub" style="margin:0">Días corriendo</span>
+      ${[[0,"Todos"],[30,"+30"],[60,"+60"],[120,"+120"],[180,"+180"],[365,"+1 año"]].map(([v,t]) => `<button class="chip ${filtroDias===v?"on":""}" data-dias="${v}">${t} · ${lista.filter(d=>(+d.ref?.d||0)>=v).length}</button>`).join("")}</div>
+    <div class="filtros"><label class="sub" style="margin:0;display:flex;align-items:center;gap:8px">Ordenar
+      <select id="fOrden" class="campo" style="width:auto;padding:7px 10px;font-size:13px">${[["mejores","Mejores primero"],["dup","Más duplicados"],["dias","Más días corriendo"],["gasto","Más gasto (Radar)"],["nuevas","Más nuevas"]].map(([k,t]) => `<option value="${k}" ${ordenElegir===k?"selected":""}>${t}</option>`).join("")}</select></label>
+      <b style="font-size:13px">${vis.length} para ver</b></div>
     ${vis.length ? `<div class="grid">${vis.map(cardElegir).join("")}</div>` : `<div class="vacio">No hay referencias nuevas. Todos los días a las 7:10 h llegan 30 más.</div>`}`;
   $("#vista").querySelectorAll("[data-f]").forEach(b => b.onclick = () => { filtroDia = b.dataset.f; pintar(); });
   $("#vista").querySelectorAll("[data-tipo]").forEach(b => b.onclick = () => { filtroTipo = b.dataset.tipo; filtroMarca = "todas"; pintar(); });
+  const guardarF = (k, v) => { try { localStorage.setItem(LS+k, v); } catch(_) {} };
+  $("#vista").querySelectorAll("[data-dup]").forEach(b => b.onclick = () => { filtroDup = +b.dataset.dup; guardarF("dup", filtroDup); pintar(); });
+  $("#vista").querySelectorAll("[data-dias]").forEach(b => b.onclick = () => { filtroDias = +b.dataset.dias; guardarF("dias", filtroDias); pintar(); });
+  $("#fOrden").onchange = e => { ordenElegir = e.target.value; guardarF("orden", ordenElegir); pintar(); };
   $("#fMarca").onchange = e => { filtroMarca = e.target.value; try { localStorage.setItem(LS+"marca", filtroMarca); } catch(_) {} pintar(); };
   $("#vista").querySelectorAll(".card").forEach(c => {
     const id = c.dataset.id;
