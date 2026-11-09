@@ -133,6 +133,8 @@ tr:hover td,tr:hover td:first-child{background:#fafafa}
 .chispa{display:inline-flex;gap:2px;align-items:flex-end;height:22px}.chispa i{width:6px;border-radius:2px;background:#d4d4d8}
 .chispa i.b{background:#86efac}.chispa i.m{background:#fca5a5}
 .nota{font-size:12.5px;color:var(--sub);margin:6px 0 14px}
+#guia{position:fixed;left:0;right:0;bottom:0;background:#18181b;color:#fff;font-size:17px;line-height:1.35;padding:14px 24px;z-index:60;text-align:center}
+.lang-en .cuerpo,.lang-en .centro{padding-bottom:110px}
 .matriz td,.matriz th{text-align:center;font-size:12px;padding:7px 9px}
 .matriz th:first-child,.matriz td:first-child{text-align:left}
 @media (max-width:900px){
@@ -150,6 +152,56 @@ tr:hover td,tr:hover td:first-child{background:#fafafa}
 </head>
 <body>
 <div id="raiz"></div>
+<script>
+// ?lang=en: Radar en inglés con subtítulos, para la grabación que pide la revisión de Meta (rechazo del 5/11/2026).
+const LANG_EN = new URLSearchParams(location.search).get("lang") === "en";
+const EN = {"Conectá tu cuenta de Meta":"Connect your Meta account","Conectar con Facebook":"Connect with Facebook","Privacidad":"Privacy","Entrás con tu Facebook (el que administra la cuenta publicitaria).":"Log in with the Facebook account that manages your ad account.",
+"Un clic y ves todos tus anuncios ordenados por lo que vende: ROAS, CPA, CTR, hooks y qué tipo de creativo funciona.":"One click and you see all your ads ranked by what sells: ROAS, CPA, CTR, hooks and which creatives work.",
+"Aceptás que Radar ":"Allow Radar to ","lea":"read"," tus anuncios. Solo lectura: no puede crear, cambiar ni gastar nada.":" your ads. Read-only: it can never create, edit or spend anything.","Elegís la cuenta publicitaria y listo. Se actualiza solo cada 6 horas.":"Choose your ad account and you are done. It refreshes every 6 hours.",
+"¿Qué cuenta querés ver?":"Which ad account do you want to see?","Activa":"Active","Inactiva":"Inactive","Cargando…":"Loading…","Trayendo tus anuncios… puede tardar un par de minutos":"Fetching your ads… this can take a couple of minutes",
+"Home":"Home","Optimizador":"Optimizer","Leaderboard":"Leaderboard","Temas de mensaje":"Message themes","Reportes":"Reports","Mejores creativos":"Best creatives","Anuncios activos":"Active ads","Lanzamientos nuevos":"New launches","Mejores hooks":"Best hooks","Más clics":"Most clicks","Mejores copies":"Best copy","Tipos de anuncio":"Ad types","Análisis de landings":"Landing pages","Análisis de videos":"Video analysis","Análisis de estáticos":"Static analysis","Duración de videos":"Video length","Tendencia semanal":"Weekly trend",
+"Patrones creativos":"Creative patterns","Tipo de pieza":"Asset type","Formato visual":"Visual format","Tema de mensaje":"Message theme","Táctica de hook":"Hook tactic","Táctica de titular":"Headline tactic","Público":"Audience","Estacionalidad":"Seasonality","Tipo de oferta":"Offer type","Quién habla":"Who speaks","Ángulo":"Angle","Nivel de conciencia":"Awareness level","Cuenta":"Account","Ajustes":"Settings","Embudo de la tienda":"Store funnel","pronto":"soon","Conectado como ":"Connected as ",
+"Tus creativos con mejor rendimiento, para ver rápido qué está funcionando.":"Your best performing creatives, to quickly see what is working.","Lo que salió en el período y cómo le está yendo. Abajo, la tasa de acierto de cada semana.":"What launched in this period and how it is doing. Below, the hit rate of each week.",
+"Últimos 7 días":"Last 7 days","Últimos 14 días":"Last 14 days","Últimos 30 días":"Last 30 days","Últimos 90 días":"Last 90 days","Agrupar por ":"Group by ","Creativo":"Creative","Tipo de anuncio ":"Ad type ","no es ":"is not ","Catálogo":"Catalog","todos":"all","Gasto mínimo ":"Minimum spend ","sin mínimo":"no minimum","Sin mínimo":"No minimum","＋ Métrica":"＋ Metric","✦ Etiquetas IA":"✦ AI tags",
+"Lanzamiento":"Launched","Etiquetas":"Tags","Gasto":"Spend","Facturación":"Revenue","Compras":"Purchases","CTR (enlace)":"CTR (link)","CPC (enlace)":"CPC (link)","Impresiones":"Impressions","Ticket promedio":"Average order value","Clics":"Clicks","Frecuencia":"Frequency","Retención":"Hold rate","Carritos":"Add to carts","Costo por carrito":"Cost per add to cart","Checkouts":"Checkouts","Compra / clic":"Purchase / click","Duración":"Length","Ve 25 %":"Watched 25%","Ve 50 %":"Watched 50%","Ve 75 %":"Watched 75%","Ve 100 %":"Watched 100%",
+"Testing":"Testing","Low impact":"Low impact","Escalando":"Scaling","Estable":"Stable","Bajando":"Declining","Video":"Video","Imagen":"Image","Carrusel":"Carousel","Flexible":"Flexible","Post":"Post","Otro":"Other","sin etiquetar":"not tagged yet",
+"Hasta dónde lo miran":"How far people watch","Análisis IA":"AI analysis","Campañas":"Campaigns","Titular":"Headline","Copy":"Ad copy","▶ Ver el video":"▶ Watch the video","🛬 Landing":"🛬 Landing page","Tasa de acierto por semana":"Hit rate by week","Semana":"Week","Lanzados":"Launched","Escalaron":"Scaled","Ganadores":"Winners","Acierto":"Hit rate","Mejor ganador":"Best winner","Hook":"Hook","Watch":"Watch","Click":"Click","Convert":"Convert","Tipo de anuncio no es":"Ad type is not","Tipo de anuncio":"Ad type","Gasto mínimo":"Minimum spend","Agrupar por":"Group by",
+"Engancha pero se van antes: rehacé el cuerpo y dejá el hook.":"Strong hook but people leave early: rework the body and keep the hook.","Vende bien pero engancha poco: probá hooks nuevos con este mismo cuerpo.":"Sells well but hooks few people: test new hooks with this same body.","Hacen clic pero no compran: revisá la landing o la oferta.":"People click but do not buy: review the landing page or the offer.","Rinde muy arriba del break-even y gasta poco: subile presupuesto.":"Well above break-even with low spend: consider raising its budget.","Se lleva mucho gasto y queda debajo del break-even: bajalo o apagalo.":"Takes a lot of spend and is below break-even: consider lowering or pausing it.","Campañas":"Campaigns"};
+const EN_RE = [[/^(\s*)(\d+) creativos(\s*)$/,"$1$2 creatives$3"],[/^(\s*)(\d+) anuncios?(\s*)$/,"$1$2 ad(s)$3"],[/^Actualizado hace (\d+) min$/,"Updated $1 min ago"],[/^Actualizado hace (\d+) h$/,"Updated $1 h ago"],[/^Actualizado este minuto$/,"Updated just now"],[/^Encontramos (\d+) cuentas publicitarias en tu Facebook\.$/,"We found $1 ad accounts in your Facebook."],
+[/(\d+) ago (\d{4})/,"Aug $1, $2"],[/(\d+) sept (\d{4})/,"Sep $1, $2"],[/(\d+) oct (\d{4})/,"Oct $1, $2"],[/(\d+) nov (\d{4})/,"Nov $1, $2"],[/(\d+) jun (\d{4})/,"Jun $1, $2"],[/(\d+) jul (\d{4})/,"Jul $1, $2"],
+[/^(.*)anuncio(s?) · lanzado (.*) · (\d+) activos?(.*)$/,"$1ad$2 · launched $3 · $4 active$5"],[/^(.*)anuncio(s?) · lanzado (.*) · pausado(.*)$/,"$1ad$2 · launched $3 · paused$4"],
+[/^Escaló = gastó más de (.*) \(2 % del gasto de 90 días\)\. Ganador = escaló y ROAS ≥ (.*)\. Últimas 12 semanas: $/,"Scaled = spent more than $1 (2% of 90-day spend). Winner = scaled and ROAS ≥ $2. Last 12 weeks: "],[/^(\d+) ganadores de (\d+) lanzados \((.*)\)\.?$/,"$1 winners out of $2 launched ($3)."]];
+function traducirTexto(t) {
+  const m = t.match(/^([^\p{L}¿]*)(.*?)( [↓↑])?(:?)(\s*)$/su);
+  if (m && EN[m[2]] !== undefined) return m[1] + EN[m[2]] + (m[3] || "") + m[4] + m[5];
+  if (EN[t] !== undefined) return EN[t];
+  let y = t; for (const [re, r] of EN_RE) y = y.replace(re, r);
+  return y;
+}
+function traducir(n) {
+  const w = document.createTreeWalker(n, NodeFilter.SHOW_TEXT);
+  const l = []; while (w.nextNode()) l.push(w.currentNode);
+  for (const x of l) { const y = traducirTexto(x.nodeValue); if (y !== x.nodeValue) x.nodeValue = y; }
+  if (n.querySelectorAll) { n.querySelectorAll("input[placeholder]").forEach(i => { if (i.placeholder.startsWith("Buscar")) i.placeholder = "Search creative, copy or tag"; }); n.querySelectorAll("option").forEach(o => { const y = traducirTexto(o.textContent); if (y !== o.textContent) o.textContent = y; }); }
+}
+function textoGuia() {
+  const panel = document.querySelector("#panel.on"), p = (typeof est !== "undefined" && est.pantalla) || "";
+  if (panel) return "Creative detail: all the ads_read metrics for this ad, how far people watch it, and its copy. Only this advertiser can see it.";
+  if (document.querySelector(".fb")) return "Step 1. The advertiser opens their private Radar link and clicks “Connect with Facebook” to start Facebook Login for Business.";
+  if (document.querySelector(".cuentas")) return "Step 3. After granting ads_read, the advertiser picks which of their own ad accounts Radar should read.";
+  if (p === "r:lanzamientos") return "New launches: ads_read insights for the creatives launched in this period, and the weekly hit rate.";
+  if (p === "r:mejores") return "Best creatives: ad-level insights read with ads_read (spend, ROAS, purchases, CTR, CPC, CPA) grouped by creative. Radar is read-only.";
+  if (p === "home") return "Home: account totals read with ads_read, compared with the previous period.";
+  return "Radar shows the advertiser their own ad performance, read with ads_read. It never edits ads.";
+}
+if (LANG_EN) addEventListener("DOMContentLoaded", () => {
+  document.documentElement.lang = "en"; document.body.classList.add("lang-en");
+  const g = document.createElement("div"); g.id = "guia"; document.body.appendChild(g);
+  const pintar = () => { traducir(document.getElementById("raiz")); const t = textoGuia(); if (g.textContent !== t) g.textContent = t; };
+  new MutationObserver(pintar).observe(document.getElementById("raiz"), { childList: true, subtree: true, attributes: true, attributeFilter: ["class"] });
+  pintar();
+});
+</script>
 <script>
 const FN = "https://us-central1-cleargy-creators.cloudfunctions.net/radar";
 const q = new URLSearchParams(location.search);
@@ -211,7 +263,7 @@ const PATRONES = Object.fromEntries(["tipo_pieza", "formato_visual", "tema_mensa
 function tramo(s) { if (s == null) return "Sin dato"; return s < 15 ? "0-15 s" : s < 30 ? "15-30 s" : s < 45 ? "30-45 s" : s < 60 ? "45-60 s" : "60 s o más"; }
 
 let est = {
-  pantalla: leer("pantalla", "home"), preset: leer("preset", "last_14d"), vista: leer("vista", "tabla"),
+  pantalla: LANG_EN ? "r:mejores" : leer("pantalla", "home"), preset: LANG_EN ? "last_90d" : leer("preset", "last_14d"), vista: leer("vista", "tabla"),
   formatos: leer("formatos", ["video", "imagen", "carrusel", "flexible", "post", "otro"]),
   metricasExtra: leer("metricasExtra", {}), orden: null, buscar: "", minGasto: leer("minGasto", 0),
   conexion: null, datos: null, cache: {},
@@ -740,7 +792,7 @@ async function cargarDatos() {
 // ── conexión ───────────────────────────────────────────────────────
 function pantallaSinLink() { $("#raiz").innerHTML = `<div class="centro"><h1>Radar</h1><p>Este link está incompleto. Pedile a CIMA el link de tu marca.</p></div>`; }
 function pantallaConectar(error) {
-  const href = `${FN}?accion=conectar&marca=${encodeURIComponent(MARCA)}&k=${encodeURIComponent(K)}`;
+  const href = `${FN}?accion=conectar&marca=${encodeURIComponent(MARCA)}&k=${encodeURIComponent(K)}${LANG_EN ? "&lang=en" : ""}`;
   $("#raiz").innerHTML = `<div class="centro"><div style="font-size:42px">📡</div><h1>Conectá tu cuenta de Meta</h1>
     <p>Un clic y ves todos tus anuncios ordenados por lo que vende: ROAS, CPA, CTR, hooks y qué tipo de creativo funciona.</p>
     ${error ? `<div class="aviso">No se completó la conexión. Probá de nuevo.</div>` : ""}
@@ -758,7 +810,7 @@ function pantallaCuentas() {
 async function elegir(id, b) {
   document.querySelectorAll(".cuentas button").forEach(x => x.disabled = true);
   b.innerHTML = "<span>Trayendo tus anuncios… puede tardar un par de minutos</span>";
-  try { await api("elegir", { cuenta: id }); location.replace(`?m=${MARCA}&k=${encodeURIComponent(K)}`); }
+  try { await api("elegir", { cuenta: id }); location.replace(`?m=${MARCA}&k=${encodeURIComponent(K)}${LANG_EN ? "&lang=en" : ""}`); }
   catch (e) { alert("No se pudo: " + e.message); pantallaCuentas(); }
 }
 async function iniciar() {
