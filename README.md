@@ -20,3 +20,8 @@ que el celular no sirva la copia vieja.
   copiando una carpeta y cambiando el slug.
 - **UGC** (`/<marca>/videos`, `/<marca>/admin`): `python3 build-links.py [ruta/a/cima-admin.html]`
   los regenera para todas las marcas que estén en el panel. Marca nueva → correrlo y pushear.
+- **Guiones** (`/<marca>/guiones`): acá no es un redirect, es la página misma. La marca y sus creadoras ven los guiones
+  aprobados al lado del anuncio de referencia; cada una entra con su clave y la creadora ve solo los suyos. La página no
+  trae claves ni guiones: cada clave abre su paquete cifrado (`d/<id>.json`, AES-256-GCM); `v/` son los anuncios de
+  referencia. **No se edita a mano**: se arma con `creativos/formatos/cliente.py <marca> --aprobados <revisión> --github
+  <este repo>/<marca>/guiones` desde la carpeta de trabajo de CIMA. Un guion puntual se abre con `#g-<código>`.
