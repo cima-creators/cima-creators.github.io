@@ -416,7 +416,8 @@ button.ref:hover{background:var(--sunken)}
 .gate .btn.pri{height:40px;border-radius:10px;padding:0 16px}
 .gate .gate-e{color:var(--bad)}
 /* ---------- versión para el cliente: solo sus guiones, sin revisión ---------- */
-.cli .pill,.cli .it .st,.cli .fest,.cli .prog,.cli .sync,.cli .tagc{display:none}
+.cli .fest,.cli .prog,.cli .sync,.cli .tagc,.cli:not(.conest) .pill,.cli:not(.conest) .it .st{display:none}
+.side-f a{color:var(--accent);text-decoration:none;font-weight:500}
 
 /* ---------- dos columnas ---------- */
 @media (min-width:720px){
@@ -560,7 +561,7 @@ const S = { cli: !!CFG.cliente, solo: '', tab: 'formatos', fmt: null, gan: null,
             F: [], G: {}, GU: [], rev: {}, notas: [], db: null, me: null, dbOk: false, dbMsg: '', saving: 0, cargado: false };
 
 const colorBloque = (nombre, lista) => { const i = lista.indexOf(nombre); return COLS[(i < 0 ? 0 : i) % COLS.length]; };
-const estadoDe = id => (S.rev[id] && S.rev[id].estado) || '';
+const estadoDe = id => (S.rev[id] && S.rev[id].estado) || (S.cli && id.startsWith('gui-') ? ((S.GU.find(g => 'gui-' + g.codigo === id) || {}).estado || '') : '');   // en la versión de la marca el estado viene con el guion
 const HB = {};   // hash de la versión publicada de cada guion o plantilla
 function hashItem(id){ if (!HB[id]) { const x = id.startsWith('fmt-') ? S.F.find(f => 'fmt-' + f.id === id) : S.GU.find(g => 'gui-' + g.codigo === id); HB[id] = hash(((x && (x.filas || x.plantilla)) || []).map(normal)); } return HB[id]; }
 const hechosDe = id => { const rv = S.rev[id] || {}; return rv.hechos && rv.hsobre === hashItem(id) ? rv.hechos : {}; };   // cambios que hizo Claude sobre esta versión
@@ -581,6 +582,7 @@ async function cargar(){
   leerHash();
   if (!S.fmt && S.F.length) S.fmt = S.F[0].id;
   if (!S.gui && S.GU.length) S.gui = S.GU[0].codigo;
+  if (S.cli) { $('#app').classList.toggle('conest', S.GU.some(g => g.estado)); const sala = S.paquete && S.paquete.sala; if (sala) $('.side-f').innerHTML = '<a href="' + esc(sala) + '" target="_blank" rel="noopener">Lo que falta aprobar está en la Sala ↗</a>'; }
   render(); if (!S.cli) conectar();
 }
 function leerHash(){
