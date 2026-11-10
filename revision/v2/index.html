@@ -1,0 +1,607 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<title>Sala de revisión · CIMA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',-apple-system,BlinkMacSystemFont,sans-serif}
+:root{--bg:#FAF7F4;--card:#FFFFFF;--soft:#F6F2EE;--line:#EFE8E3;--line2:#E2D8D1;--txt:#26211E;--mut:#8A7E77;--mut2:#B5A79F;
+  --ok:#3F8F6B;--ok-bg:#E7F2EC;--warn:#B07B2E;--warn-bg:#F7EEDD;--bad:#C1613C;--bad-bg:#F8E7DF;--esc:#1B1715;--r:18px}
+body{background:var(--bg);color:var(--txt);min-height:100vh;-webkit-font-smoothing:antialiased;font-size:13.5px;line-height:1.45}
+button{font:inherit;color:inherit;cursor:pointer}
+.btn{background:var(--card);color:var(--txt);border:1px solid var(--line);padding:9px 15px;border-radius:12px;font-weight:600;font-size:13px;min-height:40px}
+.btn:hover{border-color:var(--line2)}
+.btn.dark{background:var(--txt);color:#fff;border-color:var(--txt)}
+.btn.ok{background:var(--ok);color:#fff;border-color:var(--ok)}
+.btn.link{border:0;background:transparent;color:var(--bad);padding:9px 4px;font-weight:500}
+.btn:disabled{background:var(--soft);color:var(--mut2);border-color:var(--line);cursor:default}
+.btn.ch{min-height:32px;padding:5px 11px;font-size:12px;border-radius:10px}
+#login{max-width:340px;margin:16vh auto 0;padding:0 22px;text-align:center}
+#login h1{font-size:26px;letter-spacing:-.03em}
+#login input{width:100%;border:1px solid var(--line2);border-radius:12px;padding:12px 14px;font-size:15px;margin:16px 0 10px;background:var(--card)}
+.sub{color:var(--mut);font-size:12.5px}
+#app{max-width:1500px;margin:0 auto;padding:16px 18px 40px}
+header{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:12px}
+header h1{font-size:21px;font-weight:700;letter-spacing:-.03em}
+header .sp{flex:1}
+.marcas{display:flex;gap:3px;background:var(--soft);border:1px solid var(--line);border-radius:13px;padding:3px;max-width:100%;overflow-x:auto}
+.mt{border:0;background:transparent;color:var(--mut);font-weight:600;font-size:12.5px;padding:6px 12px;border-radius:10px;white-space:nowrap}
+.mt.on{background:var(--card);color:var(--txt);box-shadow:0 1px 4px rgba(38,33,30,.08)}
+.mt b{display:inline-block;margin-left:6px;min-width:18px;padding:0 5px;border-radius:99px;background:var(--warn-bg);color:var(--warn);font-size:10.5px}
+.vistas{display:flex;gap:3px;background:var(--soft);border:1px solid var(--line);border-radius:13px;padding:3px}
+.hero{background:var(--esc);color:#fff;border-radius:26px;padding:44px 28px 30px;text-align:center;margin-bottom:14px}
+.hero h2{font-size:clamp(34px,7vw,76px);font-weight:700;letter-spacing:-.045em;line-height:.95;text-transform:uppercase}
+.hero p{color:#cfc6c0;font-size:clamp(14px,1.6vw,19px);margin-top:14px;font-weight:400}
+.mets{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}
+.met{position:relative;background:var(--card);border:1px solid var(--line);border-radius:20px;padding:22px 16px 18px;text-align:center;transition:border-color .12s,transform .12s}
+button.met:hover{border-color:var(--txt);transform:translateY(-2px)}
+.met b{display:block;font-size:44px;font-weight:700;letter-spacing:-.04em;line-height:1}
+.met .l{display:block;font-size:11.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;margin-top:8px}
+.met .d{display:block;font-size:12.5px;color:var(--mut);margin-top:5px}
+.met.av b{color:#D99A00}.met.mal b{color:var(--bad)}
+.info{margin-top:14px;background:var(--card);border:1px solid var(--line);border-radius:20px;padding:16px 18px}
+.info h3{font-size:14px;font-weight:700;margin-bottom:8px}
+.info .r{display:flex;gap:10px;padding:7px 0;border-top:1px solid var(--line);font-size:12.5px}
+.info .r b{min-width:28px;text-align:right}.info .r span{color:var(--mut)}
+.barra{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:16px}
+.tabs{display:flex;gap:4px;flex-wrap:wrap;flex:1}
+.tab{border:1px solid var(--line);background:var(--card);border-radius:99px;padding:4px 10px;font-size:11.5px;font-weight:600;color:var(--mut)}
+.tab b{margin-left:5px;color:var(--txt)}
+.tab.on{background:var(--txt);border-color:var(--txt);color:#fff}.tab.on b{color:#fff}
+.tab.alerta:not(.on){border-color:var(--warn);color:var(--warn)}.tab.mal:not(.on){border-color:var(--bad);color:var(--bad)}
+.barra select{border:1px solid var(--line);border-radius:10px;padding:6px 9px;font:inherit;font-size:12px;background:var(--card);color:var(--txt)}
+#lista{display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:20px 14px}
+.tarj{background:none;border:0;padding:0;text-align:left;display:flex;flex-direction:column;gap:7px;min-width:0}
+.poster{position:relative;width:100%;aspect-ratio:9/16;border-radius:14px;overflow:hidden;background:var(--esc);transition:outline-color .12s;outline:3px solid transparent;outline-offset:3px}
+.tarj:hover .poster,.tarj:focus-visible .poster{outline-color:#F5C518}
+.poster video{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none}
+.poster .pill[class]{position:absolute;left:7px;top:7px;background:rgba(27,23,21,.82);color:#fff}
+.poster .pill:before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:currentColor;margin-right:6px}
+.poster .pill[class]:before{background:#fff}.poster .pill.e-revisar:before{background:#F5C518}.poster .pill.e-subido:before,.poster .pill.e-aprobado:before{background:#8fe3a8}.poster .pill.e-error:before,.poster .pill.e-rechazado:before{background:#f0a08a}
+.poster .nn{position:absolute;right:7px;top:7px;background:#F5C518;color:#1B1715;border-radius:99px;font-size:11px;font-weight:700;padding:1px 8px;font-style:normal}
+.poster .dur{position:absolute;right:7px;bottom:7px;background:rgba(27,23,21,.82);color:#fff;font-size:11px;border-radius:7px;padding:1px 7px;font-variant-numeric:tabular-nums}
+.poster .sinv{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#b9aea7;font-size:12px;text-align:center;padding:12px}
+.tarj .tit{font-weight:600;font-size:13px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.tarj .m{font-size:11.5px;color:var(--mut);display:flex;gap:7px;flex-wrap:wrap}
+.tarj .m .w{color:var(--warn);font-weight:600}.tarj .m .b{color:var(--bad);font-weight:600}
+.vacio{padding:26px 16px;color:var(--mut);text-align:center;grid-column:1/-1}
+#visor{position:fixed;inset:0;z-index:5;background:var(--card);display:grid;grid-template-columns:minmax(300px,44%) minmax(0,1fr)}
+#visor[hidden]{display:none}
+.esc{background:var(--esc);color:#fff;display:flex;flex-direction:column;min-width:0}
+.pant{flex:1;display:flex;align-items:center;justify-content:center;min-height:0;padding:12px 12px 0}
+.pant video,.pant iframe{max-width:100%;max-height:calc(100vh - 150px);aspect-ratio:9/16;border-radius:12px;background:#000;border:0}
+.pant iframe{width:100%}
+.pant .ph{color:#b9aea7;padding:40px 20px;text-align:center}
+.lt{padding:12px 14px 12px}
+.pista{position:relative;height:30px;cursor:pointer;touch-action:none}
+.pista .riel{position:absolute;left:0;right:0;top:12px;height:6px;border-radius:9px;background:rgba(255,255,255,.16)}
+.pista .hecho{position:absolute;left:0;top:12px;height:6px;border-radius:9px;background:#fff;width:0}
+.pista .seg{position:absolute;top:21px;height:6px;border-radius:3px;background:#7d8f86;border:0;padding:0;min-width:3px}
+.pista .seg.propio{background:#8fe3a8}.pista .seg.marc{background:#f0a35e}.pista .seg.ahora{outline:2px solid #fff}
+.pista .mk{position:absolute;top:0;width:10px;height:10px;margin-left:-5px;border-radius:50%;background:#f5c518;border:0;padding:0}
+.pista .mk.ok{background:#6f6a66}.pista .mk.act{box-shadow:0 0 0 3px rgba(245,197,24,.35)}
+.pista .cz{position:absolute;top:7px;width:3px;height:16px;margin-left:-1.5px;background:#fff;border-radius:2px;left:0}
+.ctr{display:flex;align-items:center;gap:6px;margin-top:8px;flex-wrap:wrap}
+.ctr .tc{font-variant-numeric:tabular-nums;font-size:12.5px;color:#cfc6c0;margin-right:auto}.ctr .tc b{color:#fff}
+.bi{background:rgba(255,255,255,.1);border:0;color:#fff;border-radius:9px;padding:6px 10px;font-size:12px;font-weight:600;min-height:32px}
+.bi:hover{background:rgba(255,255,255,.18)}
+.ley{font-size:10.5px;color:#a89d96;margin-top:8px;display:flex;gap:12px;flex-wrap:wrap}
+.ley i{display:inline-block;width:10px;height:6px;border-radius:3px;margin-right:4px;vertical-align:middle}
+.pan{display:flex;flex-direction:column;min-width:0;height:100vh}
+.cab{padding:14px 16px 10px;border-bottom:1px solid var(--line)}
+.cab .l1{display:flex;gap:8px;align-items:flex-start}
+.cab h2{font-size:16px;font-weight:700;letter-spacing:-.02em;flex:1;min-width:0}
+.cab .st{font-size:12px;color:var(--mut);margin-top:2px}.cab .st a{color:inherit}
+.pill{font-size:11px;font-weight:600;border-radius:99px;padding:3px 10px;background:var(--soft);color:var(--mut);white-space:nowrap}
+.pill.e-revisar{background:var(--warn-bg);color:var(--warn)}.pill.e-subido,.pill.e-aprobado{background:var(--ok-bg);color:var(--ok)}
+.pill.e-error,.pill.e-rechazado{background:var(--bad-bg);color:var(--bad)}
+.nav{display:flex;gap:4px}
+.err{margin-top:8px;background:var(--bad-bg);color:var(--bad);border-radius:10px;padding:8px 11px;font-size:12px}
+.aud{margin-top:8px;border:1px solid var(--line);border-radius:10px;background:var(--soft);font-size:12px;color:var(--mut)}
+.aud summary{cursor:pointer;padding:7px 11px;font-weight:600;color:var(--warn);list-style:none}
+.aud summary::-webkit-details-marker{display:none}
+.aud ul{padding:0 11px 9px 26px;max-height:130px;overflow:auto}
+.secs{display:flex;gap:2px;padding:8px 12px 0;border-bottom:1px solid var(--line)}
+.sec{border:0;background:transparent;padding:7px 11px;font-size:12.5px;font-weight:600;color:var(--mut);border-bottom:2px solid transparent}
+.sec.on{color:var(--txt);border-bottom-color:var(--txt)}.sec b{font-weight:600;color:var(--mut2);margin-left:4px}
+#cuerpo{flex:1;overflow:auto;padding:10px 12px;min-height:120px}
+.nota{border:1px solid var(--line);border-radius:12px;padding:9px 10px;margin-bottom:7px;display:grid;grid-template-columns:auto 1fr;gap:4px 9px;align-items:start}
+.nota.act{border-color:var(--txt)}.nota.ok{opacity:.6}
+.tcb{border:0;background:var(--txt);color:#fff;border-radius:8px;padding:3px 8px;font-size:11.5px;font-weight:600;font-variant-numeric:tabular-nums}
+.tcb.gen{background:var(--soft);color:var(--mut)}
+.nota .tx{white-space:pre-wrap;word-break:break-word}
+.nota .pie{grid-column:2;font-size:11px;color:var(--mut);display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.nota .pie button{border:0;background:transparent;color:var(--mut);font-size:11px;font-weight:600;text-decoration:underline;padding:0}
+.nota .pie .si{color:var(--ok)}.nota .pie .no{color:var(--bad)}
+.et{font-size:10.5px;font-weight:600;border-radius:99px;padding:1px 8px;background:var(--soft);color:var(--mut)}
+.et.env{background:var(--warn-bg);color:var(--warn)}.et.ok{background:var(--ok-bg);color:var(--ok)}
+.hist{font-size:12px;color:var(--mut);background:var(--soft);border-radius:10px;padding:8px 11px;margin-bottom:7px}
+.trow{border:1px solid var(--line);border-radius:12px;margin-bottom:6px;overflow:hidden}
+.trow.ahora{border-color:var(--txt)}.trow.marcada{border-color:#f0a35e;background:#fff8f1}
+.tchip{display:flex;width:100%;gap:9px;align-items:center;border:0;background:transparent;padding:8px 10px;text-align:left}
+.tchip b{font-variant-numeric:tabular-nums;font-size:12px;white-space:nowrap}
+.tchip small{flex:1;min-width:0;color:var(--mut);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tchip em{font-style:normal;font-size:10px;font-weight:700;color:var(--ok)}
+.tpanel{padding:4px 10px 10px}
+.tpanel .q{font-size:12px;color:var(--mut);margin-bottom:8px}
+.alts{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:8px}
+.alt{cursor:pointer;border:2px solid transparent;border-radius:11px;overflow:hidden;background:#222;font-size:10.5px;color:#fff;text-align:center;line-height:1.3;width:100px}
+.alt .th{width:96px;height:170px;background-repeat:no-repeat;margin:0 auto}
+.alt span{display:block;padding:5px 4px;background:#1d1916}
+.alt .dc{display:block;font-size:9px;font-weight:700;letter-spacing:.3px;color:#8fe3a8;margin-bottom:2px}
+.alt.sel{border-color:var(--ok);box-shadow:0 0 0 2px var(--ok-bg)}
+.alt.sis{display:flex;align-items:center;justify-content:center;background:var(--card);color:var(--mut);border:2px dashed var(--line2);padding:8px;font-size:12px;font-weight:600;min-height:80px}
+.alt.sis.sel{border-color:var(--ok);color:var(--ok)}
+.tpanel input,.subs input{width:100%;border:1px solid var(--line);border-radius:9px;padding:7px 9px;font:inherit;font-size:12.5px;background:var(--card);color:var(--txt)}
+.tpanel .ac{display:flex;gap:6px;margin-top:8px}
+.subs label{display:flex;gap:7px;align-items:center;margin-bottom:5px}
+.subs label span{width:22px;text-align:right;color:var(--mut2);font-size:11px}
+.subs input.cambio{border-color:#f0a35e;background:#fff8f1}
+.chk{display:flex;gap:7px;align-items:center;font-size:12.5px;color:var(--mut);margin:8px 0}
+.red{border-top:1px solid var(--line);padding:10px 12px}
+.red .d{font-size:12px;color:var(--mut);display:flex;gap:8px;align-items:center;margin-bottom:6px;flex-wrap:wrap}
+.red .d b{color:var(--txt);font-variant-numeric:tabular-nums}
+.red .d .ay{margin-left:auto;font-size:11px;color:var(--mut2)}
+.red textarea{width:100%;border:1px solid var(--line2);border-radius:11px;padding:9px 11px;font:inherit;font-size:13px;resize:vertical;min-height:58px;background:var(--card);color:var(--txt)}
+.red .r2{display:flex;gap:8px;align-items:center;margin-top:7px}
+.acc{border-top:1px solid var(--line);padding:10px 12px;background:var(--soft);display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.acc .sp{flex:1}.acc .res{font-size:12px;color:var(--mut);flex-basis:100%}
+.acc input{flex:1;min-width:160px;border:1px solid var(--line2);border-radius:10px;padding:8px 10px;font:inherit;font-size:12.5px}
+#aprende{margin-top:26px;border:1px solid var(--line);border-radius:14px;background:var(--card);font-size:12px}
+#aprende summary{padding:9px 12px;cursor:pointer;font-weight:600;color:var(--mut)}
+.apr{padding:7px 12px;border-top:1px solid var(--line)}.apr .m{color:var(--mut2);font-size:10.5px}.apr .r{color:var(--mut)}
+.toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,20px);background:var(--txt);color:#fff;padding:10px 18px;border-radius:12px;font-size:13px;font-weight:500;opacity:0;pointer-events:none;transition:.2s;z-index:9}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+@media (max-width:900px){#visor{grid-template-columns:minmax(0,1fr);overflow:auto;display:block}.pan{height:auto}.pant video,.pant iframe{max-height:56vh}#cuerpo{max-height:none}#app{padding:12px 10px 30px}
+  #lista{grid-template-columns:repeat(2,minmax(0,1fr))}}
+</style>
+</head>
+<body>
+<div id="login">
+  <h1>Sala de revisión</h1>
+  <p class="sub">Entrá con tu clave.</p>
+  <input id="clave" type="password" placeholder="Clave" autocomplete="current-password">
+  <button class="btn dark" id="entrar" style="width:100%">Entrar</button>
+  <p id="login-e" class="sub" style="color:var(--bad);margin-top:8px"></p>
+</div>
+<div id="app" hidden>
+  <header>
+    <div><h1>Sala de revisión</h1><div class="sub" id="resumen">Cargando…</div></div>
+    <span class="sp"></span>
+    <div class="vistas"><button class="mt" data-v="inicio">Inicio</button><button class="mt" data-v="revision">Revisión</button></div>
+    <div class="marcas" id="marcas"></div>
+    <button class="btn ch" id="salir">Salir</button>
+  </header>
+  <div id="vInicio"></div>
+  <div id="vRevision"><div class="barra"><div class="tabs" id="tabs"></div><select id="fCre" aria-label="Creadora"></select></div>
+  <div id="lista"></div></div>
+  <details id="aprende" hidden><summary>Lo que aprendió de tus correcciones</summary><div id="aprende-l"></div></details>
+</div>
+<div id="visor" hidden role="dialog" aria-modal="true" aria-label="Revisar video"></div>
+<div class="toast" id="toast"></div>
+<script type="module">
+const CLAVES = {"vane-2026":"Vane","cima-2026":"Nacho","abril-2026":"Abril"};
+const $ = s => document.querySelector(s);
+const ESTADOS = [["revisar","Para revisar"],["procesando","Editándose"],["corregir","Corrigiéndose"],["subido","Aprobados"],["rechazado","Rechazados"],["error","Con error"]];
+const VELS = [1, 1.25, 1.5, 2];
+let quien = null, items = {}, fb = null;
+const S = {vista: location.hash === "#revision" ? "revision" : "inicio", app:null, filtro:"revisar", cre:"", abierto:null, firma:"", sec:"notas", vel:1, loc:{}, tNota:null, general:false, activa:null, tomaAb:null, rech:false, orden:[]};
+let marcaF = new URLSearchParams(location.search).get("marca") || (()=>{ try { return localStorage.getItem("revision_marca") } catch(e){ return null } })() || "todas";
+try { quien = CLAVES[localStorage.getItem("revision_clave")] || null; S.vel = Number(localStorage.getItem("revision_vel")) || 1; } catch(e) {}
+function toast(t){ const el=$("#toast"); el.textContent=t; el.classList.add("on"); setTimeout(()=>el.classList.remove("on"),2400); }
+function esc(s){ return String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+const tc = (t, dec=true) => { t = Math.max(0, Number(t)||0); const m = Math.floor(t/60), s = t - m*60; return m + ":" + (dec ? s.toFixed(1).padStart(4,"0").replace(".",",") : String(Math.floor(s)).padStart(2,"0")); };
+const tab = it => it.estado==="aprobado" ? "subido" : it.estado;   // lo aprobado pasa a Aprobados al toque (el bot lo sube en ≤5 min)
+const loc = id => S.loc[id] || (S.loc[id] = {marc:{}, subs:{}, broll:false});
+const ver = it => Number(it.version) || 1;
+const notasT = it => Array.isArray(it.notasT) ? it.notasT : [];
+const pend = it => notasT(it).filter(n => n.estado === "pend");
+const V = () => $("#vVideo");
+const editable = it => it.estado === "revisar";
+const rehacible = it => ["subido","aprobado"].includes(it.estado);
+
+function entrar(){
+  const k = $("#clave").value.trim();
+  if(!CLAVES[k]){ $("#login-e").textContent = "Esa clave no es. Probá de nuevo."; return; }
+  try { localStorage.setItem("revision_clave", k); } catch(e) {}
+  quien = CLAVES[k]; arrancar();
+}
+$("#entrar").addEventListener("click", entrar);
+$("#clave").addEventListener("keydown", e => { if(e.key==="Enter") entrar(); });
+$("#salir").addEventListener("click", () => { try { localStorage.removeItem("revision_clave"); } catch(e) {} location.reload(); });
+
+async function arrancar(){
+  $("#login").hidden = true; $("#app").hidden = false;
+  const [{initializeApp},{getFirestore,collection,doc,onSnapshot,updateDoc},{getAuth,signInAnonymously}] = await Promise.all([
+    import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js"),
+    import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js"),
+    import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js")]);
+  const app = initializeApp({apiKey:"AIzaSyCTv4DiRCpbCpGYP6E86TPHlkPvaAZTN3g",authDomain:"cleargy-creators.firebaseapp.com",projectId:"cleargy-creators",storageBucket:"cleargy-creators.firebasestorage.app",messagingSenderId:"313543582398",appId:"1:313543582398:web:99fe78991adeea2e7cb4ef"});
+  await signInAnonymously(getAuth(app));
+  const db = getFirestore(app);
+  const {getDocs} = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+  fb = {db, doc, updateDoc, getDocs, collection};
+  let primera = true;
+  onSnapshot(collection(db,"edicion_cola"), snap => {
+    snap.docChanges().forEach(c => { if(c.type==="removed") delete items[c.doc.id]; else items[c.doc.id] = c.doc.data(); });
+    pintar();
+    if(primera){ primera = false; leerApp(); }
+  }, err => { $("#resumen").textContent = "No se pudo leer la cola: " + err.message; });
+  onSnapshot(collection(db,"edicion_aprendizaje"), snap => {
+    const xs = snap.docs.map(d=>d.data()).sort((a,b)=>(b.fecha||"").localeCompare(a.fecha||"")).slice(0,12);
+    $("#aprende").hidden = !xs.length;
+    const tipo = t => (t||[]).includes("general") ? "Regla nueva para todos los videos" : (t||[]).includes("codigo") ? "Anotado para el código" : (t||[]).includes("pendiente") ? "Anotado (falta procesar)" : "Solo ese video";
+    $("#aprende-l").innerHTML = xs.map(x => `<div class="apr"><div class="m">${esc(new Date(x.fecha).toLocaleString("es-AR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}))} · ${esc(x.quien)} · ${esc(x.marca)} · ${tipo(x.tipo)}</div><b>${esc(x.resumen||x.nota)}</b>${x.regla?`<div class="r">Regla: ${esc(x.regla)}</div>`:""}</div>`).join("");
+  }, () => {});
+}
+
+function guardar(id, datos, msg){
+  return fb.updateDoc(fb.doc(fb.db,"edicion_cola",id), {...datos, actualizado:new Date().toISOString()})
+    .then(() => { if(msg) toast(msg); return true; }).catch(e => { toast("No se pudo guardar: " + e.message); return false; });
+}
+
+function pintar(){
+  const todos = Object.entries(items).filter(([,it]) => it.marca !== "miluz");   // Mi Luz se revisa en /miluz/edicion (Luz)
+  const marcas = [...new Set(todos.map(([,it])=>it.marca))].sort(); const nom = m => (todos.find(([,it])=>it.marca===m)||[,{}])[1].marcaNombre||m;
+  if(marcaF!=="todas" && !marcas.includes(marcaF) && marcas.length) marcaF = "todas";
+  const deMarca = todos.filter(([,it]) => marcaF==="todas" || it.marca===marcaF);
+  const cuenta = e => deMarca.filter(([,it])=>tab(it)===e).length;
+  const hora = new Date().toLocaleTimeString("es-AR",{hour:"2-digit",minute:"2-digit"});
+  const p = cuenta("revisar");
+  $("#resumen").textContent = `Hola ${quien} · ${p ? p + (p===1?" video espera":" videos esperan") + " tu revisión" : "nada esperando"} · ${hora}`;
+  const porRevisar = m => todos.filter(([,it]) => (m==="todas"||it.marca===m) && it.estado==="revisar").length;
+  $("#marcas").innerHTML = ["todas",...marcas].map(m=>`<button class="mt ${m===marcaF?"on":""}" data-m="${m}">${m==="todas"?"Todas":esc(nom(m))}${porRevisar(m)?`<b>${porRevisar(m)}</b>`:""}</button>`).join("");
+  const cls = e => e==="revisar"&&cuenta(e)?"alerta":e==="error"&&cuenta(e)?"mal":"";
+  $("#tabs").innerHTML = ESTADOS.map(([e,t]) => `<button class="tab ${cls(e)} ${e===S.filtro?"on":""}" data-e="${e}">${t}<b>${cuenta(e)}</b></button>`).join("");
+  document.querySelectorAll("[data-e]").forEach(b=>b.onclick=()=>{S.filtro=b.dataset.e; pintar();});
+  document.querySelectorAll("[data-m]").forEach(b=>b.onclick=()=>{marcaF=b.dataset.m; try{localStorage.setItem("revision_marca",marcaF)}catch(e){} pintar();});
+  document.querySelectorAll("[data-v]").forEach(b => { b.classList.toggle("on", b.dataset.v === S.vista); b.onclick = () => irA(b.dataset.v); });
+  $("#vInicio").hidden = S.vista !== "inicio"; $("#vRevision").hidden = S.vista !== "revision";
+  if(S.vista === "inicio") pintarInicio(deMarca);
+  const enTab = deMarca.filter(([,it])=>tab(it)===S.filtro);
+  const cres = [...new Set(enTab.map(([,it])=>it.creadora||"Sin creadora"))].sort();
+  if(S.cre && !cres.includes(S.cre)) S.cre = "";
+  const sel = $("#fCre");
+  if(document.activeElement !== sel){ sel.innerHTML = `<option value="">Todas las creadoras (${enTab.length})</option>` + cres.map(c=>`<option ${c===S.cre?"selected":""}>${esc(c)}</option>`).join(""); sel.onchange = () => { S.cre = sel.value; pintar(); }; }
+  const lista = enTab.filter(([,it]) => !S.cre || (it.creadora||"Sin creadora")===S.cre).sort((a,b)=>(a[1].fechaCrudo||"").localeCompare(b[1].fechaCrudo||""));
+  S.orden = lista.map(([id])=>id);
+  const caja = $("#lista"), ahora = Date.now();
+  caja.querySelectorAll(".vacio").forEach(x => x.remove());
+  if(!lista.length) caja.innerHTML = `<div class="vacio">${S.filtro==="revisar"?"No hay videos para revisar. Aparecen solos cuando terminan de editarse.":"Nada por acá."}</div>`;
+  const quedan = new Set(lista.map(([id]) => "tj-" + id));
+  [...caja.children].forEach(el => { if(el.id && !quedan.has(el.id)) el.remove(); });
+  let antes = null;
+  lista.forEach(([id,it]) => {
+    const n = pend(it).length + Object.keys(loc(id).marc).length;
+    const h = it.estado==="revisar" && it.actualizado ? (ahora - new Date(it.actualizado))/36e5 : 0;
+    const espera = h >= 48 ? `<span class="b">espera hace ${Math.floor(h/24)} días</span>` : h >= 24 ? `<span class="w">espera hace 1 día</span>` : "";
+    const fecha = (it.fechaCrudo||"").slice(0,10).split("-").reverse().slice(0,2).join("/");
+    const estado = (ESTADOS.find(e=>e[0]===tab(it))||[,it.estado])[1];
+    const firma = [it.estado, ver(it), it.vistaUrl, n, espera, it.nota].join("|");
+    let el = document.getElementById("tj-" + id);
+    if(!el || el.dataset.firma !== firma){
+      const t = document.createElement("div");
+      t.innerHTML = `<button class="tarj" id="tj-${esc(id)}" data-ab="${esc(id)}"><div class="poster">${it.vistaUrl?`<video muted playsinline preload="none" data-src="${esc(it.vistaUrl)}"></video>`:`<span class="sinv">${it.estado==="procesando"?"Editándose…":it.estado==="corregir"?"Corrigiéndose…":"Sin vista previa"}</span>`}
+        <span class="pill e-${esc(it.estado)}">${esc(estado)}</span>${n?`<i class="nn">${n}</i>`:""}<span class="dur">${ver(it)>1?"v"+ver(it):""}</span></div>
+        <span class="tit">${esc(it.creadora||"Sin creadora")} · ${esc(it.guion||"sin guion")}</span>
+        <span class="m"><span>${esc(it.marcaNombre||it.marca)}</span>${fecha?`<span>${fecha}</span>`:""}${/control marcó/i.test(it.nota||"")?`<span class="w">con avisos</span>`:""}${espera}</span></button>`;
+      const nuevo = t.firstElementChild; nuevo.dataset.firma = firma;
+      if(el) el.replaceWith(nuevo); else caja.appendChild(nuevo);
+      el = nuevo; el.onclick = () => abrir(id);
+      const v = el.querySelector("video"); if(v){ v.addEventListener("loadedmetadata", () => { const d = el.querySelector(".dur"); d.textContent = tc(v.duration, false) + (ver(it)>1 ? " · v"+ver(it) : ""); }); vigia.observe(v); }
+      const d = el.querySelector(".dur"); if(!d.textContent) d.hidden = !it.vistaUrl;
+    }
+    if(antes ? antes.nextElementSibling !== el : caja.firstElementChild !== el) (antes ? antes.after(el) : caja.prepend(el));
+    antes = el;
+  });
+  if(S.abierto && !items[S.abierto]) cerrarVisor();
+  if(S.abierto) pintarVisor();
+}
+// las miniaturas se cargan recién cuando la tarjeta entra en pantalla
+const vigia = new IntersectionObserver(es => es.forEach(e => { if(e.isIntersecting){ e.target.preload = "metadata"; e.target.src = e.target.dataset.src + "#t=1"; vigia.unobserve(e.target); } }), {rootMargin:"300px"});
+
+function irA(v, filtro){ S.vista = v; if(filtro) S.filtro = filtro; try{ history.replaceState(null, "", "#" + v); }catch(e){} pintar(); if(v === "inicio") leerApp(); }
+
+// Inicio: los números de la cola en vivo + lo que está en la app de videos y todavía no tiene su editado, con el porqué
+function pintarInicio(deMarca){
+  const hs = it => it.actualizado ? (Date.now() - new Date(it.actualizado)) / 36e5 : 0;
+  const de = e => deMarca.filter(([,it]) => it.estado === e);
+  const rev = de("revisar"), viejos = rev.filter(([,it]) => hs(it) >= 24), curso = [...de("procesando"), ...de("corregir")], err = de("error");
+  const hace7 = new Date(Date.now() - 7 * 864e5).toISOString().slice(0,10);
+  const sem = deMarca.filter(([,it]) => ["subido","aprobado"].includes(it.estado) && (it.fechaEdicion || "") >= hace7);
+  const app = S.app && sinEditar();
+  const met = (n, l, d, cls, f) => `<${f?"button":"div"} class="met ${cls||""}" ${f?`data-ir="${f}"`:""}><b>${n}</b><span class="l">${l}</span><span class="d">${d}</span></${f?"button":"div"}>`;
+  $("#vInicio").innerHTML = `<div class="hero"><h2>Sala de<br>edición</h2><p>Lo que se graba, se edita, se corrige y se sube. Todo en un mismo lugar.</p></div>
+    <div class="mets">
+      ${met(rev.length, "Por revisar", "Videos editados que esperan a Abril", rev.length ? "av" : "", "revisar")}
+      ${met(viejos.length, "Esperan hace +24 h", "Editados que nadie miró todavía", viejos.length ? "mal" : "", "revisar")}
+      ${met(curso.length, "En edición", "Editándose o corrigiéndose ahora", "", "corregir")}
+      ${met(err.length, "Trabados", "El control los frenó: hay que mirarlos", err.length ? "mal" : "", "error")}
+      ${met(sem.length, "Aprobados", "Editados en los últimos 7 días", "", "subido")}
+      ${met(app ? app.total : "…", "Sin editar en la app", app ? `De ${app.subidos} subidos en 14 días` : "Leyendo la app de videos…", app && app.total ? "av" : "")}
+    </div>
+    ${app && app.total ? `<div class="info"><h3>ⓘ Por qué hay ${app.total} ${app.total===1?"video":"videos"} de la app sin su editado</h3>${app.motivos.map(([m, n, det]) => `<div class="r"><b>${n}</b><div>${esc(m)}${det?`<br><span>${esc(det)}</span>`:""}</div></div>`).join("")}</div>` : ""}`;
+  document.querySelectorAll("[data-ir]").forEach(b => b.onclick = () => irA("revision", b.dataset.ir));
+}
+// cruza los videos de la app (últimos 14 días, sin editado) con la cola de edición para decir por qué falta cada uno
+function sinEditar(){
+  const desde = new Date(Date.now() - 14 * 864e5).toISOString(), g = {}, sub = [];
+  const suma = (m, quien) => { (g[m] = g[m] || []).push(quien); };
+  for(const [marca, docs] of Object.entries(S.app)){
+    if(marcaF !== "todas" && marca !== marcaF) continue;
+    for(const d of docs){
+      if((d.fecha || "") < desde || d.status === "rejected") continue;
+      sub.push(d); if(d.editado) continue;
+      const it = items[marca + "__" + d.id], q = `${d.creadora} ${d.guion||""}`.trim();
+      if(!it) suma(d.link ? "Todavía no entró al editor (creadora sin banco de b-roll, o el bot no pasó)" : "La creadora no cargó el link de Drive del crudo", q);
+      else if(it.estado === "revisar") suma("Ya está editado: espera la revisión de Abril", q);
+      else if(["procesando","corregir"].includes(it.estado)) suma("Se está editando o corrigiendo ahora", q);
+      else if(it.estado === "error") suma("Trabado: el control lo frenó y hay que mirarlo", q);
+      else if(it.estado === "rechazado") suma("Rechazado: no es un crudo (toma de b-roll) o hay que regrabarlo", q);
+      else if(["aprobado","subido"].includes(it.estado)) suma("Aprobado: se está subiendo a la app", q);
+    }
+  }
+  const motivos = Object.entries(g).sort((a,b) => b[1].length - a[1].length).map(([m, qs]) => [m, qs.length, qs.slice(0,8).join(" · ") + (qs.length > 8 ? ` · y ${qs.length - 8} más` : "")]);
+  return {total: motivos.reduce((s, m) => s + m[1], 0), subidos: sub.length, motivos};
+}
+async function leerApp(){
+  if(!fb || !fb.getDocs || S.leyendo) return; S.leyendo = true;
+  const cols = {}; Object.values(items).forEach(it => { if(it.marca !== "miluz" && it.coleccion && /_videos$/.test(it.coleccion)) cols[it.marca] = it.coleccion; });
+  const app = {};
+  await Promise.all(Object.entries(cols).map(async ([marca, col]) => { try {
+    const snap = await fb.getDocs(fb.collection(fb.db, col));
+    const nombres = {}; Object.values(items).forEach(it => { if(it.marca === marca && it.videoId) nombres[it.videoId.split("_")[0]] = it.creadora; });
+    app[marca] = snap.docs.map(d => { const v = d.data(), link = v.driveLink || (/drive\.google/.test(v.link||"") ? v.link : "");
+      return {id: d.id, fecha: v.date || "", status: v.status, editado: !!v.editado, link: !!link, guion: v.guion || "", creadora: nombres[v.creator] || v.creator || ""}; })
+      .filter(v => !/b-?roll/i.test(v.guion));
+  } catch(e){ app[marca] = []; } }));
+  S.app = app; S.leyendo = false; if(S.vista === "inicio") pintar();
+}
+
+function abrir(id){
+  S.abierto = id; S.activa = null; S.tomaAb = null; S.rech = false; S.tNota = null; S.general = false;
+  $("#visor").hidden = false; document.body.style.overflow = "hidden";
+  pintarVisor();
+}
+function cerrarVisor(){
+  V()?.pause(); S.abierto = null; S.firma = ""; $("#visor").hidden = true; $("#visor").innerHTML = ""; document.body.style.overflow = "";
+}
+const vecino = d => { const i = S.orden.indexOf(S.abierto); return S.orden[i + d] || null; };
+
+// El video y la línea de tiempo se arman UNA vez por versión: la cola cambia a cada rato por otros videos y, si se
+// redibujara todo, el que estás mirando volvería a cero (Nacho 23/10). Notas, tomas y botones se repintan aparte.
+function pintarVisor(){
+  const id = S.abierto, it = id && items[id];
+  if(!it) return;
+  const verId = it.vistaId || it.driveId;
+  const firma = [id, it.estado, ver(it), it.vistaUrl, verId].join("|");
+  if(firma !== S.firma){
+    S.firma = firma;
+    const media = it.vistaUrl ? `<video id="vVideo" playsinline preload="auto" src="${esc(it.vistaUrl)}"></video>`
+      : verId ? `<iframe src="https://drive.google.com/file/d/${esc(verId)}/preview" allow="autoplay"></iframe>`
+      : `<div class="ph">${it.estado==="revisar"?"El video se está subiendo… en un minuto aparece.":"Todavía no hay video para ver."}</div>`;
+    $("#visor").innerHTML = `<section class="esc"><div class="pant">${media}</div>
+      ${it.vistaUrl?`<div class="lt"><div class="pista" id="vPista"><div class="riel"></div><div class="hecho" id="vHecho"></div><div id="vSegs"></div><div id="vMarcas"></div><div class="cz" id="vCab"></div></div>
+        <div class="ctr"><span class="tc" id="vTc"><b>0:00,0</b> / 0:00</span><button class="bi" id="vAtras" title="Atrás 2 s (←)">−2 s</button><button class="bi" id="vPlay" style="min-width:78px">▶ Play</button><button class="bi" id="vAdel" title="Adelante 2 s (→)">+2 s</button><button class="bi" id="vVel" title="Velocidad">${S.vel}×</button></div>
+        <div class="ley"><span><i style="background:#8fe3a8"></i>toma de la creadora</span><span><i style="background:#7d8f86"></i>otra toma</span><span><i style="background:#f0a35e"></i>marcada para cambiar</span><span><i style="background:#f5c518;height:8px;width:8px;border-radius:50%"></i>nota</span></div></div>`:""}
+      </section>
+      <aside class="pan"><div class="cab" id="vCabe"></div><div class="secs" id="vSecs"></div><div id="cuerpo"></div>
+        <form class="red" id="vForm" hidden><div class="d"><span id="vDondeL">Nota en</span><b id="vDonde">0:00,0</b><button type="button" class="btn ch" id="vGeneral">Nota general</button><span class="ay">N: nota acá · ⌘/Ctrl + Enter guarda</span></div>
+          <textarea id="vTexto" placeholder="Qué cambiar en este momento…" rows="2"></textarea>
+          <div class="r2"><button class="btn dark ch" id="vGuardar" type="submit" disabled>Guardar nota</button><span class="sub">Espacio: play · ← →: 2 s · ↑ ↓: otro video</span></div></form>
+        <div class="acc" id="vAcc"></div></aside>`;
+    conectarVideo(id);
+  }
+  pintarCabecera(id, it); pintarCuerpo(); pintarAcciones();
+}
+
+function conectarVideo(id){
+  const v = V(); if(!v) { conectarForm(id); return; }
+  v.playbackRate = S.vel;
+  const dur = () => v.duration || Math.max(0, ...((items[id]||{}).tomasLinea||[]).map(t=>Number(t.t1)||0)) || 1;
+  const tick = () => { const p = Math.min(100, v.currentTime / dur() * 100);
+    $("#vHecho").style.width = p + "%"; $("#vCab").style.left = p + "%";
+    $("#vTc").innerHTML = `<b>${tc(v.currentTime)}</b> / ${tc(dur(), false)}`;
+    $("#vPlay").textContent = v.paused ? "▶ Play" : "❚❚ Pausa";
+    if(!$("#vTexto").value && !S.general){ S.tNota = null; $("#vDonde").textContent = tc(v.currentTime); }
+    const s = v.currentTime;
+    document.querySelectorAll("[data-t0]").forEach(c => c.classList.toggle("ahora", s >= Number(c.dataset.t0) && s < Number(c.dataset.t1))); };
+  ["timeupdate","play","pause","loadedmetadata","seeked"].forEach(e => v.addEventListener(e, tick));
+  v.addEventListener("loadedmetadata", pintarPista);
+  v.addEventListener("click", () => v.paused ? v.play() : v.pause());
+  $("#vPlay").onclick = () => v.paused ? v.play() : v.pause();
+  $("#vAtras").onclick = () => { v.currentTime = Math.max(0, v.currentTime - 2); };
+  $("#vAdel").onclick = () => { v.currentTime = Math.min(dur(), v.currentTime + 2); };
+  $("#vVel").onclick = () => { S.vel = VELS[(VELS.indexOf(S.vel) + 1) % VELS.length]; v.playbackRate = S.vel; $("#vVel").textContent = S.vel + "×"; try{localStorage.setItem("revision_vel", S.vel)}catch(e){} };
+  const pista = $("#vPista"); let arr = false;
+  const ir = e => { const r = pista.getBoundingClientRect(); v.currentTime = Math.min(1, Math.max(0, (e.clientX - r.left) / r.width)) * dur(); };
+  pista.addEventListener("pointerdown", e => { if(e.target.closest(".mk,.seg")) return; arr = true; pista.setPointerCapture(e.pointerId); ir(e); });
+  pista.addEventListener("pointermove", e => { if(arr) ir(e); });
+  pista.addEventListener("pointerup", () => { arr = false; });
+  conectarForm(id);
+}
+
+function pintarPista(){
+  const id = S.abierto, it = items[id], v = V(); if(!it || !v || !$("#vSegs")) return;
+  const d = v.duration || Math.max(0, ...(it.tomasLinea||[]).map(t=>Number(t.t1)||0)) || 1, m = loc(id).marc;
+  $("#vSegs").innerHTML = (it.tomasLinea||[]).map((t,i) => `<button class="seg ${(t.clip||"").startsWith("PROPIO")?"propio":""} ${i in m?"marc":""}" data-seg="${i}" data-t0="${t.t0}" data-t1="${t.t1}" style="left:${t.t0/d*100}%;width:${Math.max(.6,(t.t1-t.t0)/d*100)}%" title="${esc(tc(t.t0)+" · "+(t.frase||""))}"></button>`).join("");
+  $("#vMarcas").innerHTML = notasT(it).filter(n => n.t != null).map(n => `<button class="mk ${n.estado==="ok"?"ok":""} ${n.id===S.activa?"act":""}" data-mk="${esc(n.id)}" style="left:${Math.min(100,n.t/d*100)}%" title="${esc(tc(n.t)+" · "+n.texto)}"></button>`).join("");
+  document.querySelectorAll("[data-seg]").forEach(b => b.onclick = () => { S.sec = "tomas"; S.tomaAb = Number(b.dataset.seg); v.currentTime = Number(b.dataset.t0) + .05; v.pause(); pintarCuerpo(); });
+  document.querySelectorAll("[data-mk]").forEach(b => b.onclick = () => irNota(b.dataset.mk));
+}
+function irNota(nid){
+  const it = items[S.abierto], n = notasT(it).find(x => x.id === nid); if(!n) return;
+  S.activa = nid; S.sec = "notas"; const v = V(); if(v && n.t != null){ v.currentTime = n.t; v.pause(); }
+  pintarCuerpo(); document.querySelector(`[data-nota="${CSS.escape(nid)}"]`)?.scrollIntoView({block:"nearest"});
+}
+
+function pintarCabecera(id, it){
+  const estado = (ESTADOS.find(e=>e[0]===tab(it))||[,it.estado])[1];
+  const fecha = (it.fechaCrudo||"").slice(0,10).split("-").reverse().slice(0,2).join("/");
+  const links = [it.driveId?`<a href="https://drive.google.com/file/d/${esc(it.driveId)}/view" target="_blank" rel="noopener">Drive</a>`:"",
+                 it.crudoLink?`<a href="${esc(it.crudoLink)}" target="_blank" rel="noopener">Crudo</a>`:""].filter(Boolean).join(" · ");
+  const nota = it.nota||"", esAviso = /control marcó/i.test(nota);
+  const avisos = esAviso ? [...new Set(nota.replace(/^.*?control marcó:\s*/i,"").split(/\s*\|\s*/).filter(Boolean))] : [];
+  const ab = $("#vCabe details")?.open;
+  $("#vCabe").innerHTML = `<div class="l1"><h2>${esc(it.creadora||"Sin creadora")} · ${esc(it.guion||"sin guion")}</h2><span class="pill e-${esc(it.estado)}">${esc(estado)}</span>
+      <span class="nav"><button class="btn ch" id="vPrev" title="Video anterior (↑)" ${vecino(-1)?"":"disabled"}>←</button><button class="btn ch" id="vNext" title="Video siguiente (↓)" ${vecino(1)?"":"disabled"}>→</button><button class="btn ch" id="vCerrar" title="Cerrar (Esc)">✕ Cerrar</button></span></div>
+    <div class="st">${esc(it.marcaNombre||it.marca)}${fecha?` · ${fecha}`:""} · versión ${ver(it)}${it.revisadoPor?` · revisó ${esc(it.revisadoPor)}`:""}${links?` · ${links}`:""}</div>
+    ${it.error?`<div class="err">${esc(it.error)}</div>`:""}
+    ${avisos.length?`<details class="aud" ${ab?"open":""}><summary>El control automático marcó ${avisos.length} ${avisos.length===1?"cosa":"cosas"} para mirar</summary><ul>${avisos.map(a=>`<li>${esc(a)}</li>`).join("")}</ul></details>`:""}
+    ${nota && !esAviso?`<div class="hist" style="margin:8px 0 0">${esc(nota)}</div>`:""}`;
+  $("#vPrev").onclick = () => vecino(-1) && abrir(vecino(-1)); $("#vNext").onclick = () => vecino(1) && abrir(vecino(1)); $("#vCerrar").onclick = cerrarVisor;
+}
+
+function pintarCuerpo(){
+  const id = S.abierto, it = items[id]; if(!it || !$("#cuerpo")) return;
+  const L = loc(id), ns = notasT(it), lin = (editable(it) && it.vistaUrl) ? (it.tomasLinea||[]) : [];
+  const subs = (it.pantallas||[]).map(t=>(t && typeof t==="object")?(t.texto||""):t);
+  const nSubs = Object.keys(L.subs).length, nMarc = Object.keys(L.marc).length;
+  const secs = [["notas","Notas",ns.filter(n=>n.estado!=="ok").length], ...(lin.length?[["tomas","Tomas",nMarc||lin.length]]:[]), ...(subs.length?[["subs","Subtítulos",nSubs||""]]:[])];
+  if(!secs.find(s=>s[0]===S.sec)) S.sec = "notas";
+  $("#vSecs").innerHTML = secs.map(([k,t,n]) => `<button class="sec ${k===S.sec?"on":""}" data-sec="${k}">${t}${n!==""?`<b>${n}</b>`:""}</button>`).join("");
+  document.querySelectorAll("[data-sec]").forEach(b => b.onclick = () => { S.sec = b.dataset.sec; pintarCuerpo(); });
+  const c = $("#cuerpo");
+  if(c.contains(document.activeElement) && /INPUT|TEXTAREA/.test(document.activeElement.tagName) && c.dataset.sec === S.sec){ pintarPista(); return; }   // está escribiendo: no se le borra
+  c.dataset.sec = S.sec;
+  const ed = editable(it) || rehacible(it);
+  if(S.sec === "notas"){
+    const orden = [...ns].sort((a,b) => (b.ver - a.ver) || ((a.t ?? -1) - (b.t ?? -1)));
+    const et = n => n.estado==="ok" ? `<span class="et ok">resuelta</span>` : n.estado==="env" ? `<span class="et env">${n.ver < ver(it) ? "pedida en v"+n.ver+": ¿quedó?" : "enviada"}</span>` : "";
+    c.innerHTML = (orden.length ? orden.map(n => `<div class="nota ${n.estado==="ok"?"ok":""} ${n.id===S.activa?"act":""}" data-nota="${esc(n.id)}">
+        <button class="tcb ${n.t==null?"gen":""}" data-ir="${esc(n.id)}">${n.t==null?"General":tc(n.t)}</button><span class="tx">${esc(n.texto)}</span>
+        <span class="pie"><span>${esc(n.por||"")} · v${n.ver}</span>${et(n)}
+          ${n.estado==="env" && n.ver < ver(it) && ed ? `<button class="si" data-ok="${esc(n.id)}">Quedó bien</button><button class="no" data-mal="${esc(n.id)}">Sigue mal</button>` : ""}
+          ${n.estado==="pend" ? `<button data-borrar="${esc(n.id)}">Borrar</button>` : ""}</span></div>`).join("")
+      : `<p class="vacio">${ed?"Sin notas todavía. Pausá donde quieras cambiar algo y escribí abajo: la nota queda clavada en ese segundo.":"Sin notas."}</p>`)
+      + ((it.notas||[]).length ? `<div class="hist"><b>Correcciones pedidas antes:</b> ${(it.notas||[]).map(esc).join(" · ")}</div>` : "");
+    c.querySelectorAll("[data-ir]").forEach(b => b.onclick = () => irNota(b.dataset.ir));
+    const cambiar = fn => guardar(id, {notasT: fn(notasT(items[id]).map(n => ({...n})))});
+    c.querySelectorAll("[data-borrar]").forEach(b => b.onclick = () => cambiar(a => a.filter(n => n.id !== b.dataset.borrar)));
+    c.querySelectorAll("[data-ok]").forEach(b => b.onclick = () => cambiar(a => a.map(n => n.id === b.dataset.ok ? {...n, estado:"ok"} : n)));
+    c.querySelectorAll("[data-mal]").forEach(b => b.onclick = () => cambiar(a => { const n = a.find(x => x.id === b.dataset.mal); n.estado = "ok";
+      return [...a, {id: Date.now().toString(36), t: n.t, texto: n.texto + " (sigue mal)", por: quien, fecha: new Date().toISOString(), ver: ver(it), estado: "pend"}]; }));
+  } else if(S.sec === "tomas"){
+    c.innerHTML = `<p class="sub" style="margin-bottom:8px">Tocá la toma que no te guste y elegí con qué reemplazarla.</p>` + lin.map((t,i) => `<div class="trow ${i in L.marc?"marcada":""}" data-k="${i}" data-t0="${t.t0}" data-t1="${t.t1}"><button class="tchip"><b>${tc(t.t0)}</b><small>${esc(t.frase||t.clip)}</small>${(t.clip||"").startsWith("PROPIO")?"<em>CREADORA</em>":""}</button></div>`).join("");
+    c.querySelectorAll(".tchip").forEach(b => b.onclick = () => { const k = Number(b.parentElement.dataset.k); S.tomaAb = S.tomaAb === k ? null : k; const v = V(); if(v && S.tomaAb != null) v.currentTime = Number(lin[k].t0) + .05; pintarCuerpo(); });
+    if(S.tomaAb != null && lin[S.tomaAb]){
+      const k = S.tomaAb, t = lin[k], m = L.marc[k] || {}, row = c.querySelector(`.trow[data-k="${k}"]`);
+      const cel = (a,j) => `<div class="alt ${m.clip===a.clip?"sel":""}" data-clip="${esc(a.clip)}" title="${esc(a.desc)}"><div class="th" style="background-image:url('${esc(it.tomasGrilla||"")}');background-size:288px auto;background-position:-${j*96}px -${(t.fila*170.4).toFixed(1)}px"></div><span>${(a.clip||"").startsWith("PROPIO")?'<b class="dc">DE LA CREADORA</b>':""}${esc((a.desc||"").slice(0,26))}</span></div>`;
+      const panel = document.createElement("div"); panel.className = "tpanel";
+      panel.innerHTML = `<div class="q">${tc(t.t0)}–${tc(t.t1)} · «${esc(t.frase||"")}»</div>
+        <div class="alts">${(t.alts||[]).map(cel).join("")}<div class="alt sis ${(k in L.marc) && !m.clip?"sel":""}" data-clip="">Que elija el sistema</div></div>
+        <input class="tnota" placeholder="Opcional: qué querés ver acá (ej. el frasco, una panza, sin cara)" value="${esc(m.nota||"")}">
+        <div class="ac"><button class="btn dark ch tmarcar">${k in L.marc?"Actualizar":"Marcar para cambiar"}</button>${k in L.marc?'<button class="btn ch tquitar">Dejarla como está</button>':""}</div>`;
+      row.appendChild(panel); row.scrollIntoView({block:"nearest"});
+      let elegido = m.clip ?? null;
+      panel.querySelectorAll(".alt").forEach(a => a.onclick = () => { panel.querySelectorAll(".alt").forEach(x=>x.classList.remove("sel")); a.classList.add("sel"); elegido = a.dataset.clip; });
+      const listo = () => { S.tomaAb = null; document.activeElement?.blur(); pintarCuerpo(); pintarAcciones(); pintarFila(id); };
+      panel.querySelector(".tmarcar").onclick = () => { L.marc[k] = {t: Number(t.t0) + 0.1, clip: elegido || "", nota: panel.querySelector(".tnota").value.trim()}; listo(); };
+      const q = panel.querySelector(".tquitar"); if(q) q.onclick = () => { delete L.marc[k]; listo(); };
+    }
+  } else {
+    c.innerHTML = `<p class="sub" style="margin-bottom:8px">${ed?"Tocá un subtítulo para corregirlo.":""}</p><div class="subs">${subs.map((t,i)=>`<label><span>${i+1}</span><input data-i="${i}" value="${esc(L.subs[i] ?? t)}" data-orig="${esc(t)}" class="${i in L.subs?"cambio":""}" ${ed?"":"disabled"}></label>`).join("")}</div>
+      ${ed?`<label class="chk"><input type="checkbox" id="vBroll" ${L.broll?"checked":""}> Elegir todo el b-roll de nuevo</label>`:""}`;
+    c.querySelectorAll(".subs input").forEach(i => i.oninput = () => { if(i.value !== i.dataset.orig) L.subs[i.dataset.i] = i.value; else delete L.subs[i.dataset.i]; i.classList.toggle("cambio", i.dataset.i in L.subs); pintarAcciones(); });
+    const ob = $("#vBroll"); if(ob) ob.onchange = () => { L.broll = ob.checked; pintarAcciones(); };
+  }
+  $("#vForm").hidden = !ed;
+  pintarPista();
+}
+function pintarFila(id){ const f = document.querySelector(`#tj-${CSS.escape(id)} .poster`); if(!f) return; const n = pend(items[id]).length + Object.keys(loc(id).marc).length; f.querySelector(".nn")?.remove(); if(n) f.insertAdjacentHTML("beforeend", `<i class="nn">${n}</i>`); }
+
+function conectarForm(id){
+  const tx = $("#vTexto"), g = $("#vGuardar"), bg = $("#vGeneral");
+  const donde = () => { $("#vDondeL").textContent = S.general ? "Nota" : "Nota en"; $("#vDonde").textContent = S.general ? "general" : tc(S.tNota ?? V()?.currentTime ?? 0); bg.textContent = S.general ? "Clavarla en el segundo" : "Nota general"; };
+  if(!V()) S.general = true;
+  donde();
+  tx.oninput = () => { if(S.tNota == null && V()){ S.tNota = V().currentTime; V().pause(); } g.disabled = !tx.value.trim(); donde(); };
+  bg.onclick = () => { if(!V()) return; S.general = !S.general; donde(); tx.focus(); };
+  const guardarNota = () => { const texto = tx.value.trim(), it = items[id]; if(!texto || !it) return;
+    const n = {id: Date.now().toString(36), t: S.general ? null : Math.round((S.tNota ?? V()?.currentTime ?? 0) * 10) / 10, texto, por: quien, fecha: new Date().toISOString(), ver: ver(it), estado: "pend"};
+    tx.value = ""; g.disabled = true; S.tNota = null; S.general = !V(); S.activa = n.id; S.sec = "notas"; donde();
+    guardar(id, {notasT: [...notasT(it), n]}, "Nota guardada"); };
+  $("#vForm").onsubmit = e => { e.preventDefault(); guardarNota(); };
+  tx.onkeydown = e => { if(e.key === "Enter" && (e.metaKey || e.ctrlKey)){ e.preventDefault(); guardarNota(); } if(e.key === "Escape") tx.blur(); };
+}
+
+function pintarAcciones(){
+  const id = S.abierto, it = items[id], el = $("#vAcc"); if(!it || !el) return;
+  if(el.contains(document.activeElement) && document.activeElement.tagName === "INPUT") return;
+  const L = loc(id), nN = pend(it).length, nT = Object.keys(L.marc).length, nS = Object.keys(L.subs).length, n = nN + nT + nS + (L.broll?1:0);
+  const partes = [nN && `${nN} ${nN===1?"nota":"notas"}`, nT && `${nT} ${nT===1?"toma":"tomas"}`, nS && `${nS} ${nS===1?"subtítulo":"subtítulos"}`, L.broll && "todo el b-roll"].filter(Boolean).join(" · ");
+  if(editable(it)){
+    if(S.rech){
+      el.innerHTML = `<input id="vMotivo" placeholder="¿Por qué no sirve el crudo? (audio cortado, mal grabado…)"><button class="btn ch" id="vRechNo">Cancelar</button><button class="btn dark ch" id="vRechSi">Rechazar el crudo</button>`;
+      $("#vMotivo").focus();
+      $("#vRechNo").onclick = () => { S.rech = false; document.activeElement?.blur(); pintarAcciones(); };
+      $("#vRechSi").onclick = () => { const m = $("#vMotivo").value.trim(); if(!m){ toast("Escribí por qué no sirve el crudo"); return; } S.rech = false; cerrar(id, {estado:"rechazado", nota:m}, "Rechazado"); };
+      return;
+    }
+    const rapido = nT && !nN && !nS && !L.broll;
+    el.innerHTML = `<button class="btn link" id="vRech" title="Solo si hay que volver a grabarlo">Rechazar el crudo</button><span class="sp"></span>
+      <button class="btn dark" id="vMandar" ${n?"":"disabled"}>Mandar correcciones${n?` (${n})`:""}</button><button class="btn ok" id="vAprobar">${n?"Aprobar igual":"Aprobar"}</button>
+      <span class="res">${n ? `${partes} · ${rapido ? "solo se cambian esas tomas: vuelve en minutos" : "vuelve re-editado en ~20 min"}` : "Sin cambios pedidos. Si está bien, aprobalo: pasa a Editados y a la app."}</span>`;
+    $("#vRech").onclick = () => { S.rech = true; pintarAcciones(); };
+    $("#vAprobar").onclick = () => { if(n && !confirm(`Tiene ${partes} sin mandar: no se van a corregir. ¿Aprobar igual?`)) return; cerrar(id, {estado:"aprobado"}, "Aprobado: pasa a Editados y a la app"); };
+    $("#vMandar").onclick = () => mandar(id, false);
+  } else if(rehacible(it)){
+    el.innerHTML = `<span class="res" style="flex-basis:auto">${n ? partes : "Para rehacerlo, dejá una nota o corregí un subtítulo."} · la app sigue con la versión aprobada hasta que apruebes la nueva.</span><span class="sp"></span><button class="btn dark" id="vRehacer" ${n?"":"disabled"}>Rehacer con esto</button>`;
+    $("#vRehacer").onclick = () => { if(confirm("¿Rehacer este video? Vuelve a Para revisar en ~20 min.")) mandar(id, true); };
+  } else if(it.estado === "error"){
+    el.innerHTML = `<span class="sp"></span><button class="btn" id="vReint">Volver a intentar</button>`;
+    $("#vReint").onclick = () => cerrar(id, {estado:"corregir", pedido:{}}, "Se vuelve a intentar");
+  } else {
+    const p = it.pedido || {};
+    el.innerHTML = `<span class="res">${it.estado==="corregir" ? `Se está corrigiendo${p.tomas?.length ? `: ${p.tomas.length} ${p.tomas.length===1?"toma":"tomas"}` : p.nota ? `: ${esc(p.nota.slice(0,160))}` : ""}. Vuelve solo a Para revisar.` : it.estado==="procesando" ? "Se está editando. Aparece solo en Para revisar." : ""}</span>`;
+  }
+}
+
+// Mismo contrato de siempre con el bot: solo tomas → {tomas} (cambia esas y vuelve en minutos); con notas, subtítulos o
+// "todo el b-roll" → {pantallas, broll, nota} (re-edición). Las notas por segundo viajan en el texto como «seg 12,3: …».
+function mandar(id, rehacer){
+  const it = items[id], L = loc(id), ps = pend(it).sort((a,b) => (a.t ?? -1) - (b.t ?? -1));
+  const tomas = Object.values(L.marc).map(m => ({t: m.t, ...(m.clip ? {clip: m.clip} : {}), ...(m.nota ? {nota: m.nota} : {})}));
+  const enviadas = notasT(it).map(n => n.estado === "pend" ? {...n, estado: "env"} : n);
+  if(!rehacer && tomas.length && !ps.length && !Object.keys(L.subs).length && !L.broll)
+    return cerrar(id, {estado:"corregir", pedido:{tomas, por:quien}}, `Listo: se ${tomas.length===1?"cambia esa toma":"cambian esas "+tomas.length+" tomas"} y vuelve en unos minutos`);
+  const pantallas = (it.pantallas||[]).map((t,i) => L.subs[i] ?? ((t && typeof t==="object") ? (t.texto||"") : t));
+  const txt = ps.map(n => (n.t == null ? "" : `seg ${n.t.toFixed(1).replace(".",",")}: `) + n.texto).join(" | ");
+  const extra = tomas.length ? "Cambiar las tomas de los seg " + tomas.map(m=>m.t.toFixed(1)+(m.nota?" ("+m.nota+")":"")).join(", ") : "";
+  cerrar(id, {estado:"corregir", notasT: enviadas, pedido:{pantallas, broll: rehacer ? true : !!L.broll, nota: [txt, extra].filter(Boolean).join(" | "), por:quien, ...(rehacer?{rehacer:true}:{})}},
+    rehacer ? "Listo: se rehace y vuelve a Para revisar en ~20 min" : "Listo: vuelve editado en ~20 min · la skill aprende de esto");
+}
+// guarda, limpia lo local de ese video y pasa al siguiente de la lista (para revisar de corrido)
+async function cerrar(id, datos, msg){
+  const sig = vecino(1) || vecino(-1);
+  if(!await guardar(id, {...datos, revisadoPor:quien}, msg)) return;
+  delete S.loc[id];
+  if(S.abierto === id){ if(sig && items[sig]) abrir(sig); else cerrarVisor(); }
+  pintar();
+}
+
+document.addEventListener("keydown", e => {
+  if($("#app").hidden || e.metaKey || e.ctrlKey || e.altKey) return;
+  if(/INPUT|TEXTAREA|SELECT/.test(e.target.tagName)) return;
+  const v = V(), k = e.key;
+  if(!S.abierto) return;
+  if(k === "Escape"){ cerrarVisor(); return; }
+  if(k === " " && v){ e.preventDefault(); v.paused ? v.play() : v.pause(); }
+  else if(k === "ArrowLeft" && v){ e.preventDefault(); v.currentTime = Math.max(0, v.currentTime - 2); }
+  else if(k === "ArrowRight" && v){ e.preventDefault(); v.currentTime = v.currentTime + 2; }
+  else if(k === "ArrowDown" && vecino(1)){ e.preventDefault(); abrir(vecino(1)); }
+  else if(k === "ArrowUp" && vecino(-1)){ e.preventDefault(); abrir(vecino(-1)); }
+  else if((k === "n" || k === "N") && $("#vForm") && !$("#vForm").hidden){ e.preventDefault(); if(v){ v.pause(); S.general = false; S.tNota = v.currentTime; $("#vDonde").textContent = tc(S.tNota); } $("#vTexto").focus(); }
+});
+
+const DEMO = new URLSearchParams(location.search).has("demo");
+if(quien && !DEMO) arrancar();
+// para probar la página sin entrar (datos de mentira desde la consola)
+window.__sala = {S, app: a => { S.app = a; pintar(); }, set: (q, its) => { quien = q; items = its; fb = {doc:(...a)=>a[2], updateDoc: async (id, d) => { items[id] = {...items[id], ...d}; setTimeout(pintar, 0); }}; $("#login").hidden = true; $("#app").hidden = false; pintar(); }};
+</script>
+</body>
+</html>
