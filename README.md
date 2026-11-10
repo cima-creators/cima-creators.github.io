@@ -25,3 +25,5 @@ que el celular no sirva la copia vieja.
   trae claves ni guiones: cada clave abre su paquete cifrado (`d/<id>.json`, AES-256-GCM); `v/` son los anuncios de
   referencia. **No se edita a mano**: se arma con `creativos/formatos/cliente.py <marca> --aprobados <revisión> --github
   <este repo>/<marca>/guiones` desde la carpeta de trabajo de CIMA. Un guion puntual se abre con `#g-<código>`.
+  La revisión (aprobados, cambios a mano, notas) se guarda en Firebase, documento `<marca>/sala`: el equipo de CIMA aprueba y
+  edita ahí mismo con su clave, y lo aprobado le aparece solo a la marca y a las creadoras.

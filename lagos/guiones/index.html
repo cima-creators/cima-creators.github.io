@@ -417,7 +417,11 @@ button.ref:hover{background:var(--sunken)}
 .gate .gate-e{color:var(--bad)}
 /* ---------- versión para el cliente: solo sus guiones, sin revisión ---------- */
 .cli .fest,.cli .prog,.cli .sync,.cli .tagc,.cli:not(.conest) .pill,.cli:not(.conest) .it .st{display:none}
-.side-f a{color:var(--accent);text-decoration:none;font-weight:500}
+.pd.cl{border-left-color:var(--warn)}
+.pd.cl span{color:var(--warn)}
+.pd.cl p{margin:0;font-size:13px;line-height:1.5;color:var(--ink)}
+.aviso{background:var(--warn-soft);color:var(--ink);border-radius:10px;padding:8px 12px;font-size:12.5px;line-height:1.45}
+.aviso a{color:var(--accent);font-weight:500}
 
 /* ---------- dos columnas ---------- */
 @media (min-width:720px){
@@ -556,14 +560,26 @@ const setPref = (k, v) => { try { localStorage.setItem('sala-' + k, v ? '1' : '0
 // claves: [huella SHA-256, huella de respaldo, quién]; quién vacío = ve todo, nombre de una creadora = ve solo sus guiones
 // cifrado (la versión que va a GitHub, repo público): no hay claves ni datos en la página; cada clave abre su paquete cifrado d/<id>.json
 const CFG = {cliente: "Lagos Lab", cifrado: true, claves: []};
-const S = { cli: !!CFG.cliente, solo: '', tab: 'formatos', fmt: null, gan: null, gui: null, gids: [], q: '', filtro: {quien: '', fmt: '', estado: '', angulo: '', idea: ''}, rtab: 'principal',
+const MUDANZA = CFG.cliente ? '' : 'https://cima-creators.github.io/lagos/guiones/';   // desde el 10/11 los guiones de Lagos se revisan ahí (guarda en Firebase)
+const FB = {apiKey: 'AIzaSyCTv4DiRCpbCpGYP6E86TPHlkPvaAZTN3g', authDomain: 'cleargy-creators.firebaseapp.com', projectId: 'cleargy-creators', storageBucket: 'cleargy-creators.firebasestorage.app', messagingSenderId: '313543582398', appId: '1:313543582398:web:99fe78991adeea2e7cb4ef'};   // el proyecto de las apps de CIMA
+const S = { cli: !!CFG.cliente, solo: '', rol: '', GUT: [], tab: 'formatos', fmt: null, gan: null, gui: null, gids: [], q: '', filtro: {quien: '', fmt: '', estado: '', angulo: '', idea: ''}, rtab: 'principal',
             orig: pref('orig', true), pant: pref('pant', true), det: pref('det', false), mas: false,
             F: [], G: {}, GU: [], rev: {}, notas: [], db: null, me: null, dbOk: false, dbMsg: '', saving: 0, cargado: false };
 
 const colorBloque = (nombre, lista) => { const i = lista.indexOf(nombre); return COLS[(i < 0 ? 0 : i) % COLS.length]; };
-const estadoDe = id => (S.rev[id] && S.rev[id].estado) || (S.cli && id.startsWith('gui-') ? ((S.GU.find(g => 'gui-' + g.codigo === id) || {}).estado || '') : '');   // en la versión de la marca el estado viene con el guion
+// Roles de la versión de la marca (vienen en el paquete que abre cada clave): equipo = CIMA, revisa igual que en la Sala · marca = ve lo aprobado y deja notas · creadora = ve lo aprobado
+const esRevisor = () => !S.cli || S.rol === 'equipo';
+const esMarca = () => S.cli && S.rol === 'marca';
+const soloAprobados = () => S.cli && S.rol !== 'equipo';
+const horneado = id => S.cli && id.startsWith('gui-') ? ((S.GUT.find(g => 'gui-' + g.codigo === id) || {}).estado || '') : '';   // estado con el que se publicó, por si la base no conecta
+const estadoDe = id => (S.rev[id] && S.rev[id].estado) || (S.dbOk ? '' : horneado(id));
+function visibles(){   // la marca y las creadoras ven solo lo aprobado, y lo que Nacho aprueba aparece solo
+  const antes = S.GU.map(g => g.codigo).join();
+  S.GU = soloAprobados() ? S.GUT.filter(g => estadoDe('gui-' + g.codigo) === 'aprobado') : S.GUT;
+  return antes !== S.GU.map(g => g.codigo).join();
+}
 const HB = {};   // hash de la versión publicada de cada guion o plantilla
-function hashItem(id){ if (!HB[id]) { const x = id.startsWith('fmt-') ? S.F.find(f => 'fmt-' + f.id === id) : S.GU.find(g => 'gui-' + g.codigo === id); HB[id] = hash(((x && (x.filas || x.plantilla)) || []).map(normal)); } return HB[id]; }
+function hashItem(id){ if (!HB[id]) { const x = id.startsWith('fmt-') ? S.F.find(f => 'fmt-' + f.id === id) : S.GUT.find(g => 'gui-' + g.codigo === id); HB[id] = hash(((x && (x.filas || x.plantilla)) || []).map(normal)); } return HB[id]; }
 const hechosDe = id => { const rv = S.rev[id] || {}; return rv.hechos && rv.hsobre === hashItem(id) ? rv.hechos : {}; };   // cambios que hizo Claude sobre esta versión
 const estadoVista = id => estadoDe(id) || (Object.keys(hechosDe(id)).length ? 'hecho' : '');
 const sinNum = t => S.solo && /ventas|compras|roas/i.test(t || '') ? '' : (t || '');   // la creadora no ve los números de la marca
@@ -577,13 +593,13 @@ async function cargar(){
   const j = async (u, d) => { try { const r = await fetch(u, {cache: 'no-store'}); return r.ok ? await r.json() : d; } catch (e) { return d; } };
   const [F, G, GU] = S.paquete ? [S.paquete.formatos || [], S.paquete.ganadores || {}, S.paquete.guiones || []] : await Promise.all([j('data/formatos.json', []), j('data/ganadores.json', {}), j('data/guiones.json', [])]);
   const grupos = []; F.forEach(f => { if (!grupos.includes(f.grupo || 'Formatos')) grupos.push(f.grupo || 'Formatos'); });
-  S.F = grupos.flatMap(g => F.filter(f => (f.grupo || 'Formatos') === g)); S.G = G; S.GU = S.solo ? GU.filter(g => g.quien === S.solo) : GU; S.cargado = true;
+  S.F = grupos.flatMap(g => F.filter(f => (f.grupo || 'Formatos') === g)); S.G = G; S.GUT = S.solo ? GU.filter(g => g.quien === S.solo) : GU; visibles(); S.cargado = true;
   if (S.cli) S.tab = 'guiones';
   leerHash();
   if (!S.fmt && S.F.length) S.fmt = S.F[0].id;
   if (!S.gui && S.GU.length) S.gui = S.GU[0].codigo;
-  if (S.cli) { $('#app').classList.toggle('conest', S.GU.some(g => g.estado)); const sala = S.paquete && S.paquete.sala; if (sala) $('.side-f').innerHTML = '<a href="' + esc(sala) + '" target="_blank" rel="noopener">Lo que falta aprobar está en la Sala ↗</a>'; }
-  render(); if (!S.cli) conectar();
+  if (S.cli) $('#app').classList.toggle('conest', soloAprobados());
+  render(); if (!S.cli || CFG.cifrado) conectar();
 }
 function leerHash(){
   const h = (location.hash || '').slice(1);
@@ -593,21 +609,39 @@ function leerHash(){
 }
 async function conectar(){
   const sin = msg => { S.dbMsg = msg; pintarSync(); pintarNuestro(true); actualizarRevision(); };
-  if (!window.claude || !claude.use) return sin('Vista sin conexión: no se guarda');
   let db = null, user = null;
-  try { db = await claude.use('db'); user = await claude.use('user'); } catch (e) {}
+  if (CFG.cifrado) { try { db = await conectarFirebase(); } catch (e) {} S.me = (S.paquete && S.paquete.nombre) || ''; }
+  else { if (!window.claude || !claude.use) return sin('Vista sin conexión: no se guarda'); try { db = await claude.use('db'); user = await claude.use('user'); } catch (e) {} }
   if (!db) return sin('No se pudo conectar: no se guarda');
-  S.db = db; try { S.me = user ? await user.id() : null; } catch (e) {}
+  S.db = db; if (!CFG.cifrado) { try { S.me = user ? await user.id() : null; } catch (e) {} }
   pintarSync(); pintarNuestro(true); actualizarRevision();
   const t = setTimeout(() => { if (!S.dbOk) { S.dbMsg = 'La base tarda en responder'; pintarSync(); } }, 10000);
   db.collection('revision').onSnapshot(snap => {
     const r = {}; snap.docs.forEach(d => { r[d.id] = d.data(); });
     S.rev = r; if (!snap.metadata || !snap.metadata.fromCache) { S.dbOk = true; S.dbMsg = ''; clearTimeout(t); }
+    if (visibles()) { if (!S.GU.some(g => g.codigo === S.gui)) S.gui = (S.GU[0] || {}).codigo || null; render(); return; }   // cambió lo que esta persona puede ver
     pintarFiltros(); pintarLista(); pintarProgreso(); pintarSync(); actualizarRevision(); pintarNuestro(false);
   }, e => { S.dbMsg = 'La base no responde (' + (e.code || 'error') + ')'; clearTimeout(t); pintarSync(); actualizarRevision(); });
   db.collection('notas').orderBy('fecha', 'asc').onSnapshot(snap => {
     S.notas = snap.docs.map(d => Object.assign({id: d.id}, d.data())); actualizarRevision();
   }, () => {});
+}
+async function conectarFirebase(){   // la revisión vive en Firebase, documento <marca>/sala: un JSON {revision, notas}, como el estado de las apps de CIMA
+  const V = 'https://www.gstatic.com/firebasejs/10.12.0/firebase-';
+  const [A, F, U] = await Promise.all([import(V + 'app.js'), import(V + 'firestore.js'), import(V + 'auth.js')]);
+  const app = A.initializeApp(FB); await U.signInAnonymously(U.getAuth(app));
+  const fs = F.getFirestore(app), prueba = new URLSearchParams(location.search).has('prueba');   // ?prueba usa la marca de pruebas (smoketest)
+  const ref = F.doc(fs, prueba ? 'smoketest' : S.paquete.marca, 'sala');
+  const vacio = () => ({revision: {}, notas: []}), leer = d => { try { return Object.assign(vacio(), d.exists() ? JSON.parse(d.data().data) : {}); } catch (e) { return vacio(); } };
+  let est = vacio(), cache = true, listo = false; const subs = {revision: [], notas: []}, errs = [];
+  const foto = c => c === 'notas' ? {docs: est.notas.map(n => ({id: n.id, data: () => n}))} : {docs: Object.entries(est.revision).map(([id, d]) => ({id, data: () => d})), metadata: {fromCache: cache}};
+  F.onSnapshot(ref, d => { est = leer(d); cache = d.metadata.fromCache; listo = true; Object.keys(subs).forEach(c => subs[c].forEach(f => f(foto(c)))); }, e => errs.forEach(f => f(e)));
+  const cambiar = fn => F.runTransaction(fs, async t => { const e = leer(await t.get(ref)); fn(e); t.set(ref, {data: JSON.stringify(e), savedAt: new Date().toISOString()}); });
+  const col = c => ({ onSnapshot(cb, err){ subs[c].push(cb); if (err) errs.push(err); if (listo) cb(foto(c)); return () => {}; }, orderBy(){ return this; },
+    doc(id){ id = id || 'n' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); return {
+      set: d => cambiar(e => { if (c === 'notas') e.notas = e.notas.filter(n => n.id !== id).concat([Object.assign({id}, d)]); else e.revision[id] = d; }),
+      merge: d => cambiar(e => { const x = Object.assign({}, e.revision[id] || {}, d); Object.keys(x).forEach(k => { if (x[k] === null) delete x[k]; }); e.revision[id] = x; }) }; } });
+  return { collection: col, doc(p){ const [c, id] = p.split('/'); return col(c).doc(id); } };
 }
 function pintarSync(){
   let cls = 'busy', txt = 'Conectando…';
@@ -720,6 +754,7 @@ function pintarMain(){
       '</div>' + contexto(g) + '<div class="tl" id="tl"></div>';
   }
   main.classList.toggle('sim', !esF && !S.det);
+  if (!esF && MUDANZA) cab = '<div class="aviso">La revisión de los guiones de Lagos se mudó a <a href="' + MUDANZA + '" target="_blank" rel="noopener">cima-creators.github.io/lagos/guiones</a>: ahí aprobás, editás y dejás notas, y lo ven Giuliano y las creadoras. Lo que marques acá ya no cuenta.</div>' + cab;
   main.innerHTML = '<div class="head">' + cab + '</div>' +
     '<div class="ws"><section class="pane p-vid" id="p-vid" aria-label="Referencia"></section><section class="pane p-tr" id="p-tr" aria-label="Guion de la referencia"></section><section class="pane p-our" id="p-our" aria-label="' + (esF ? 'Plantilla' : 'Nuestro guion') + '"></section></div>' +
     '<div class="rev" id="rev"></div>';
@@ -879,16 +914,16 @@ function pintarNuestro(forzar){
   } else if (S.rtab === 'porque') {
     cuerpo = '<div class="mas-b suelto">' + (porQueHTML(S.G[g.ref] || {}) || '<p>Esta referencia no tiene la ficha cargada.</p>') + '</div>';
   } else {
-    const {raw, base, ed, viejo, filas} = vigentes(), ce = S.db ? 'true' : 'false', enl = enlazado(), calc = raw.filter(r => r.ref).length;
+    const {raw, base, ed, viejo, filas} = vigentes(), ce = S.db && esRevisor() ? 'true' : 'false', enl = enlazado(), calc = raw.filter(r => r.ref).length;
     const cel = (i, k, val, cls, ph) => '<div class="ed ' + cls + '" contenteditable="' + ce + '" data-i="' + i + '" data-k="' + k + '" data-ph="' + esc(ph) + '">' + esc(val) + '</div>';
-    const PD = esF ? {} : pedidos(base), HC = hechosDe(itemId());
+    const PD = esF ? {} : pedidos(base), HC = esRevisor() ? hechosDe(itemId()) : {}, CL = !esF && esRevisor() && S.cli ? notasDe('cliente', base) : {};
     const filaHTML = (r, i) => {
-      const o = base[i] || {}, rf = (raw[i] || {}).ref, m = k => (ed && (r[k] || '') !== (o[k] || '')) ? ' mod' : '', p = r.etapa.split(' · ');
+      const o = base[i] || {}, rf = (raw[i] || {}).ref, m = k => (ed && esRevisor() && (r[k] || '') !== (o[k] || '')) ? ' mod' : '', p = r.etapa.split(' · ');
       const chip = esF ? '' : rf ? '<button class="tc" data-ir="' + rf[0] + '"' + (enl ? '' : ' disabled') + ' title="' + (enl ? 'Ver este tramo en la referencia' : 'Calca la referencia principal de este guion') + '">' + fmtT(rf[0]) + '</button>' : (calc && !uno ? '<span class="tc own" title="Esta fila no está en la referencia">propia</span>' : '');
       const antes = (!esF && i === 0 && g.hook_antes) ? '<div class="antes"><b>Hook aprobado antes:</b> ' + esc(g.hook_antes) + '<span class="porq"> Cambió para abrir como abre la referencia.</span></div>' : '';
-      const nb = (esF || !S.db) ? '' : '<button class="nb" data-nota="' + i + '"' + (PD[i] ? ' hidden' : '') + ' title="Dejar una nota para que Claude cambie esta parte">+ Nota</button>';
+      const nb = (esF || !S.db || !(esRevisor() || esMarca())) ? '' : '<button class="nb" data-nota="' + i + '"' + (PD[i] ? ' hidden' : '') + ' title="' + (esMarca() ? 'Dejar una nota sobre esta parte' : 'Dejar una nota para que Claude cambie esta parte') + '">+ Nota</button>';
       return '<div class="fila"' + (rf ? ' data-a="' + rf[0] + '" data-b="' + rf[1] + '"' : '') + '><div class="et"><b>' + esc(p[0]) + '</b>' + (p.length > 1 ? '<small>' + esc(p.slice(1).join(' · ')) + '</small>' : '') + chip + nb + '</div>' +
-        '<div class="di">' + cel(i, 'dice', r.dice, 'dicho' + m('dice'), 'Sin texto') + antes + (HC[i] ? hechoHTML(HC[i]) : '') + (PD[i] ? pedidoHTML(i, PD[i]) : '') + '</div>' +
+        '<div class="di">' + cel(i, 'dice', r.dice, 'dicho' + m('dice'), 'Sin texto') + antes + (HC[i] ? hechoHTML(HC[i]) : '') + (CL[i] ? '<div class="pd cl"><span>Nota de ' + esc(CFG.cliente) + '</span><p>' + esc(CL[i]) + '</p></div>' : '') + (PD[i] ? pedidoHTML(i, PD[i]) : '') + '</div>' +
         '<div class="ve">' + (esF ? '' : cel(i, 'texto', r.texto, 'placa' + m('texto'), '+ texto en pantalla')) + cel(i, 'filma', r.filma, 'filma' + m('filma'), 'Sin indicación') + '</div></div>';
     };
     if (uno) {   // una sola tabla: a la izquierda el tramo de la referencia, a la derecha la fila nuestra que lo calca
@@ -923,7 +958,7 @@ function pintarNuestro(forzar){
     if (!esF && !enl && S.G[g.ref]) pie = '<span>Estás viendo otra referencia del formato. Este guion sale de <b>' + esc(S.G[g.ref].marca || g.ref) + '</b>.</span><button class="linkbtn" id="alorigen">Volver a esa</button>' + (ed ? pie : '');
   }
   const tabs = [['principal', esF ? 'Plantilla' : uno ? 'Lado a lado' : 'Nuestro guion'], ['estructura', 'Estructura'], ['reglas', 'Reglas']].concat(uno ? [['porque', 'Por qué funciona']] : []).filter(t => !S.cli || t[0] === 'principal' || t[0] === 'porque');
-  if (S.cli) pie = '';
+  if (S.cli && !esRevisor()) pie = '';
   box.innerHTML = '<div class="pane-h"><div class="stabs" role="tablist">' + tabs.map(([k, n]) => '<button role="tab" class="' + (S.rtab === k ? 'on' : '') + '" aria-selected="' + (S.rtab === k) + '" data-rt="' + k + '">' + n + '</button>').join('') + '</div><span class="pane-x">' + extra + '</span>' + modo + '</div>' +
     '<div class="pane-b scroll' + clase + '" id="our-b">' + cuerpo + '</div>' + (pie ? '<div class="pane-f">' + pie + '</div>' : '');
   if (!forzar) $('#our-b').scrollTop = prev;
@@ -941,12 +976,14 @@ function pintarNuestro(forzar){
   pintarTiempos();
 }
 /* nota por parte del guion: la deja Nacho, la lee Claude y cambia esa fila */
-function pedidos(base){ const rv = S.rev[itemId()] || {}; return rv.pedidos && rv.psobre === hash(base) ? rv.pedidos : {}; }
+const campoNota = () => esMarca() ? 'cliente' : 'pedidos', sobreDe = c => c === 'cliente' ? 'csobre' : 'psobre';
+function notasDe(campo, base){ const rv = S.rev[itemId()] || {}; return rv[campo] && rv[sobreDe(campo)] === hash(base) ? rv[campo] : {}; }
+function pedidos(base){ return notasDe(campoNota(), base); }
 function hechoHTML(h){
   let f = ''; try { f = h.fecha ? new Date(h.fecha).toLocaleDateString('es-AR', {day: 'numeric', month: 'short'}) : ''; } catch (e) {}
   return '<div class="hc"><b>Cambio hecho' + (f ? ' · ' + esc(f) : '') + '</b>' + (h.nota ? '<p><i>Tu nota:</i> ' + esc(h.nota) + '</p>' : '') + (h.que ? '<p>' + esc(h.que) + '</p>' : '') + (h.antes ? '<p><i>Antes:</i> ' + esc(h.antes) + '</p>' : '') + '</div>';
 }
-function pedidoHTML(i, t){ return '<label class="pd"><span>Nota para cambiar esta parte</span><textarea data-pd="' + i + '" rows="1" placeholder="¿Qué querés que cambie acá?">' + esc(t) + '</textarea></label>'; }
+function pedidoHTML(i, t){ return '<label class="pd' + (esMarca() ? ' cl' : '') + '"><span>' + (esMarca() ? 'Tu nota sobre esta parte' : 'Nota para cambiar esta parte') + '</span><textarea data-pd="' + i + '" rows="1" placeholder="' + (esMarca() ? '¿Qué cambiarías acá?' : '¿Qué querés que cambie acá?') + '">' + esc(t) + '</textarea></label>'; }
 function ligarPedido(ta, boton){
   const alto = () => { if (!ta.scrollHeight) return; ta.style.height = 'auto'; ta.style.height = ta.scrollHeight + 'px'; };
   ta.oninput = alto; alto();
@@ -957,8 +994,8 @@ async function guardarPedido(ta, boton){
   const i = ta.dataset.pd, val = ta.value.replace(/\s+/g, ' ').trim(), id = itemId(), {base} = vigentes(), act = pedidos(base);
   if ((act[i] || '') === val) { if (!val) { ta.onblur = null; const pd = ta.closest('.pd'); if (pd) pd.remove(); if (boton) boton.hidden = false; } return; }
   const nuevo = Object.assign({}, act); if (val) nuevo[i] = val; else delete nuevo[i];
-  const hay = Object.keys(nuevo).length > 0, cambios = {pedidos: hay ? nuevo : null, psobre: hay ? hash(base) : null};
-  if (val && !['cambios', 'rechazado'].includes(estadoDe(id))) cambios.estado = 'cambios';   // una nota es un pedido de cambio
+  const campo = campoNota(), hay = Object.keys(nuevo).length > 0, cambios = {[campo]: hay ? nuevo : null, [sobreDe(campo)]: hay ? hash(base) : null};
+  if (campo === 'pedidos' && val && !['cambios', 'rechazado'].includes(estadoDe(id))) cambios.estado = 'cambios';   // una nota del equipo es un pedido de cambio
   await escribir(id, cambios); toast(val ? 'Nota guardada' : 'Nota borrada');
 }
 function ponerModo(det){   // «Solo guion» o «Con notas»: la fila que se estaba leyendo queda en el mismo lugar
@@ -999,7 +1036,8 @@ function escribir(id, cambios){
     const actual = Object.assign({}, S.rev[id] || {}, cambios, {fecha: new Date().toISOString(), por: S.me || ''});
     Object.keys(actual).forEach(k => { if (actual[k] === null) delete actual[k]; });
     S.rev = Object.assign({}, S.rev, {[id]: actual});
-    try { await S.db.doc('revision/' + id).set(actual); } catch (err) { S.dbMsg = 'No se guardó (' + (err.code || 'error') + ')'; toast('No se pudo guardar'); }
+    pintarLista(); pintarProgreso(); actualizarRevision();   // se ve al toque; la base confirma después
+    try { const ref = S.db.doc('revision/' + id); if (ref.merge) await ref.merge(Object.assign({}, cambios, {fecha: actual.fecha, por: actual.por})); else await ref.set(actual); } catch (err) { S.dbMsg = 'No se guardó (' + (err.code || 'error') + ')'; toast('No se pudo guardar'); }
     S.saving--; pintarFiltros(); pintarLista(); pintarProgreso(); pintarSync(); actualizarRevision(); pintarNuestro(false);
   });
   return cola;
@@ -1008,7 +1046,7 @@ function escribir(id, cambios){
 /* ---------- barra de revisión ---------- */
 function montarRevision(){
   const box = $('#rev'); if (!box) return;
-  if (S.cli) { box.hidden = true; return; }
+  if (S.cli && !esRevisor()) { box.hidden = true; return; }
   box.innerHTML = '<div class="dec" role="group" aria-label="Decisión">' +
     '<button class="btn ok" data-st="aprobado"><i></i>Aprobar</button><button class="btn warn" data-st="cambios"><i></i><span class="ancho">Pedir cambios</span><span class="angosto">Cambios</span></button><button class="btn bad" data-st="rechazado"><i></i>Rechazar</button></div>' +
     '<div class="comp"><textarea id="nota" rows="1" aria-label="Sugerencias y cambios"></textarea><button class="btn pri" id="enviar"><span>Guardar<span class="ancho"> nota</span></span></button></div>' +
@@ -1064,7 +1102,8 @@ async function huella(t){   // la clave no va escrita en la página: se compara 
 const quienEntra = h => { const c = CFG.claves.find(c => c[0] === h || c[1] === h); return c ? (c[2] || '') : null; };   // null = clave incorrecta
 const claveOk = h => quienEntra(h) !== null;
 function arrancar(quien){
-  S.solo = quien || '';
+  S.solo = quien || ''; S.rol = (S.paquete && S.paquete.rol) || '';
+  $('#app').classList.toggle('cli', S.cli && !esRevisor());
   if (S.solo) { $('.bname').textContent = CFG.cliente + ' · Guiones de ' + S.solo; let p = null; try { p = localStorage.getItem('sala-det'); } catch (e) {} if (p === null) S.det = true; }   // la creadora abre con todo lo que tiene que filmar
   $('#gate').hidden = true; $('#app').hidden = false; cargar();
 }
@@ -1102,7 +1141,7 @@ function pedirClave(){
   setTimeout(() => inp.focus(), 50);
 }
 (() => {
-  if (S.cli) { $('#app').classList.add('cli'); $('.bname').textContent = $('#gate-t').textContent = CFG.cliente + ' · Guiones'; $('#t-formatos').hidden = true; }
+  if (S.cli) { $('.bname').textContent = $('#gate-t').textContent = CFG.cliente + ' · Guiones'; $('#t-formatos').hidden = true; }
   if (CFG.cifrado) { recordarCifrado().then(ok => { if (!ok) pedirClave(); }); return; }
   let g = ''; try { g = localStorage.getItem('sala-clave') || ''; } catch (e) {}
   if (!CFG.claves.length || (g && claveOk(g))) arrancar(quienEntra(g)); else pedirClave();
