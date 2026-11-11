@@ -377,7 +377,7 @@ function sinEditar(){
     for(const d of docs){
       if((d.fecha || "") < desde || d.status === "rejected") continue;
       const it = items[marca + "__" + d.id], q = `${d.creadora} ${d.guion||""}`.trim();
-      if(it && it.estado === "rechazado" && /ya no trabaja/i.test(it.nota || "")) continue;
+      if(it && it.estado === "rechazado" && (it.fuera || /ya no trabaja/i.test(it.nota || ""))) continue;   // sacados a mano: no cuentan
       sub++; if(d.editado) continue;
       if(!it) suma(marca, d.link ? "No entró al editor: falta el b-roll de la creadora o el bot todavía no pasó" : "La creadora no cargó el link de Drive del crudo", q);
       else if(it.estado === "revisar") suma(marca, "Ya está editado: espera la revisión de Abril", q);
