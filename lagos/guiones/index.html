@@ -104,6 +104,11 @@ select{height:30px;border:1px solid var(--line);border-radius:8px;background:var
 .side-b{flex:1;min-height:0;padding:6px}
 .grp{font:500 10.5px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);padding:13px 8px 5px}
 .grp:first-child{padding-top:6px}
+/* plegar un grupo de la lista de Ganadores (Nacho, 11/11: «un botón para achicar si no quiero ver las marcas o los formatos») */
+.grp.gbt{display:flex;align-items:center;gap:6px;width:100%;border:0;background:none;cursor:pointer;text-align:left;font:inherit;letter-spacing:inherit;text-transform:inherit;color:inherit}
+.grp.gbt .ch{font-style:normal;display:inline-block;transition:transform .15s;color:var(--ink-4)}
+.grp.gbt.off .ch{transform:rotate(-90deg)}
+.ggrp .pleg-x{border:0;background:none;cursor:pointer;font:inherit;letter-spacing:inherit;text-transform:inherit;color:inherit;display:flex;align-items:center;gap:8px;padding:0;min-width:0}
 .it{display:grid;grid-template-columns:36px minmax(0,1fr) 14px;gap:8px;align-items:center;width:100%;text-align:left;border:0;background:transparent;padding:7px 8px;border-radius:9px;cursor:pointer;color:var(--ink-2);transition:background .1s}
 .it:hover{background:var(--sunken)}
 .it.on{background:var(--accent-soft);color:var(--ink)}
@@ -634,7 +639,7 @@ const setPref = (k, v) => { try { localStorage.setItem('sala-' + k, v ? '1' : '0
 const CFG = {cliente: "Lagos Lab", cifrado: true, claves: []};
 const MUDANZA = CFG.cliente ? '' : 'https://cima-creators.github.io/lagos/guiones/';   // desde el 10/11 los guiones de Lagos se revisan ahí (guarda en Firebase)
 const FB = {apiKey: 'AIzaSyCTv4DiRCpbCpGYP6E86TPHlkPvaAZTN3g', authDomain: 'cleargy-creators.firebaseapp.com', projectId: 'cleargy-creators', storageBucket: 'cleargy-creators.firebasestorage.app', messagingSenderId: '313543582398', appId: '1:313543582398:web:99fe78991adeea2e7cb4ef'};   // el proyecto de las apps de CIMA
-const S = { cli: !!CFG.cliente, solo: '', rol: '', GUT: [], GAN: [], gf: {estado: 'elegir', fmt: '', orden: (() => { try { return localStorage.getItem('gan_orden') || ''; } catch (x) { return ''; } })()}, tab: 'formatos', fmt: null, gan: null, gui: null, gids: [], q: '', filtro: {quien: '', fmt: '', estado: '', angulo: '', idea: ''}, rtab: 'principal',
+const S = { cli: !!CFG.cliente, solo: '', rol: '', GUT: [], GAN: [], gf: {estado: 'elegir', fmt: '', orden: (() => { try { return localStorage.getItem('gan_orden') || ''; } catch (x) { return ''; } })()}, pleg: (() => { try { return JSON.parse(localStorage.getItem('gan_pleg') || '{}'); } catch (x) { return {}; } })(), tab: 'formatos', fmt: null, gan: null, gui: null, gids: [], q: '', filtro: {quien: '', fmt: '', estado: '', angulo: '', idea: ''}, rtab: 'principal',
             orig: pref('orig', true), pant: pref('pant', true), det: pref('det', false), mas: false,
             F: [], G: {}, GU: [], rev: {}, notas: [], db: null, me: null, dbOk: false, dbMsg: '', saving: 0, cargado: false };
 
@@ -1170,23 +1175,29 @@ const GRUPOS_GAN = {propios: ['Nuestras marcas', 'videos con 40 ventas o más de
 const ORDEN_GAN = ['F01', 'F02', 'F03', 'F04', 'AD', 'F08', 'F09', 'F11', 'F23', 'F07', 'F05', 'F16', 'F22', 'F12', 'OTRO', 'F13', 'AN', 'F17', 'F18'];   // el que manda es el `orden` que graba ganadores_dia.py; esto es por si falta
 function grupoGan(d){ return GRUPOS_GAN[d.grupo] ? d.grupo : d.fmt === 'OTRO' ? 'otros' : ['F13', 'AN'].includes(d.fmt) ? 'ia' : ['F17', 'F18'].includes(d.fmt) ? 'marca' : 'creadora'; }
 function ordenGan(d){ if (typeof d.orden === 'number') return d.orden; const i = ORDEN_GAN.indexOf(d.fmt); return i < 0 ? 39 : i < 14 ? 10 + i : i === 14 ? 40 : i < 17 ? 60 + i - 15 : 80 + i - 17; }
-function seccionGan(d){ const g = grupoGan(d); return g === 'otros' ? 'Otros formatos' : (d.fmtNombre || d.fmt) + (g === 'marca' && !['F17', 'F18'].includes(d.fmt) ? ' · con experta o dueña' : ''); }
+function seccionGan(d){ const g = grupoGan(d); return g === 'propios' ? (((d.ref || {}).m) || 'Nuestras marcas') : g === 'otros' ? 'Otros formatos' : (d.fmtNombre || d.fmt) + (g === 'marca' && !['F17', 'F18'].includes(d.fmt) ? ' · con experta o dueña' : ''); }
+function fmtPropio(d){ return grupoGan(d) === 'propios' && d.fmt && d.fmt !== 'PRO' ? {fmt: d.fmt, fmtNombre: d.fmtNombre} : null; }   // el formato etiquetado de un ganador propio: aparece también en esa sección
 const HOY_LOCAL = (() => { const h = new Date(); return h.getFullYear() + '-' + String(h.getMonth() + 1).padStart(2, '0') + '-' + String(h.getDate()).padStart(2, '0'); })();
 const CRIT_GAN = {ventas: d => (d.ref || {}).compras || 0, dup: d => (d.ref || {}).dup || 0, dias: d => (d.ref || {}).d || 0, senal: d => (d.ref || {}).senal || 0};   // «Ordenar por»: sin criterio queda por formato
 function ganVisibles(){
   const q = S.q.trim().toLowerCase(), e = S.gf.estado;
-  return S.GAN.filter(d => (e === 'elegida' ? ['elegida', 'lista'].includes(d.estado) : d.estado === e) && (!S.gf.fmt || seccionGan(d) === S.gf.fmt) && (!q || ((d.ref || {}).m || '').toLowerCase().includes(q)))
+  return S.GAN.filter(d => (e === 'elegida' ? ['elegida', 'lista'].includes(d.estado) : d.estado === e) && (!S.gf.fmt || seccionGan(d) === S.gf.fmt || (fmtPropio(d) && seccionGan(fmtPropio(d)) === S.gf.fmt)) && (!q || ((d.ref || {}).m || '').toLowerCase().includes(q)))
     .sort((a, b) => (CRIT_GAN[S.gf.orden] ? CRIT_GAN[S.gf.orden](b) - CRIT_GAN[S.gf.orden](a) : 0) || ordenGan(a) - ordenGan(b) || String(b.fecha || '').localeCompare(String(a.fecha || '')) || ((b.ref || {}).senal || 0) - ((a.ref || {}).senal || 0) || ((b.ref || {}).dup || 0) - ((a.ref || {}).dup || 0) || ((b.ref || {}).d || 0) - ((a.ref || {}).d || 0));   // por formato (los de creadoras arriba), lo nuevo primero y después lo que tiene más señal
 }
 function pintarListaGanadores(){   // en esta pestaña la lista de la izquierda filtra por formato, en el orden de trabajo: primero lo que graban las creadoras
   const e = S.gf.estado, deEstado = S.GAN.filter(d => e === 'elegida' ? ['elegida', 'lista'].includes(d.estado) : d.estado === e), sec = {};
-  deEstado.forEach(d => { const k = seccionGan(d); (sec[k] = sec[k] || {n: 0, o: ordenGan(d), g: grupoGan(d)}).n++; });
+  deEstado.forEach(d => { const k = seccionGan(d); (sec[k] = sec[k] || {n: 0, o: ordenGan(d), g: grupoGan(d)}).n++;
+    const p = fmtPropio(d); if (p) { const k2 = seccionGan(p); (sec[k2] = sec[k2] || {n: 0, o: ordenGan(p), g: grupoGan(p)}).n++; } });   // el propio cuenta también en la sección de su formato
   const fila = (id, nombre, c, g) => '<button class="it g' + (S.gf.fmt === id ? ' on' : '') + '" data-gf="' + esc(id) + '"><i class="dot ' + (g || '') + '"></i><span class="nm">' + esc(nombre) + '</span><span class="cod">' + c + '</span></button>';
   let h = fila('', 'Todos', deEstado.length, ''), ant = '';
-  Object.keys(sec).sort((a, b) => sec[a].o - sec[b].o).forEach(k => { if (sec[k].g !== ant) { ant = sec[k].g; h += '<div class="grp">' + esc(GRUPOS_GAN[ant][0]) + '</div>'; } h += fila(k, k, sec[k].n, sec[k].g); });
+  Object.keys(sec).sort((a, b) => sec[a].o - sec[b].o).forEach(k => {
+    if (sec[k].g !== ant) { ant = sec[k].g; h += '<button class="grp gbt' + (S.pleg[ant] ? ' off' : '') + '" data-pleg="' + esc(ant) + '" aria-expanded="' + !S.pleg[ant] + '"><i class="ch">▾</i>' + esc(GRUPOS_GAN[ant][0]) + '</button>'; }
+    if (!S.pleg[sec[k].g] || S.gf.fmt === k) h += fila(k, k, sec[k].n, sec[k].g); });
   $('#lista').innerHTML = h;
   $$('#lista [data-gf]').forEach(b => b.onclick = () => { S.gf.fmt = b.dataset.gf; $('#app').classList.remove('nav-open'); pintarLista(); pintarGanadores(); });
+  $$('#lista [data-pleg]').forEach(b => b.onclick = () => plegar(b.dataset.pleg));
 }
+function plegar(g){ S.pleg[g] = !S.pleg[g]; try { localStorage.setItem('gan_pleg', JSON.stringify(S.pleg)); } catch (x) {} pintarLista(); pintarGanadores(); }
 function tarjeta(d){
   const r = d.ref || {}, marca = S.paquete && S.paquete.marca, idea = ((d.ideas || {})[marca] || {}).idea || d.porque || '', para = d.para || {};
   const pie = d.estado === 'elegir' ? '<button class="btn no" data-no>No</button><button class="btn si" data-si>La quiero</button>'
@@ -1203,9 +1214,12 @@ function tarjeta(d){
 function pintarGanadores(){
   const main = $('#main'), vis = ganVisibles(), cuenta = e => S.GAN.filter(d => e === 'elegida' ? ['elegida', 'lista'].includes(d.estado) : d.estado === e).length, prev = ($('#ggrid') || {}).scrollTop || 0;
   let grilla = '', gAnt = '', sAnt = '';
-  vis.forEach((d, i) => { const g = grupoGan(d), sc = seccionGan(d);
+  vis.forEach((d, i) => { const g = grupoGan(d), sc = seccionGan(d), pleg = !S.gf.fmt && !!S.pleg[g];
     if (CRIT_GAN[S.gf.orden]) { grilla += tarjeta(d); return; }   // ordenado por números: todo junto, sin títulos de formato
-    if (g !== gAnt) { gAnt = g; sAnt = ''; grilla += '<div class="ggrp"><i class="dot ' + g + '"></i>' + esc(GRUPOS_GAN[g][0]) + ' <small>' + esc(GRUPOS_GAN[g][1]) + '</small></div>'; }
+    if (g !== gAnt) { gAnt = g; sAnt = '';
+      grilla += '<div class="ggrp"><button class="pleg-x" data-pleg="' + esc(g) + '" aria-expanded="' + !pleg + '"><i class="dot ' + g + '"></i>' + esc(GRUPOS_GAN[g][0]) +
+        (pleg ? ' <small>plegado · ' + vis.filter(x => grupoGan(x) === g).length + ' — tocá para abrir</small>' : ' <small>' + esc(GRUPOS_GAN[g][1]) + '</small>') + '</button></div>'; }
+    if (pleg) return;   // grupo plegado: queda el título solo
     if (sc !== sAnt) { sAnt = sc; grilla += '<div class="gsec">' + esc(sc) + ' <span>' + vis.filter(x => grupoGan(x) === g && seccionGan(x) === sc).length + '</span></div>'; }
     grilla += tarjeta(d); });
   const tab = (e, t) => '<button class="tab' + (S.gf.estado === e ? ' on' : '') + '" data-ge="' + e + '" aria-pressed="' + (S.gf.estado === e) + '">' + t + ' <b>' + cuenta(e) + '</b></button>';
@@ -1216,6 +1230,7 @@ function pintarGanadores(){
   $('#ggrid').scrollTop = prev;
   $('#gorden').onchange = e => { S.gf.orden = e.target.value; try { localStorage.setItem('gan_orden', S.gf.orden); } catch (x) {} $('#ggrid').scrollTop = 0; pintarGanadores(); };
   $$('#main [data-ge]').forEach(b => b.onclick = () => { S.gf.estado = b.dataset.ge; S.gf.fmt = ''; pintarLista(); pintarGanadores(); });
+  $$('#main [data-pleg]').forEach(b => b.onclick = () => plegar(b.dataset.pleg));
   $$('#main .gc').forEach(c => { const id = c.dataset.id, d = S.GAN.find(x => x.id === id);
     c.querySelector('[data-ver]').onclick = () => abrirFicha(id);
     const si = c.querySelector('[data-si]'), no = c.querySelector('[data-no]'), vo = c.querySelector('[data-volver]');
