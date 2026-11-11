@@ -609,6 +609,7 @@ button.ref:hover{background:var(--sunken)}
       <button class="tab" id="t-ganadores" role="tab" aria-selected="false" hidden>Ganadores <b id="n-ganadores">0</b></button>
       <button class="tab on" id="t-formatos" role="tab" aria-selected="true">Formatos <b id="n-formatos">0</b></button>
       <button class="tab" id="t-guiones" role="tab" aria-selected="false">Guiones <b id="n-guiones">0</b></button>
+      <button class="tab" id="t-prod" role="tab" aria-selected="false" hidden>Del equipo <b id="n-prod">0</b></button>
     </div>
     <div class="top-r">
       <div class="prog" id="prog"></div>
@@ -649,13 +650,16 @@ const setPref = (k, v) => { try { localStorage.setItem('sala-' + k, v ? '1' : '0
 const CFG = {cliente: "Lagos Lab", cifrado: true, claves: []};
 const MUDANZA = CFG.cliente ? '' : 'https://cima-creators.github.io/lagos/guiones/';   // desde el 10/11 los guiones de Lagos se revisan ahí (guarda en Firebase)
 const FB = {apiKey: 'AIzaSyCTv4DiRCpbCpGYP6E86TPHlkPvaAZTN3g', authDomain: 'cleargy-creators.firebaseapp.com', projectId: 'cleargy-creators', storageBucket: 'cleargy-creators.firebasestorage.app', messagingSenderId: '313543582398', appId: '1:313543582398:web:99fe78991adeea2e7cb4ef'};   // el proyecto de las apps de CIMA
-const S = { cli: !!CFG.cliente, solo: '', rol: '', GUT: [], GAN: [], gf: {estado: 'elegir', fmt: '', orden: (() => { try { return localStorage.getItem('gan_orden') || ''; } catch (x) { return ''; } })()}, pleg: (() => { try { return JSON.parse(localStorage.getItem('gan_pleg') || '{}'); } catch (x) { return {}; } })(), tab: 'formatos', fmt: null, gan: null, gui: null, gids: [], q: '', filtro: {quien: '', fmt: '', estado: '', angulo: '', idea: ''}, rtab: 'principal',
+const S = { cli: !!CFG.cliente, solo: '', rol: '', GUT: [], GAN: [], gf: {estado: 'elegir', fmt: '', orden: (() => { try { return localStorage.getItem('gan_orden') || ''; } catch (x) { return ''; } })()}, pleg: (() => { try { return JSON.parse(localStorage.getItem('gan_pleg') || '{}'); } catch (x) { return {}; } })(), tab: 'formatos', sub: 'solas', fmt: null, gan: null, gui: null, gids: [], q: '', filtro: {quien: '', fmt: '', estado: '', angulo: '', idea: ''}, rtab: 'principal',
             orig: pref('orig', true), pant: pref('pant', true), det: pref('det', false), mas: false,
             F: [], G: {}, GU: [], rev: {}, notas: [], db: null, me: null, dbOk: false, dbMsg: '', saving: 0, cargado: false };
 
 const colorBloque = (nombre, lista) => { const i = lista.indexOf(nombre); return COLS[(i < 0 ? 0 : i) % COLS.length]; };
 // Roles de la versión de la marca (vienen en el paquete que abre cada clave): equipo = CIMA, revisa igual que en la Sala · marca = ve lo aprobado y deja notas · creadora = ve lo aprobado
 const esRevisor = () => !S.cli || S.rol === 'equipo';
+// «Del equipo»: guiones que una creadora NO puede grabar y editar sola (mezcla de creadoras, IA, fundadora) van en su propia pestaña (Nacho, 11/11)
+const NOSOLA = g => /^(IA \(|Fundadora|Las |.+ y .+)/.test((g && g.quien) || '');
+const GUsub = () => S.GU.filter(g => NOSOLA(g) === (S.sub === 'prod'));
 const esMarca = () => S.cli && S.rol === 'marca';
 const soloAprobados = () => S.cli && S.rol !== 'equipo';
 const horneado = id => S.cli && id.startsWith('gui-') ? ((S.GUT.find(g => 'gui-' + g.codigo === id) || {}).estado || '') : '';   // estado con el que se publicó, por si la base no conecta
@@ -691,7 +695,7 @@ async function cargar(){
 function leerHash(){
   const h = (location.hash || '').slice(1);
   if (h === 'ganadores' && S.cli && S.rol === 'equipo') { S.tab = 'ganadores'; return true; }
-  if (h.startsWith('g-') && S.GU.some(g => g.codigo === h.slice(2))) { S.tab = 'guiones'; S.gui = h.slice(2); return true; }
+  if (h.startsWith('g-') && S.GU.some(g => g.codigo === h.slice(2))) { S.tab = 'guiones'; S.gui = h.slice(2); S.sub = NOSOLA(S.GU.find(g => g.codigo === S.gui)) ? 'prod' : 'solas'; return true; }
   if (!S.cli && h && S.F.some(f => f.id === h)) { S.tab = 'formatos'; S.fmt = h; return true; }
   return false;
 }
@@ -742,7 +746,7 @@ function pintarSync(){
   const el = $('#sync'); el.className = 'sync ' + cls; el.title = txt; el.querySelector('span').textContent = txt;
 }
 function pintarProgreso(){
-  const ids = S.tab === 'formatos' ? S.F.map(f => 'fmt-' + f.id) : S.GU.map(g => 'gui-' + g.codigo), n = ids.length || 1;
+  const ids = S.tab === 'formatos' ? S.F.map(f => 'fmt-' + f.id) : GUsub().map(g => 'gui-' + g.codigo), n = ids.length || 1;
   const c = e => ids.filter(i => estadoDe(i) === e).length, a = c('aprobado'), k = c('cambios'), r = c('rechazado');
   $('#prog').innerHTML = '<div class="pb" role="img" aria-label="' + a + ' aprobados, ' + k + ' con cambios, ' + r + ' rechazados"><i class="a" style="width:' + (100 * a / n) + '%"></i><i class="c" style="width:' + (100 * k / n) + '%"></i><i class="r" style="width:' + (100 * r / n) + '%"></i></div><span><b>' + a + '</b> de ' + ids.length + ' aprobados</span>';
 }
@@ -753,13 +757,18 @@ function lista(){
   if (S.tab === 'ganadores') return [];
   if (S.tab === 'formatos') return S.F.filter(f => !q || (f.id + ' ' + f.nombre + ' ' + (f.grupo || '')).toLowerCase().includes(q));
   const fl = S.filtro;
-  return S.GU.filter(g => (!fl.quien || g.quien === fl.quien) && (!fl.fmt || g.fmt === fl.fmt) && (!fl.angulo || g.angulo === fl.angulo) && (!fl.idea || g.idea === fl.idea) &&
+  return GUsub().filter(g => (!fl.quien || g.quien === fl.quien) && (!fl.fmt || g.fmt === fl.fmt) && (!fl.angulo || g.angulo === fl.angulo) && (!fl.idea || g.idea === fl.idea) &&
     (!fl.estado || estadoVista('gui-' + g.codigo) === (fl.estado === 'sin' ? '' : fl.estado)) &&
     (!q || (g.num + ' ' + g.titulo + ' ' + g.quien + ' ' + nombreFmt(g.fmt) + ' ' + (g.angulo || '') + ' ' + (g.idea || '')).toLowerCase().includes(q)));
 }
 function render(){
-  ['ganadores', 'formatos', 'guiones'].forEach(t => { const b = $('#t-' + t); b.classList.toggle('on', S.tab === t); b.setAttribute('aria-selected', S.tab === t); });
-  $('#n-formatos').textContent = S.F.length; $('#n-guiones').textContent = S.GU.length;
+  ['ganadores', 'formatos'].forEach(t => { const b = $('#t-' + t); b.classList.toggle('on', S.tab === t); b.setAttribute('aria-selected', S.tab === t); });
+  const enG = S.tab === 'guiones';
+  $('#t-guiones').classList.toggle('on', enG && S.sub !== 'prod'); $('#t-guiones').setAttribute('aria-selected', enG && S.sub !== 'prod');
+  const prod = S.GU.filter(NOSOLA), tp = $('#t-prod');
+  tp.hidden = !prod.length; tp.classList.toggle('on', enG && S.sub === 'prod'); tp.setAttribute('aria-selected', enG && S.sub === 'prod');
+  $('#n-prod').textContent = prod.length;
+  $('#n-formatos').textContent = S.F.length; $('#n-guiones').textContent = S.GU.length - prod.length;
   $('#q').placeholder = S.tab === 'formatos' ? 'Buscar formato' : S.tab === 'ganadores' ? 'Buscar marca' : 'Buscar guion';
   pintarFiltros(); pintarLista(); pintarProgreso(); pintarSync(); pintarMain();
 }
@@ -767,9 +776,10 @@ function pintarFiltros(){
   const box = $('#filtros'); if (box.contains(document.activeElement)) return;
   if (S.tab !== 'guiones' || !S.GU.length) { box.hidden = true; box.innerHTML = ''; return; }
   box.hidden = false;
-  const fl = S.filtro, qs = [...new Set(S.GU.map(g => g.quien))], fs = [...new Set(S.GU.map(g => g.fmt))];
-  const as = [...new Set(S.GU.map(g => g.angulo).filter(Boolean))], is = [...new Set(S.GU.filter(g => !fl.angulo || g.angulo === fl.angulo).map(g => g.idea).filter(Boolean))];
-  const n = e => S.GU.filter(g => estadoVista('gui-' + g.codigo) === e).length;
+  const GS = GUsub();
+  const fl = S.filtro, qs = [...new Set(GS.map(g => g.quien))], fs = [...new Set(GS.map(g => g.fmt))];
+  const as = [...new Set(GS.map(g => g.angulo).filter(Boolean))], is = [...new Set(GS.filter(g => !fl.angulo || g.angulo === fl.angulo).map(g => g.idea).filter(Boolean))];
+  const n = e => GS.filter(g => estadoVista('gui-' + g.codigo) === e).length;
   const fe = (v, cls, tit, cnt) => '<button class="fe' + (fl.estado === v ? ' on' : '') + '" data-fe="' + v + '" title="' + tit + '" aria-label="' + tit + '" aria-pressed="' + (fl.estado === v) + '">' + (cls === null ? '' : '<i class="st ' + cls + '"></i>') + cnt + '</button>';
   box.innerHTML = '<div class="fil"><select id="fq" aria-label="Creadora"><option value="">Todas</option>' + qs.map(q => '<option' + (q === fl.quien ? ' selected' : '') + '>' + esc(q) + '</option>').join('') + '</select>' +
     '<select id="ff" aria-label="Formato"><option value="">Todos los formatos</option>' + fs.map(f => '<option value="' + esc(f) + '"' + (f === fl.fmt ? ' selected' : '') + '>' + esc(nombreFmt(f)) + '</option>').join('') + '</select></div>' +
@@ -1286,7 +1296,8 @@ function abrirFicha(id){
 window.addEventListener('hashchange', () => { const a = S.tab + S.fmt + S.gui; if (leerHash() && a !== S.tab + S.fmt + S.gui) { S.gan = null; S.rtab = 'principal'; render(); } });
 $('#t-ganadores').onclick = () => irGanadores();
 $('#t-formatos').onclick = () => ir('formatos', S.fmt);
-$('#t-guiones').onclick = () => ir('guiones', S.gui);
+$('#t-guiones').onclick = () => { S.sub = 'solas'; const g = S.GU.find(x => x.codigo === S.gui); ir('guiones', g && !NOSOLA(g) ? S.gui : (S.GU.find(x => !NOSOLA(x)) || {}).codigo); };
+$('#t-prod').onclick = () => { S.sub = 'prod'; const g = S.GU.find(x => x.codigo === S.gui); ir('guiones', g && NOSOLA(g) ? S.gui : (S.GU.find(NOSOLA) || {}).codigo); };
 $('#q').oninput = e => { S.q = e.target.value; pintarLista(); if (S.tab === 'ganadores') pintarGanadores(); else pintarNav(); };
 $('#menu').onclick = () => $('#app').classList.toggle('nav-open');
 $('#veil').onclick = () => $('#app').classList.remove('nav-open');
