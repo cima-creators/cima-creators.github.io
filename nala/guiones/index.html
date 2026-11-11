@@ -341,11 +341,17 @@ button.ref:hover{background:var(--sunken)}
 .pd textarea::placeholder{color:var(--ink-3)}
 .pd:focus-within{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
 /* cambio hecho a partir de una nota: qué se pidió, qué se hizo y cómo decía antes */
-.hc{margin-top:10px;padding:6px 9px 7px;background:var(--ok-soft);border-left:2px solid var(--ok);border-radius:0 7px 7px 0;font-size:12px;line-height:1.45;color:var(--ink-2)}
+.hc{padding:8px 11px 9px;background:var(--surface);border:1px solid var(--ok);border-radius:10px;font-size:12px;line-height:1.45;color:var(--ink-2);box-shadow:var(--sh-pop, 0 10px 30px rgba(0,0,0,.18))}
 .hc > b{display:block;font:500 10px var(--mono);letter-spacing:.07em;text-transform:uppercase;color:var(--ok);margin-bottom:2px}
 .hc p{margin:0}
 .hc p + p{margin-top:3px}
 .hc i{font-style:normal;color:var(--ink-3)}
+/* el «Cambio hecho» no ocupa espacio: queda como chip ⓘ y el detalle abre en popup (Nacho, 11/11) */
+.hc2{display:inline-block;position:relative;margin-top:6px}
+.hc2>summary{list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:5px;font:600 10px var(--mono);letter-spacing:.05em;text-transform:uppercase;color:var(--ok);background:var(--ok-soft);border-radius:99px;padding:3px 9px}
+.hc2>summary::-webkit-details-marker{display:none}
+.hc2>summary i{display:inline-grid;place-items:center;width:13px;height:13px;border:1.5px solid var(--ok);border-radius:50%;font:700 9px var(--ff);font-style:normal}
+.hc2[open]>.hc{position:absolute;z-index:40;top:calc(100% + 6px);left:0;width:min(360px,76vw)}
 @container our (max-width:440px){.fila .nb{margin:-8px 0 -8px auto;padding:10px 0 10px 16px}}
 .mas-b.suelto{max-height:none;padding:14px}
 .stabs{overflow-x:auto;scrollbar-width:none}
@@ -1087,7 +1093,8 @@ function notasDe(campo, base){ const rv = S.rev[itemId()] || {}; return rv[campo
 function pedidos(base){ return notasDe(campoNota(), base); }
 function hechoHTML(h){
   let f = ''; try { f = h.fecha ? new Date(h.fecha).toLocaleDateString('es-AR', {day: 'numeric', month: 'short'}) : ''; } catch (e) {}
-  return '<div class="hc"><b>Cambio hecho' + (f ? ' · ' + esc(f) : '') + '</b>' + (h.nota ? '<p><i>Tu nota:</i> ' + esc(h.nota) + '</p>' : '') + (h.que ? '<p>' + esc(h.que) + '</p>' : '') + (h.antes ? '<p><i>Antes:</i> ' + esc(h.antes) + '</p>' : '') + '</div>';
+  return '<details class="hc2"><summary><i>i</i>Cambio hecho' + (f ? ' · ' + esc(f) : '') + '</summary><div class="hc">' +
+    (h.nota && h.nota !== h.que ? '<p><i>Tu nota:</i> ' + esc(h.nota) + '</p>' : '') + (h.que ? '<p>' + esc(h.que) + '</p>' : '') + (h.antes ? '<p><i>Antes:</i> ' + esc(h.antes) + '</p>' : '') + '</div></details>';
 }
 function pedidoHTML(i, t){ return '<label class="pd' + (esMarca() ? ' cl' : '') + '"><span>' + (esMarca() ? 'Tu nota sobre esta parte' : 'Nota para cambiar esta parte') + '</span><textarea data-pd="' + i + '" rows="1" placeholder="' + (esMarca() ? '¿Qué cambiarías acá?' : '¿Qué querés que cambie acá?') + '">' + esc(t) + '</textarea></label>'; }
 function ligarPedido(ta, boton){
