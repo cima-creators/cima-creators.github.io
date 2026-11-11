@@ -434,7 +434,7 @@ button.ref:hover{background:var(--sunken)}
 .pl.hoy{background:var(--accent);color:var(--on)}
 /* color por grupo: verde = lo graba una creadora en su casa · ámbar = formato nuevo · violeta = animado con IA · gris = fundadora, detrás de escena */
 .dot{display:inline-block;width:8px;height:8px;border-radius:50%;flex:none;background:var(--ink-4)}
-.dot.creadora{background:var(--ok)}.dot.otros{background:var(--warn)}.dot.ia{background:var(--ia)}.dot.marca{background:var(--ink-4)}
+.dot.propios{background:var(--accent,#2563eb)}.dot.creadora{background:var(--ok)}.dot.otros{background:var(--warn)}.dot.ia{background:var(--ia)}.dot.marca{background:var(--ink-4)}
 .pl.f{display:inline-flex;align-items:center;gap:6px;max-width:100%}.pl.f span{overflow:hidden;text-overflow:ellipsis}
 .it.g{grid-template-columns:14px minmax(0,1fr) auto}.it.g .dot{justify-self:center}
 .ggrp{grid-column:1/-1;display:flex;align-items:center;gap:8px;margin:14px 2px 0;font:600 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2)}
@@ -716,7 +716,7 @@ async function conectarFirebase(){   // la revisión vive en Firebase, documento
     doc(id){ id = id || 'n' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); return {
       set: d => cambiar(e => { if (c === 'notas') e.notas = e.notas.filter(n => n.id !== id).concat([Object.assign({id}, d)]); else e.revision[id] = d; }),
       merge: d => cambiar(e => { const x = Object.assign({}, e.revision[id] || {}, d); Object.keys(x).forEach(k => { if (x[k] === null) delete x[k]; }); e.revision[id] = x; }) }; } });
-  const qG = F.query(F.collection(fs, 'estaticos'), F.where('marca', '==', 'ganadores'));
+  const qG = F.query(F.collection(fs, 'estaticos'), F.where('marca', '==', POOL()));
   const ganadores = { onSnapshot: (cb, err) => F.onSnapshot(qG, x => cb(x.docs.map(d => Object.assign({id: d.id}, d.data()))), err || (() => {})),
                       guardar: (id, c) => F.setDoc(F.doc(fs, 'estaticos', id), Object.assign({}, c, {actualizado: new Date().toISOString()}), {merge: true}) };
   return { ganadores, collection: col, doc(p){ const [c, id] = p.split('/'); return col(c).doc(id); } };
@@ -1162,16 +1162,17 @@ async function guardarNota(){
 
 /* ---------- ganadores del día ---------- */
 const ESTRELLAS = n => '★'.repeat(Math.max(0, Math.min(5, n || 0))) + '☆'.repeat(5 - Math.max(0, Math.min(5, n || 0)));
-const angulosMarca = () => [...new Set(S.GUT.map(g => g.angulo).filter(a => a && a !== 'Producto y oferta'))];
+const angulosMarca = () => (S.paquete && S.paquete.angulos && S.paquete.angulos.length) ? S.paquete.angulos : [...new Set(S.GUT.map(g => g.angulo).filter(a => a && a !== 'Producto y oferta'))];   // los de clientes.json; si no, los de los guiones
+const POOL = () => (S.paquete && S.paquete.pool) || 'ganadores';   // de qué pool salen los Ganadores de esta marca (campo `marca` de los docs de `estaticos`)
 function irGanadores(){ S.tab = 'ganadores'; try { history.replaceState(null, '', '#ganadores'); } catch (e) {} $('#app').classList.remove('nav-open'); render(); }
-const GRUPOS_GAN = {creadora: ['Para creadoras', 'las graba una creadora sola en su casa'], otros: ['Otros formatos', 'no están en nuestra lista, pero se pueden grabar en casa'],
+const GRUPOS_GAN = {propios: ['Nuestras marcas', 'videos con 40 ventas o más de los reportes pro'], creadora: ['Para creadoras', 'las graba una creadora sola en su casa'], otros: ['Otros formatos', 'no están en nuestra lista, pero se pueden grabar en casa'],
   ia: ['Animados', 'se hacen con IA'], marca: ['No son para creadoras', 'habla la dueña, una experta o alguien de la marca']};
 const ORDEN_GAN = ['F01', 'F02', 'F03', 'F04', 'AD', 'F08', 'F09', 'F11', 'F23', 'F07', 'F05', 'F16', 'F22', 'F12', 'OTRO', 'F13', 'AN', 'F17', 'F18'];   // el que manda es el `orden` que graba ganadores_dia.py; esto es por si falta
 function grupoGan(d){ return GRUPOS_GAN[d.grupo] ? d.grupo : d.fmt === 'OTRO' ? 'otros' : ['F13', 'AN'].includes(d.fmt) ? 'ia' : ['F17', 'F18'].includes(d.fmt) ? 'marca' : 'creadora'; }
 function ordenGan(d){ if (typeof d.orden === 'number') return d.orden; const i = ORDEN_GAN.indexOf(d.fmt); return i < 0 ? 39 : i < 14 ? 10 + i : i === 14 ? 40 : i < 17 ? 60 + i - 15 : 80 + i - 17; }
 function seccionGan(d){ const g = grupoGan(d); return g === 'otros' ? 'Otros formatos' : (d.fmtNombre || d.fmt) + (g === 'marca' && !['F17', 'F18'].includes(d.fmt) ? ' · con experta o dueña' : ''); }
 const HOY_LOCAL = (() => { const h = new Date(); return h.getFullYear() + '-' + String(h.getMonth() + 1).padStart(2, '0') + '-' + String(h.getDate()).padStart(2, '0'); })();
-const CRIT_GAN = {dup: d => (d.ref || {}).dup || 0, dias: d => (d.ref || {}).d || 0, senal: d => (d.ref || {}).senal || 0};   // «Ordenar por»: sin criterio queda por formato
+const CRIT_GAN = {ventas: d => (d.ref || {}).compras || 0, dup: d => (d.ref || {}).dup || 0, dias: d => (d.ref || {}).d || 0, senal: d => (d.ref || {}).senal || 0};   // «Ordenar por»: sin criterio queda por formato
 function ganVisibles(){
   const q = S.q.trim().toLowerCase(), e = S.gf.estado;
   return S.GAN.filter(d => (e === 'elegida' ? ['elegida', 'lista'].includes(d.estado) : d.estado === e) && (!S.gf.fmt || seccionGan(d) === S.gf.fmt) && (!q || ((d.ref || {}).m || '').toLowerCase().includes(q)))
@@ -1191,10 +1192,10 @@ function tarjeta(d){
   const pie = d.estado === 'elegir' ? '<button class="btn no" data-no>No</button><button class="btn si" data-si>La quiero</button>'
             : d.estado === 'descartada' ? '<button class="btn" data-volver>Volver a verla</button>'
             : '<button class="btn" data-volver>Deshacer</button>';
-  return '<article class="gc" data-id="' + esc(d.id) + '"><div class="gc-h"><span class="av">' + esc((r.m || '?').charAt(0).toUpperCase()) + '</span><div class="who"><b>' + esc(r.m || '') + (r.pais ? ' <span>· ' + esc(String(r.pais).split(',')[0]) + '</span>' : '') + '</b><small><i></i>' + esc(r.d) + ' días al aire</small></div>' +
+  return '<article class="gc" data-id="' + esc(d.id) + '"><div class="gc-h"><span class="av">' + esc((r.m || '?').charAt(0).toUpperCase()) + '</span><div class="who"><b>' + esc(r.m || '') + (r.pais ? ' <span>· ' + esc(String(r.pais).split(',')[0]) + '</span>' : '') + '</b><small><i></i>' + (r.compras ? esc(r.compras) + ' ventas · ROAS ' + esc(String(r.roas).replace('.', ',')) : esc(r.d) + ' días al aire') + '</small></div>' +
     (r.link ? '<a class="ext" href="' + esc(r.link) + '" target="_blank" rel="noopener" title="Ver el anuncio original" aria-label="Ver el anuncio original">↗</a>' : '') + '</div>' +
     '<button class="gc-img" data-ver aria-label="Ver el video">' + (d.img ? '<img loading="lazy" src="' + esc(d.img) + '" alt="">' : '') + (r.dur ? '<span class="dur">' + fmtT(r.dur) + '</span>' : '') + '</button>' +
-    '<div class="gc-b"><div class="pills"><span class="pl a" title="Señal: días al aire, duplicados, tamaño de la marca y nivel">' + ESTRELLAS(r.senal) + '</span>' + (r.d ? '<span class="pl" title="Días que lleva corriendo">' + esc(r.d) + ' días</span>' : '') + (r.dup > 1 ? '<span class="pl">' + esc(r.dup) + ' dup.</span>' : '') + (d.fecha === HOY_LOCAL && d.estado === 'elegir' ? '<span class="pl hoy">Hoy</span>' : '') + '<span class="pl f" title="' + esc(GRUPOS_GAN[grupoGan(d)][0]) + '"><i class="dot ' + grupoGan(d) + '"></i><span>' + esc(d.fmtNombre || d.fmt) + '</span></span></div>' +
+    '<div class="gc-b"><div class="pills"><span class="pl a" title="Señal: días al aire, duplicados, tamaño de la marca y nivel">' + ESTRELLAS(r.senal) + '</span>' + (r.compras ? '<span class="pl ok" title="Compras en el reporte pro">' + esc(r.compras) + ' ventas</span><span class="pl">ROAS ' + esc(String(r.roas).replace('.', ',')) + '</span>' : '') + (r.d ? '<span class="pl" title="Días que lleva corriendo">' + esc(r.d) + ' días</span>' : '') + (r.dup > 1 ? '<span class="pl">' + esc(r.dup) + ' dup.</span>' : '') + (d.fecha === HOY_LOCAL && d.estado === 'elegir' ? '<span class="pl hoy">Hoy</span>' : '') + '<span class="pl f" title="' + esc(GRUPOS_GAN[grupoGan(d)][0]) + '"><i class="dot ' + grupoGan(d) + '"></i><span>' + esc(d.fmtNombre || d.fmt) + '</span></span></div>' +
     '<h3 class="clamp2">' + esc(d.hook || '') + '</h3><p class="clamp3">' + esc(idea) + '</p>' +
     (d.estado === 'elegida' || d.estado === 'lista' ? '<div class="pills">' + (para.angulos || []).map(a => '<span class="pl ok">' + esc(a) + '</span>').join('') + (d.estado === 'lista' ? '<span class="pl ok">Guion hecho' + (d.guiones ? ': ' + esc(d.guiones) : '') + '</span>' : '<span class="pl">Falta escribirlo</span>') + '</div>' : '') +
     '<div class="gacc">' + pie + '</div></div></article>';
@@ -1208,9 +1209,9 @@ function pintarGanadores(){
     if (sc !== sAnt) { sAnt = sc; grilla += '<div class="gsec">' + esc(sc) + ' <span>' + vis.filter(x => grupoGan(x) === g && seccionGan(x) === sc).length + '</span></div>'; }
     grilla += tarjeta(d); });
   const tab = (e, t) => '<button class="tab' + (S.gf.estado === e ? ' on' : '') + '" data-ge="' + e + '" aria-pressed="' + (S.gf.estado === e) + '">' + t + ' <b>' + cuenta(e) + '</b></button>';
-  main.innerHTML = '<div class="gan"><div class="gan-h"><div><h1>Ganadores del día</h1><p>Anuncios que llevan 60 días o más al aire. Arriba, los formatos que graba una creadora en su casa; al fondo, los animados y los de fundadora. Con «La quiero» elegís los ángulos y te lo escribo calcado para ' + esc(CFG.cliente) + '.</p></div>' +
+  main.innerHTML = '<div class="gan"><div class="gan-h"><div><h1>' + esc((S.paquete && S.paquete.pool_titulo) || 'Ganadores del día') + '</h1><p>' + esc((S.paquete && S.paquete.pool_txt) || 'Anuncios que llevan 60 días o más al aire. Arriba, los nuestros con 40 ventas o más; después, los formatos que graba una creadora en su casa; al fondo, los animados y los de fundadora.') + ' Con «La quiero» elegís los ángulos y te lo escribo calcado para ' + esc(CFG.cliente) + '.</p></div>' +
     '<div class="gtabs">' + tab('elegir', 'Para elegir') + tab('elegida', 'Elegidas') + tab('descartada', 'Descartadas') + '</div>' +
-    '<select id="gorden" aria-label="Ordenar por" style="flex:none;font:inherit;font-size:13px;padding:7px 10px;border-radius:10px;border:1px solid var(--line);background:var(--sunken);color:inherit">' + [['', 'Ordenar: por formato'], ['dup', 'Más duplicados'], ['dias', 'Más días corriendo'], ['senal', 'Más estrellas']].map(o => '<option value="' + o[0] + '"' + ((S.gf.orden || '') === o[0] ? ' selected' : '') + '>' + o[1] + '</option>').join('') + '</select></div>' +
+    '<select id="gorden" aria-label="Ordenar por" style="flex:none;font:inherit;font-size:13px;padding:7px 10px;border-radius:10px;border:1px solid var(--line);background:var(--sunken);color:inherit">' + [['', 'Ordenar: por formato'], ['ventas', 'Más ventas'], ['dup', 'Más duplicados'], ['dias', 'Más días corriendo'], ['senal', 'Más estrellas']].map(o => '<option value="' + o[0] + '"' + ((S.gf.orden || '') === o[0] ? ' selected' : '') + '>' + o[1] + '</option>').join('') + '</select></div>' +
     '<div class="ggrid scroll" id="ggrid">' + (grilla || '<div class="vacio" style="grid-column:1/-1"><b>' + (S.GAN.length ? 'Nada por acá' : 'Todavía no hay ganadores cargados') + '</b>' + (S.gf.estado === 'elegir' ? 'Mañana llegan los nuevos.' : '') + '</div>') + '</div></div>';
   $('#ggrid').scrollTop = prev;
   $('#gorden').onchange = e => { S.gf.orden = e.target.value; try { localStorage.setItem('gan_orden', S.gf.orden); } catch (x) {} $('#ggrid').scrollTop = 0; pintarGanadores(); };
@@ -1225,7 +1226,7 @@ function pintarGanadores(){
 function marcarGanador(id, cambios, aviso){
   const d = S.GAN.find(x => x.id === id); if (!d || !S.db || !S.db.ganadores) return;
   Object.assign(d, cambios); $('#n-ganadores').textContent = S.GAN.filter(x => x.estado === 'elegir').length; pintarLista(); pintarGanadores();   // se ve al toque; la base confirma después
-  S.db.ganadores.guardar(id, Object.assign({marca: 'ganadores', por: S.me || ''}, cambios)).then(() => toast(aviso), () => toast('No se pudo guardar'));
+  S.db.ganadores.guardar(id, Object.assign({marca: POOL(), por: S.me || ''}, cambios)).then(() => toast(aviso), () => toast('No se pudo guardar'));
 }
 function cerrarFicha(){ const f = $('#ficha'), v = f.querySelector('video'); if (v) v.pause(); f.hidden = true; f.innerHTML = ''; pintarGanadores(); }
 function abrirFicha(id){
@@ -1233,14 +1234,14 @@ function abrirFicha(id){
   const r = d.ref || {}, marca = S.paquete && S.paquete.marca, ia = (d.ideas || {})[marca] || {}, todos = angulosMarca(), marcados = new Set((d.para && d.para.angulos) || (ia.angulos || []).filter(a => todos.includes(a)));
   const f = $('#ficha');
   f.innerHTML = '<div class="fx" role="dialog" aria-label="Ganador"><div class="fx-v"><video src="' + esc(d.video) + '" poster="' + esc(d.img || '') + '" controls playsinline autoplay></video></div><div class="fx-b">' +
-    '<div class="gc-h" style="padding:0"><span class="av">' + esc((r.m || '?').charAt(0).toUpperCase()) + '</span><div class="who"><b>' + esc(r.m || '') + '</b><small><i></i>' + esc(r.d) + ' días al aire' + (r.rubro ? ' · ' + esc(r.rubro) : '') + '</small></div>' + (r.link ? '<a class="ext" href="' + esc(r.link) + '" target="_blank" rel="noopener" title="Ver el anuncio original">↗</a>' : '') + '<button class="ext" id="fx-x" aria-label="Cerrar" style="border:0;background:none;cursor:pointer">✕</button></div>' +
+    '<div class="gc-h" style="padding:0"><span class="av">' + esc((r.m || '?').charAt(0).toUpperCase()) + '</span><div class="who"><b>' + esc(r.m || '') + '</b><small><i></i>' + (r.compras ? esc(r.compras) + ' ventas · ROAS ' + esc(String(r.roas).replace('.', ',')) + ' · ' : '') + esc(r.d) + ' días' + (r.compras ? '' : ' al aire') + (r.rubro ? ' · ' + esc(r.rubro) : '') + '</small></div>' + (r.link ? '<a class="ext" href="' + esc(r.link) + '" target="_blank" rel="noopener" title="Ver el anuncio original">↗</a>' : '') + '<button class="ext" id="fx-x" aria-label="Cerrar" style="border:0;background:none;cursor:pointer">✕</button></div>' +
     '<div class="pills"><span class="pl a">' + ESTRELLAS(r.senal) + '</span>' + (r.dup > 1 ? '<span class="pl">' + esc(r.dup) + ' duplicados</span>' : '') + (r.n ? '<span class="pl">' + esc(r.n) + ' anuncios de la marca</span>' : '') + (r.perf ? '<span class="pl">' + esc(r.perf) + '</span>' : '') + '<span class="pl f">' + esc(d.fmtNombre || d.fmt) + '</span><span class="pl">' + esc(r.src || '') + '</span></div>' +
     '<div><div class="lbl">Cómo abre</div><p><b>' + esc(d.hook || '') + '</b></p></div>' +
     '<div><div class="lbl">Por qué funciona</div><p>' + esc(d.porque || '') + '</p></div>' +
     (ia.idea ? '<div class="idea"><div class="lbl">Así quedaría en ' + esc(CFG.cliente) + '</div><p>' + esc(ia.idea) + '</p></div>' : '') +
     ((d.guion || []).length ? '<details><summary>Lo que dice el anuncio (' + d.guion.length + ' frases)</summary><div>' + d.guion.map(x => '<span><span class="mono" style="color:var(--ink-4)">' + fmtT(x.t) + '</span> ' + esc(x.es) + '</span>').join('') + '</div></details>' : '') +
     (d.estado === 'descartada' ? '' : '<div><div class="lbl">Ángulos (vienen marcados los que le van; sale un guion por cada ✓)</div><div class="angs">' + todos.map(a => '<button class="ang' + (marcados.has(a) ? ' on' : '') + '" data-ang="' + esc(a) + '" aria-pressed="' + marcados.has(a) + '">' + esc(a) + '</button>').join('') + '</div><div class="angn" id="fx-angn"></div></div>' +
-      '<div><div class="lbl">Tu pedido (opcional)</div><textarea id="fx-nota" placeholder="Ej: con Fabi, que hable de las rodillas">' + esc(d.nota || '') + '</textarea></div>') +
+      '<div><div class="lbl">Tu pedido (opcional)</div><textarea id="fx-nota" placeholder="' + esc((S.paquete && S.paquete.pedido_ej) || 'Ej: con qué creadora, o qué detalle querés que tenga') + '">' + esc(d.nota || '') + '</textarea></div>') +
     '<div class="gacc">' + (d.estado === 'descartada' ? '<button class="btn" id="fx-volver">Volver a verla</button>' : '<button class="btn no" id="fx-no">No</button><button class="btn si" id="fx-si">' + (d.estado === 'elegir' ? 'La quiero' : 'Guardar') + '</button>') + '</div></div></div>';
   f.hidden = false;
   f.onclick = e => { if (e.target === f) cerrarFicha(); };
