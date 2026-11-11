@@ -864,6 +864,7 @@ function pintarMain(){
   } else {
     cab = '<div class="h-row"><div class="h-id"><span class="code">' + esc(g.num) + '</span><h1>' + esc(g.titulo) + '</h1></div>' + acc + '</div>' +
       '<div class="meta"><span><b>' + esc(g.quien) + '</b></span><span>' + (S.cli ? esc(fmt.nombre || g.fmt) : '<button class="lnk" id="irfmt" title="Ver el formato">' + esc(fmt.nombre || g.fmt) + '</button>') + '</span>' + (S.G[g.ref] ? '<span>Sale de <button class="lnk" id="irref" title="Ver la referencia de la que se calcó">' + esc(S.G[g.ref].marca || g.ref) + '</button></span>' : '') +
+      (g.broll ? '<span><a class="lnk" href="' + esc(g.broll) + '" target="_blank" rel="noopener" title="Carpeta con las capturas y fotos que pide este guion">📁 Tomas y capturas</a></span>' : '') +
       '</div>' + contexto(g) + '<div class="tl" id="tl"></div>';
   }
   main.classList.toggle('sim', !esF && !S.det);
