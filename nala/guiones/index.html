@@ -61,6 +61,15 @@ button{-webkit-tap-highlight-color:transparent}
 .mark{width:26px;height:26px;border-radius:8px;background:var(--ink);display:grid;place-items:center;flex:none}
 .mark::before{content:"";width:13px;height:10px;background:var(--bg);clip-path:polygon(0 100%,36% 12%,54% 50%,68% 30%,100% 100%)}
 .bname{font-weight:600;font-size:15px;letter-spacing:-.015em;white-space:nowrap}
+.bsel{font-weight:600;font-size:15px;letter-spacing:-.015em;border:1px solid var(--line);background:var(--surface);border-radius:9px;padding:4px 8px;cursor:pointer;max-width:220px}   /* saltar al panel de otra marca (solo equipo) */
+/* minitutorial de las creadoras (primera vez) + aviso de girar el celu en vertical */
+.tuto{position:fixed;inset:0;background:rgba(10,12,16,.55);display:grid;place-items:center;z-index:90;padding:20px}
+.tuto-c{background:var(--surface);border-radius:16px;max-width:430px;padding:22px 22px 18px;box-shadow:0 18px 50px rgba(0,0,0,.28)}
+.tuto-c h2{margin:0 0 12px;font-size:17px;letter-spacing:-.015em}
+.tuto-c ol{margin:0 0 16px;padding-left:20px;display:grid;gap:9px;font-size:13.5px}
+.gira{display:none;position:fixed;left:12px;right:12px;bottom:12px;z-index:80;background:var(--ink);color:var(--bg);border-radius:12px;padding:10px 14px;gap:10px;align-items:center;font-weight:500;box-shadow:0 10px 30px rgba(0,0,0,.3)}
+.gira button{border:0;background:transparent;color:inherit;margin-left:auto;cursor:pointer;font-size:15px;padding:2px 4px}
+@media (orientation:portrait) and (max-width:760px){body.rol-cre .gira{display:flex}}
 .tabs{display:flex;gap:2px;background:var(--sunken);border-radius:10px;padding:3px}
 .tab{border:0;background:transparent;color:var(--ink-3);font-weight:500;padding:6px 12px;border-radius:8px;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:7px;transition:color .12s}
 .tab:hover{color:var(--ink)}
@@ -1297,6 +1306,34 @@ const claveOk = h => quienEntra(h) !== null;
 function arrancar(quien){
   S.solo = quien || ''; S.rol = (S.paquete && S.paquete.rol) || '';
   $('#app').classList.toggle('cli', S.cli && !esRevisor());
+  const M = (S.paquete && S.paquete.marcas) || [];   // el equipo salta al panel de otra marca desde acá (la clave es la misma: entra directo)
+  if (S.rol === 'equipo' && M.length > 1) {
+    const sel = document.createElement('select'); sel.className = 'bsel'; sel.setAttribute('aria-label', 'Cambiar de marca');
+    sel.innerHTML = M.map(m => '<option value="' + esc(m.url) + '"' + (m.nombre === CFG.cliente ? ' selected' : '') + '>' + esc(m.nombre) + ' · Guiones</option>').join('');
+    sel.onchange = () => { if (sel.value) location.href = sel.value; };
+    const b = $('.bname'); b.textContent = ''; b.appendChild(sel);
+  }
+  if (S.cli && S.rol === 'creadora') {   // minitutorial la primera vez + aviso si la abre con el celu en vertical
+    document.body.classList.add('rol-cre');
+    let visto = ''; try { visto = localStorage.getItem('sala-tuto') || ''; } catch (e) {}
+    if (!visto) {
+      const d = document.createElement('div'); d.className = 'tuto';
+      d.innerHTML = '<div class="tuto-c"><h2>Tu sala de guiones 🎬</h2><ol>' +
+        '<li>Entrás siempre con <b>tu contraseña, la misma de la app</b> donde subís los videos.</li>' +
+        '<li>En la lista están <b>tus guiones aprobados</b>. Tocá uno y lo ves <b>lado a lado</b>: el video de referencia y tu guion, con lo que tenés que decir y filmar.</li>' +
+        '<li>Usala <b>en la compu o con el celu acostado (horizontal)</b>: en vertical no se puede comparar con el video.</li>' +
+        '</ol><button class="btn pri" id="tuto-ok">Entendido</button></div>';
+      document.body.appendChild(d);
+      d.querySelector('#tuto-ok').onclick = () => { d.remove(); try { localStorage.setItem('sala-tuto', '1'); } catch (e) {} };
+    }
+    let gx = ''; try { gx = sessionStorage.getItem('sala-gira') || ''; } catch (e) {}
+    if (!gx) {
+      const g = document.createElement('div'); g.className = 'gira';
+      g.innerHTML = '<span>📱 Girá el celu (horizontal) o usala en la compu: así ves tu guion al lado de la referencia.</span><button aria-label="Cerrar">✕</button>';
+      document.body.appendChild(g);
+      g.querySelector('button').onclick = () => { g.remove(); try { sessionStorage.setItem('sala-gira', '1'); } catch (e) {} };
+    }
+  }
   if (S.solo) { $('.bname').textContent = CFG.cliente + ' · Guiones de ' + S.solo; let p = null; try { p = localStorage.getItem('sala-det'); } catch (e) {} if (p === null) S.det = true; }   // la creadora abre con todo lo que tiene que filmar
   $('#gate').hidden = true; $('#app').hidden = false; cargar();
 }
