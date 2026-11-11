@@ -461,7 +461,10 @@ button.ref:hover{background:var(--sunken)}
 .idea{background:var(--accent-soft);border-radius:12px;padding:10px 12px}
 .idea .lbl{color:var(--accent)}
 .angs{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
-.ang{border:1px solid var(--line-2);background:var(--surface);color:var(--ink-2);border-radius:99px;padding:5px 12px;font-size:12.5px;font-weight:500;cursor:pointer}
+.ang{border:1px dashed var(--line-2);background:transparent;color:var(--ink-3);border-radius:99px;padding:5px 12px;font-size:12.5px;font-weight:500;cursor:pointer}
+.ang::before{content:'+ ';opacity:.7}
+.ang.on::before{content:'✓ ';opacity:1}
+.angn{font-size:12px;color:var(--ink-3);margin-top:6px}
 .ang.on{background:var(--ink);color:var(--surface);border-color:var(--ink)}
 .fx-b textarea{width:100%;border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:16px;background:var(--raised);resize:vertical;min-height:54px;outline:0}
 .fx-b textarea:focus{border-color:var(--accent)}
@@ -1236,13 +1239,14 @@ function abrirFicha(id){
     '<div><div class="lbl">Por qué funciona</div><p>' + esc(d.porque || '') + '</p></div>' +
     (ia.idea ? '<div class="idea"><div class="lbl">Así quedaría en ' + esc(CFG.cliente) + '</div><p>' + esc(ia.idea) + '</p></div>' : '') +
     ((d.guion || []).length ? '<details><summary>Lo que dice el anuncio (' + d.guion.length + ' frases)</summary><div>' + d.guion.map(x => '<span><span class="mono" style="color:var(--ink-4)">' + fmtT(x.t) + '</span> ' + esc(x.es) + '</span>').join('') + '</div></details>' : '') +
-    (d.estado === 'descartada' ? '' : '<div><div class="lbl">Ángulos (uno o más: sale un guion por cada uno)</div><div class="angs">' + todos.map(a => '<button class="ang' + (marcados.has(a) ? ' on' : '') + '" data-ang="' + esc(a) + '" aria-pressed="' + marcados.has(a) + '">' + esc(a) + '</button>').join('') + '</div></div>' +
+    (d.estado === 'descartada' ? '' : '<div><div class="lbl">Ángulos (vienen marcados los que le van; sale un guion por cada ✓)</div><div class="angs">' + todos.map(a => '<button class="ang' + (marcados.has(a) ? ' on' : '') + '" data-ang="' + esc(a) + '" aria-pressed="' + marcados.has(a) + '">' + esc(a) + '</button>').join('') + '</div><div class="angn" id="fx-angn"></div></div>' +
       '<div><div class="lbl">Tu pedido (opcional)</div><textarea id="fx-nota" placeholder="Ej: con Fabi, que hable de las rodillas">' + esc(d.nota || '') + '</textarea></div>') +
     '<div class="gacc">' + (d.estado === 'descartada' ? '<button class="btn" id="fx-volver">Volver a verla</button>' : '<button class="btn no" id="fx-no">No</button><button class="btn si" id="fx-si">' + (d.estado === 'elegir' ? 'La quiero' : 'Guardar') + '</button>') + '</div></div></div>';
   f.hidden = false;
   f.onclick = e => { if (e.target === f) cerrarFicha(); };
   $('#fx-x').onclick = cerrarFicha;
-  f.querySelectorAll('[data-ang]').forEach(b => b.onclick = () => { const on = !b.classList.contains('on'); b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); });
+  f.querySelectorAll('[data-ang]').forEach(b => b.onclick = () => { const on = !b.classList.contains('on'); b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); cuentaAng(); });
+  const cuentaAng = () => { const n = f.querySelectorAll('.ang.on').length, e = $('#fx-angn'); if (e) e.textContent = n ? 'Marcados con ✓: ' + n + (n === 1 ? ' guion' : ' guiones') + '. Tocá uno para sacarlo o sumarlo.' : 'Ninguno marcado: tocá los que quieras.'; }; cuentaAng();
   const si = $('#fx-si'), no = $('#fx-no'), vo = $('#fx-volver');
   if (si) si.onclick = () => { const ang = [...f.querySelectorAll('.ang.on')].map(b => b.dataset.ang); if (!ang.length) { toast('Marcá al menos un ángulo'); return; }
     const c = {estado: d.estado === 'lista' ? 'lista' : 'elegida', para: {marca, angulos: ang}, nota: $('#fx-nota').value.trim(), elegidaEn: new Date().toISOString()}; cerrarFicha(); marcarGanador(id, c, 'Elegida: te la escribo para ' + CFG.cliente); };
