@@ -339,6 +339,22 @@ function armarDuo(duo){
   });
 }
 
+// los saltos 📦 salen de las escenas REALES del desarmado (las contiguas se funden); los `seg` del chequeo
+// llegaron a inventar segundos que el video no tiene (206-215 s en uno de 163)
+function packSpans(des, d){
+  const spans = [];
+  (des.escenas || []).forEach(s => {
+    if (!s.pack) return;
+    const [a, b] = String(s.t || "").split("-").map(parseFloat);
+    if (isNaN(a)) return;
+    const fin = isNaN(b) ? a : b;
+    if (spans.length && a - spans[spans.length - 1].fin <= 0.5) spans[spans.length - 1].fin = Math.max(spans[spans.length - 1].fin, fin);
+    else spans.push({ini: a, fin});
+  });
+  if (!spans.length) (d.packs || []).forEach(p => { const s = parseFloat(p.seg); if (!isNaN(s) && (!d.duracion || s < d.duracion)) spans.push({ini: s, fin: s}); });
+  return spans.map(s => s.ini);
+}
+
 function estadoProd(d){
   if (d.estado === "elegida") return `<div class="aviso w">Desarmando la novela (guion, escenas, packs)…</div>`;
   if (d.estado === "lista") return `<div class="aviso w">${d.turno === "mañana" ? "En fila: se dobla mañana (tope de " + TOPE + " por día)" : "En fila para doblar"}</div>`;
@@ -375,7 +391,7 @@ function tarjeta(d){
       <span class="tag r">${esc(d.cantada === "cantada" ? "Cantada" : "Hablada")}</span></div>`}
     <div class="cuerpo">
       <div class="meta uno"><span class="pill" style="background:var(--acc-bg);color:var(--acc)">${"★".repeat(d.calidad||1)}${"☆".repeat(5-(d.calidad||1))}</span><span class="pill">${esc(d.dias)} días</span><span class="pill">×${esc(d.dup)} dup</span>${(d.copias||1) > 1 ? `<span class="pill" style="background:var(--acc-bg);color:var(--acc)">${d.copias} iguales</span>` : ""}</div>
-      ${prod && (d.packs||[]).length ? `<div class="meta"><span class="pill" style="background:var(--ok-bg);color:var(--ok)">saltar a</span>${(d.packs||[]).map(p => `<button class="pill chip" data-t="${esc(p.seg)}" title="${esc(p.que_pasa || "")}">📦 ${esc(p.seg)} s</button>`).join("")}</div>` : ""}
+      ${prod && packSpans(des, d).length ? `<div class="meta"><span class="pill" style="background:var(--ok-bg);color:var(--ok)">saltar a</span>${packSpans(des, d).map(p => `<button class="pill chip" data-t="${esc(p)}">📦 ${Math.round(p)} s</button>`).join("")}</div>` : ""}
       <div class="idea-c clamp2">${esc(d.resumen || d.hook || "")}</div>
       ${estadoProd(d)}
       <div class="extra">
