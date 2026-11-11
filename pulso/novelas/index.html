@@ -143,6 +143,59 @@ summary{cursor:pointer;font-weight:600;font-size:13px}
 .chip{cursor:pointer;border:0}
 .esc tr[data-t]{cursor:pointer}
 .esc tr[data-t]:hover td{background:var(--soft)}
+/* visor de revisión en popup (estilo Frame.io, calcado de la Sala de revisión; Nacho 11/11) */
+#visor{position:fixed;inset:0;z-index:30;background:rgba(53,38,27,.55);backdrop-filter:blur(14px) saturate(1.1);-webkit-backdrop-filter:blur(14px) saturate(1.1);display:flex;align-items:center;justify-content:center;animation:vfo .15s ease-out}
+#visor[hidden]{display:none}
+#vbox{width:min(1240px,95vw);height:min(860px,92vh);background:var(--card);border:1px solid var(--line2);border-radius:24px;overflow:hidden;display:grid;grid-template-columns:minmax(320px,55%) minmax(0,1fr);box-shadow:0 30px 90px rgba(38,33,30,.5);animation:vsu .2s cubic-bezier(.2,.9,.3,1.1)}
+@keyframes vfo{from{opacity:0}}@keyframes vsu{from{opacity:0;transform:scale(.96) translateY(10px)}}
+.vesc{background:#17120E;color:#fff;display:flex;flex-direction:column;min-width:0}
+.vpar{flex:1;display:grid;grid-template-columns:1fr 1fr;gap:8px;min-height:0;padding:12px 12px 0}
+.vv{position:relative;border-radius:12px;overflow:hidden;background:#000;min-height:0;cursor:pointer}
+.vv video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
+.vv .tag{position:absolute;top:8px;left:8px;font-size:10.5px;font-weight:600;padding:3px 9px;border-radius:99px;background:rgba(38,33,30,.75);color:#fff;z-index:1}
+.vv .tag.hecho{background:var(--ok)}
+.vlt{padding:10px 14px 12px}
+.pista{position:relative;height:28px;cursor:pointer;touch-action:none}
+.pista .riel{position:absolute;left:0;right:0;top:11px;height:6px;border-radius:9px;background:rgba(255,255,255,.18)}
+.pista .hecho{position:absolute;left:0;top:11px;height:6px;border-radius:9px;background:#fff;width:0}
+.pista .mk{position:absolute;top:1px;width:10px;height:10px;margin-left:-5px;border-radius:50%;background:#B4633A;border:2px solid #fff;padding:0;cursor:pointer}
+.pista .mk.ok{background:#6f6a66;border-color:#999}
+.pista .mk.act{box-shadow:0 0 0 3px rgba(180,99,58,.45)}
+.pista .pk{position:absolute;top:20px;height:5px;border-radius:3px;background:#E8A66B;border:0;padding:0;min-width:4px;cursor:pointer}
+.pista .cz{position:absolute;top:6px;width:3px;height:16px;margin-left:-1.5px;background:#fff;border-radius:2px;left:0}
+.vctr{display:flex;align-items:center;gap:6px;margin-top:8px;flex-wrap:wrap}
+.vctr .tcv{font-variant-numeric:tabular-nums;font-size:12.5px;color:#D8CCC2;margin-right:auto}.vctr .tcv b{color:#fff}
+.bi{background:rgba(255,255,255,.12);border:0;color:#fff;border-radius:9px;padding:6px 10px;font-size:12px;font-weight:600;min-height:32px;cursor:pointer}
+.bi:hover{background:rgba(255,255,255,.2)}
+.vley{font-size:10.5px;color:#B5A799;margin-top:7px;display:flex;gap:12px;flex-wrap:wrap}
+.vley i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:4px;vertical-align:middle}
+.vpan{display:flex;flex-direction:column;min-width:0;height:100%;min-height:0}
+.vcab{padding:14px 16px 10px;border-bottom:1px solid var(--line)}
+.vcab .l1{display:flex;gap:8px;align-items:flex-start}
+.vcab h2{font-size:16px;font-weight:700;letter-spacing:-.02em;flex:1;min-width:0}
+.vcab .st{font-size:12px;color:var(--mut);margin-top:3px}
+.vnav{display:flex;gap:4px}
+.btn.ch{min-height:32px;padding:5px 11px;font-size:12px;border-radius:10px}
+#vcuerpo{flex:1;overflow:auto;padding:10px 14px;min-height:100px;scrollbar-width:thin}
+.nota{border:1px solid var(--line);border-radius:12px;padding:9px 10px;margin-bottom:7px;display:grid;grid-template-columns:auto 1fr;gap:4px 9px;align-items:start;background:var(--card)}
+.nota.act{border-color:var(--acc)}.nota.ok{opacity:.55}
+.tcb{border:0;background:var(--esp);color:#fff;border-radius:8px;padding:3px 8px;font-size:11.5px;font-weight:600;font-variant-numeric:tabular-nums;cursor:pointer}
+.tcb.gen{background:var(--soft);color:var(--mut)}
+.nota .tx{white-space:pre-wrap;word-break:break-word;font-size:13px}
+.nota .pie{grid-column:2;font-size:11px;color:var(--mut);display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.nota .pie button{border:0;background:transparent;color:var(--mut);font-size:11px;font-weight:600;text-decoration:underline;padding:0;cursor:pointer}
+.et{font-size:10.5px;font-weight:600;border-radius:99px;padding:1px 8px;background:var(--soft);color:var(--mut)}
+.et.env{background:var(--warn-bg);color:var(--warn)}
+.vred{border-top:1px solid var(--line);padding:10px 14px}
+.vred .d{font-size:12px;color:var(--mut);display:flex;gap:8px;align-items:center;margin-bottom:6px;flex-wrap:wrap}
+.vred .d b{color:var(--txt);font-variant-numeric:tabular-nums}
+.vred .d .ay{margin-left:auto;font-size:11px;color:var(--mut2)}
+.vred textarea{width:100%;border:1px solid var(--line2);border-radius:11px;padding:9px 11px;font:inherit;font-size:13px;resize:vertical;min-height:54px;background:var(--soft);color:var(--txt)}
+.vred textarea:focus{outline:none;border-color:var(--acc)}
+.vred .r2{display:flex;gap:8px;align-items:center;margin-top:7px}
+.vacc{border-top:1px solid var(--line);padding:12px 14px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.vacc .sp{flex:1}.vacc .res{font-size:11.5px;color:var(--mut);flex-basis:100%}
+@media (max-width:900px){#vbox{width:100vw;height:100dvh;border-radius:0;border:0;display:block;overflow:auto}.vpan{height:auto}.vpar{min-height:46vh}#vcuerpo{max-height:none}}
 </style>
 </head>
 <body>
@@ -216,6 +269,7 @@ summary{cursor:pointer;font-weight:600;font-size:13px}
   <textarea id="planTxt" placeholder="Notas para el doblaje (opcional)"></textarea>
   <div class="acciones" style="align-items:center"><button class="btn" id="planNo">Cancelar</button><span id="planCosto" style="font-size:12.5px;font-weight:600;color:var(--acc);white-space:nowrap;padding:0 4px"></span><button class="btn dark" id="planSi">Confirmar y doblar</button></div>
 </div></div>
+<div id="visor" hidden role="dialog" aria-modal="true" aria-label="Revisar novela"><div id="vbox"></div></div>
 <div class="toast" id="toast"></div>
 
 <script type="module">
@@ -300,11 +354,13 @@ function pintar(){
   lista.sort((a, b) => vista === "hechos" ? (b.producidoEn||"").localeCompare(a.producidoEn||"") : k(b) - k(a));
   if (!lista.length) {
     $("#grid").innerHTML = `<div class="vacio">${{elegidas:"No hay nada re-doblándose. Tocá <b>La quiero</b> en Para elegir.", hechos:"Todavía no hay novelas producidas.", todas:"No descartaste ninguna.", hoy:"No hay novelas con este filtro."}[vista]}</div>`;
+    if (VS.abierto) { if (!dd(VS.abierto)) cerrarVisor(); else pintarVisor(); }
     return;
   }
   $("#grid").innerHTML = lista.map(tarjeta).join("");
   $("#grid").querySelectorAll("[data-acc]").forEach(b => b.onclick = () => accion(b.dataset.id, b.dataset.acc));
   $("#grid").querySelectorAll(".duo").forEach(armarDuo);
+  if (VS.abierto) { if (!dd(VS.abierto)) cerrarVisor(); else pintarVisor(); }
 }
 
 // comparador lado a lado: el original de Ryze y el nuestro corren JUNTOS (un play, una barra), como la Sala de guiones
@@ -338,6 +394,184 @@ function armarDuo(duo){
     if (p.paused) { p.play(); o.play().catch(() => {}); }
   });
 }
+
+// ---- Revisión en POPUP, estilo Frame.io (calcado de la Sala de revisión multicuenta; Nacho 11/11):
+// notas clavadas al segundo sobre el comparador; «Mandar correcciones» arma el cambio para el bot ----
+const VELS = [1, 1.25, 1.5, 2];
+const VS = {abierto: null, orden: [], activa: null, tNota: null, general: false, vel: 1, audio: "pulso", firma: ""};
+const tcv = (t, dec = true) => { t = Math.max(0, Number(t) || 0); const m = Math.floor(t / 60), s = t - m * 60; return m + ":" + (dec ? s.toFixed(1).padStart(4, "0").replace(".", ",") : String(Math.floor(s)).padStart(2, "0")); };
+const notasT = d => Array.isArray(d.notasT) ? d.notasT : [];
+const pendN = d => notasT(d).filter(n => n.estado === "pend");
+const verN = d => (d.cambios || 0) + 1;
+const dd = id => docs.find(x => x.id === id);
+const VV = () => $("#vvP");
+const vecinoV = k => { const i = VS.orden.indexOf(VS.abierto); return VS.orden[i + k] || null; };
+
+function abrirVisor(id){
+  if (!dd(id)) return;
+  VS.orden = docs.filter(x => x.estado === "producido" || x.estado === "aprobado")
+    .sort((a, b) => (b.producidoEn || "").localeCompare(a.producidoEn || "")).map(x => x.id);
+  VS.abierto = id; VS.activa = null; VS.tNota = null; VS.general = false; VS.firma = "";
+  $("#visor").hidden = false; document.body.style.overflow = "hidden";
+  pintarVisor();
+}
+function cerrarVisor(){
+  VV()?.pause(); $("#vvO")?.pause();
+  VS.abierto = null; VS.firma = ""; $("#visor").hidden = true; $("#vbox").innerHTML = ""; document.body.style.overflow = "";
+}
+$("#visor").addEventListener("pointerdown", e => { if (e.target.id === "visor") cerrarVisor(); });
+
+function pintarVisor(){
+  const id = VS.abierto, d = id && dd(id); if (!d) return;
+  const firma = [id, d.estado, d.finalSubs || d.final].join("|");
+  if (firma !== VS.firma){
+    VS.firma = firma;
+    $("#vbox").innerHTML = `<section class="vesc"><div class="vpar">
+        <div class="vv"><video id="vvO" src="${esc(d.video)}" muted playsinline preload="auto"></video><span class="tag">Ryze · original</span></div>
+        <div class="vv"><video id="vvP" src="${esc(d.finalSubs || d.final)}" playsinline preload="auto"></video><span class="tag hecho">Pulso · ${esc(d.codigo || "")}</span></div></div>
+      <div class="vlt"><div class="pista" id="vPista"><div class="riel"></div><div class="hecho" id="vHecho"></div><div id="vPacks"></div><div id="vMarcas"></div><div class="cz" id="vCz"></div></div>
+        <div class="vctr"><span class="tcv" id="vTc"><b>0:00,0</b> / 0:00</span><button class="bi" id="vAtras" title="Atrás 2 s (←)">−2 s</button><button class="bi" id="vPlay" style="min-width:76px">▶ Play</button><button class="bi" id="vAdel" title="Adelante 2 s (→)">+2 s</button><button class="bi" id="vVel" title="Velocidad">${VS.vel}×</button><button class="bi" id="vAud" title="Qué audio escuchás">🔊 Pulso</button></div>
+        <div class="vley"><span><i style="background:#B4633A"></i>nota</span><span><i style="background:#E8A66B;border-radius:3px;height:5px;width:12px"></i>toma del pack</span><span>N: nota acá · espacio: play · ← → 2 s · ↑ ↓ otra novela</span></div></div></section>
+      <aside class="vpan"><div class="vcab" id="vCabe"></div><div id="vcuerpo"></div>
+        <form class="vred" id="vForm" hidden><div class="d"><span id="vDondeL">Nota en</span><b id="vDonde">0:00,0</b><button type="button" class="btn ch" id="vGeneral">Nota general</button><span class="ay">⌘/Ctrl + Enter guarda</span></div>
+          <textarea id="vTexto" placeholder="Qué cambiar en este momento… (si nombrás el pack, se rehace esa toma)" rows="2"></textarea>
+          <div class="r2"><button class="btn dark ch" id="vGuardar" type="submit" disabled>Guardar nota</button></div></form>
+        <div class="vacc" id="vAcc"></div></aside>`;
+    conectarVisor(id);
+  }
+  pintarVCab(id, d); pintarNotas(); pintarVAcc();
+}
+
+function conectarVisor(id){
+  const p = VV(), o = $("#vvO");
+  o.muted = VS.audio === "pulso"; p.muted = VS.audio !== "pulso";
+  p.playbackRate = o.playbackRate = VS.vel;
+  const dur = () => p.duration || (dd(id) || {}).duracion || 0;
+  const tick = () => {
+    if (Math.abs(o.currentTime - p.currentTime) > 0.35) o.currentTime = p.currentTime;
+    const pc = dur() ? Math.min(100, p.currentTime / dur() * 100) : 0;
+    $("#vHecho").style.width = pc + "%"; $("#vCz").style.left = pc + "%";
+    $("#vTc").innerHTML = `<b>${tcv(p.currentTime)}</b> / ${tcv(dur(), false)}`;
+    $("#vPlay").textContent = p.paused ? "▶ Play" : "❚❚ Pausa";
+    if (!$("#vTexto").value && !VS.general){ VS.tNota = null; $("#vDonde").textContent = tcv(p.currentTime); }
+  };
+  ["timeupdate", "play", "pause", "loadedmetadata", "seeked"].forEach(e => p.addEventListener(e, tick));
+  p.addEventListener("loadedmetadata", pintarVPista);
+  p.addEventListener("play", () => o.play().catch(() => {}));
+  p.addEventListener("pause", () => o.pause());
+  p.addEventListener("ended", () => o.pause());
+  const tg = () => p.paused ? (p.play(), o.play().catch(() => {})) : p.pause();
+  $("#vPlay").onclick = tg; p.onclick = tg; o.onclick = tg;
+  $("#vAtras").onclick = () => { p.currentTime = Math.max(0, p.currentTime - 2); };
+  $("#vAdel").onclick = () => { p.currentTime = Math.min(dur(), p.currentTime + 2); };
+  $("#vVel").onclick = () => { VS.vel = VELS[(VELS.indexOf(VS.vel) + 1) % VELS.length]; p.playbackRate = o.playbackRate = VS.vel; $("#vVel").textContent = VS.vel + "×"; };
+  $("#vAud").onclick = () => { VS.audio = VS.audio === "pulso" ? "ryze" : "pulso"; p.muted = VS.audio !== "pulso"; o.muted = VS.audio !== "ryze"; $("#vAud").textContent = VS.audio === "pulso" ? "🔊 Pulso" : "🔊 Ryze"; };
+  const pista = $("#vPista"); let arr = false;
+  const irX = e => { const r = pista.getBoundingClientRect(); if (dur()){ const t = Math.min(1, Math.max(0, (e.clientX - r.left) / r.width)) * dur(); p.currentTime = t; o.currentTime = t; } };
+  pista.addEventListener("pointerdown", e => { if (e.target.closest(".mk,.pk")) return; arr = true; pista.setPointerCapture(e.pointerId); irX(e); });
+  pista.addEventListener("pointermove", e => { if (arr) irX(e); });
+  pista.addEventListener("pointerup", () => { arr = false; });
+  conectarVForm(id);
+}
+const irT = t => { const p = VV(), o = $("#vvO"); if (p){ p.currentTime = t; o.currentTime = t; p.pause(); o.pause(); } };
+
+function pintarVPista(){
+  const d = VS.abierto && dd(VS.abierto), p = VV(); if (!d || !p || !$("#vMarcas")) return;
+  const dur = p.duration || d.duracion || 1;
+  $("#vPacks").innerHTML = packSpans(d.desarmado || {}, d).map(t => `<button class="pk" data-pk="${t}" style="left:${Math.min(99, t / dur * 100)}%;width:7px" title="toma del pack · ${Math.round(t)} s"></button>`).join("");
+  $("#vMarcas").innerHTML = notasT(d).filter(n => n.t != null).map(n => `<button class="mk ${n.estado !== "pend" ? "ok" : ""} ${n.id === VS.activa ? "act" : ""}" data-mk="${esc(n.id)}" style="left:${Math.min(100, n.t / dur * 100)}%" title="${esc(tcv(n.t) + " · " + n.texto)}"></button>`).join("");
+  $("#vbox").querySelectorAll("[data-pk]").forEach(b => b.onclick = () => irT(Number(b.dataset.pk)));
+  $("#vbox").querySelectorAll("[data-mk]").forEach(b => b.onclick = () => irNota(b.dataset.mk));
+}
+function irNota(nid){
+  const d = dd(VS.abierto), n = d && notasT(d).find(x => x.id === nid); if (!n) return;
+  VS.activa = nid; if (n.t != null) irT(n.t);
+  pintarNotas();
+}
+
+function pintarVCab(id, d){
+  $("#vCabe").innerHTML = `<div class="l1"><h2>${esc(d.codigo || "Novela")} · ${d.cantada === "cantada" ? "cantada" : "hablada"} · ${esc(d.duracion || "?")} s</h2>
+      <span class="vnav"><button class="btn ch" id="vPrev" title="Anterior (↑)" ${vecinoV(-1) ? "" : "disabled"}>←</button><button class="btn ch" id="vNext" title="Siguiente (↓)" ${vecinoV(1) ? "" : "disabled"}>→</button><button class="btn ch" id="vCerrar" title="Cerrar (Esc)">✕</button></span></div>
+    <div class="st">${esc(d.resumen || "")}</div>
+    <div class="st">versión ${verN(d)}${d.costoUsd ? ` · salió USD ${esc(d.costoUsd)}` : ""} · <a href="${esc(d.link)}" target="_blank" rel="noopener">anuncio original</a>${d.driveUrl ? ` · <a href="${esc(d.driveUrl)}" target="_blank" rel="noopener">Drive</a>` : ""}</div>`;
+  $("#vPrev").onclick = () => vecinoV(-1) && abrirVisor(vecinoV(-1));
+  $("#vNext").onclick = () => vecinoV(1) && abrirVisor(vecinoV(1));
+  $("#vCerrar").onclick = cerrarVisor;
+}
+
+function pintarNotas(){
+  const d = dd(VS.abierto), c = $("#vcuerpo"); if (!d || !c) return;
+  if (c.contains(document.activeElement) && /TEXTAREA|INPUT/.test(document.activeElement.tagName)) return;
+  const ed = d.estado === "producido";
+  const ns = [...notasT(d)].sort((a, b) => ((a.t ?? -1) - (b.t ?? -1)));
+  const et = n => n.estado === "pend" ? "" : n.estado === "env" ? `<span class="et env">${(n.ver || 1) < verN(d) ? "pedida en v" + n.ver : "enviada"}</span>` : `<span class="et">resuelta</span>`;
+  c.innerHTML = ns.length ? ns.map(n => `<div class="nota ${n.estado !== "pend" ? "ok" : ""} ${n.id === VS.activa ? "act" : ""}">
+      <button class="tcb ${n.t == null ? "gen" : ""}" data-ir="${esc(n.id)}" type="button">${n.t == null ? "General" : tcv(n.t)}</button><span class="tx">${esc(n.texto)}</span>
+      <span class="pie"><span>${esc(n.por || "")} · v${n.ver || 1}</span>${et(n)}${n.estado === "pend" ? `<button data-borrar="${esc(n.id)}" type="button">Borrar</button>` : ""}</span></div>`).join("")
+    : `<p style="color:var(--mut);font-size:12.5px;padding:8px 2px">${ed ? "Pausá donde quieras cambiar algo y escribí abajo: la nota queda clavada en ese segundo, como Frame.io. Los puntitos 🟠 de la barra son las tomas del pack." : "Sin notas."}</p>`;
+  c.querySelectorAll("[data-ir]").forEach(b => b.onclick = () => irNota(b.dataset.ir));
+  c.querySelectorAll("[data-borrar]").forEach(b => b.onclick = async () => {
+    try { await fs.updateDoc(fs.doc(fs.db, COL, VS.abierto), {notasT: notasT(dd(VS.abierto)).filter(n => n.id !== b.dataset.borrar)}); }
+    catch (e) { toast("No se pudo: " + e.code); }
+  });
+  $("#vForm").hidden = !ed;
+  pintarVPista();
+}
+
+function conectarVForm(id){
+  const tx = $("#vTexto"), g = $("#vGuardar"), bg = $("#vGeneral");
+  const donde = () => { $("#vDondeL").textContent = VS.general ? "Nota" : "Nota en"; $("#vDonde").textContent = VS.general ? "general" : tcv(VS.tNota ?? VV()?.currentTime ?? 0); bg.textContent = VS.general ? "Clavarla en el segundo" : "Nota general"; };
+  donde();
+  tx.oninput = () => { if (VS.tNota == null && !VS.general && VV()){ VS.tNota = VV().currentTime; VV().pause(); $("#vvO")?.pause(); } g.disabled = !tx.value.trim(); donde(); };
+  bg.onclick = () => { VS.general = !VS.general; donde(); tx.focus(); };
+  async function guardarNota(){
+    const d = dd(VS.abierto), texto = tx.value.trim(); if (!texto || !d) return;
+    const n = {id: Date.now().toString(36), t: VS.general ? null : Math.round((VS.tNota ?? VV()?.currentTime ?? 0) * 10) / 10,
+               texto, por: quien, fecha: new Date().toISOString(), ver: verN(d), estado: "pend"};
+    tx.value = ""; g.disabled = true; VS.tNota = null; VS.activa = n.id; donde();
+    try { await fs.updateDoc(fs.doc(fs.db, COL, VS.abierto), {notasT: [...notasT(d), n]}); toast("Nota guardada"); }
+    catch (e) { toast("No se pudo guardar: " + e.code); }
+  }
+  $("#vForm").onsubmit = e => { e.preventDefault(); guardarNota(); };
+  tx.onkeydown = e => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)){ e.preventDefault(); guardarNota(); } if (e.key === "Escape") tx.blur(); };
+}
+
+function pintarVAcc(){
+  const d = dd(VS.abierto), el = $("#vAcc"); if (!d || !el) return;
+  const ps = pendN(d), n = ps.length;
+  if (d.estado === "producido"){
+    const puede = (d.cambios || 0) < MAX_CAMBIOS;
+    el.innerHTML = `<span class="res">${n ? `${n} ${n === 1 ? "nota" : "notas"} sin mandar · al mandarlas se re-dobla con esas correcciones` : "Sin notas. Si está bien, aprobala: pasa a Drive."}${puede ? "" : ` · ya no quedan cambios (máx ${MAX_CAMBIOS})`}</span>
+      <span class="sp"></span><button class="btn" id="vMandar" ${n && puede ? "" : "disabled"}>Mandar correcciones${n ? ` (${n})` : ""}</button><button class="btn dark" id="vAprobar">${n ? "Aprobar igual" : "Aprobar"}</button>`;
+    $("#vAprobar").onclick = async () => {
+      if (n && !confirm(`Tiene ${n} nota${n === 1 ? "" : "s"} sin mandar: no se van a corregir. ¿Aprobar igual?`)) return;
+      try { await fs.updateDoc(fs.doc(fs.db, COL, VS.abierto), {estado: EST.aprobado, aprobadoEn: new Date().toISOString(), aprobo: quien}); toast("Aprobada: va a Listos para subir"); sigOCerrar(); }
+      catch (e) { toast("No se pudo: " + e.code); }
+    };
+    $("#vMandar").onclick = async () => {
+      const txt = [...ps].sort((a, b) => (a.t ?? -1) - (b.t ?? -1)).map(x => (x.t == null ? "" : `seg ${x.t.toFixed(1).replace(".", ",")}: `) + x.texto).join(" | ");
+      const env = notasT(d).map(x => x.estado === "pend" ? {...x, estado: "env"} : x);
+      try { await fs.updateDoc(fs.doc(fs.db, COL, VS.abierto), {estado: EST.cambiar, cambioNota: txt, cambioEn: new Date().toISOString(), cambio: quien, cambios: (d.cambios || 0) + 1, notasT: env}); toast("Enviado: se rehace con tus notas"); sigOCerrar(); }
+      catch (e) { toast("No se pudo: " + e.code); }
+    };
+  } else {
+    el.innerHTML = `<span class="res">${d.estado === "aprobado" ? (d.enDrive ? "✓ En Drive · " + esc(d.enDrive) : "✓ Aprobada") : esc(d.estado)}</span>`;
+  }
+}
+function sigOCerrar(){ const s = vecinoV(1) || vecinoV(-1); if (s && dd(s)) abrirVisor(s); else cerrarVisor(); }
+
+document.addEventListener("keydown", e => {
+  if (!VS.abierto || e.metaKey || e.ctrlKey || e.altKey) return;
+  if (/INPUT|TEXTAREA|SELECT/.test(e.target.tagName)) return;
+  const p = VV(), o = $("#vvO"), k = e.key;
+  if (k === "Escape"){ cerrarVisor(); return; }
+  if (k === " " && p){ e.preventDefault(); p.paused ? (p.play(), o.play().catch(() => {})) : p.pause(); }
+  else if (k === "ArrowLeft" && p){ e.preventDefault(); p.currentTime = Math.max(0, p.currentTime - 2); }
+  else if (k === "ArrowRight" && p){ e.preventDefault(); p.currentTime = p.currentTime + 2; }
+  else if (k === "ArrowDown" && vecinoV(1)){ e.preventDefault(); abrirVisor(vecinoV(1)); }
+  else if (k === "ArrowUp" && vecinoV(-1)){ e.preventDefault(); abrirVisor(vecinoV(-1)); }
+  else if ((k === "n" || k === "N") && (dd(VS.abierto) || {}).estado === "producido"){ e.preventDefault(); if (p){ p.pause(); o.pause(); VS.general = false; VS.tNota = p.currentTime; $("#vDonde").textContent = tcv(VS.tNota); } $("#vTexto").focus(); }
+});
 
 // los saltos 📦 salen de las escenas REALES del desarmado (las contiguas se funden); los `seg` del chequeo
 // llegaron a inventar segundos que el video no tiene (206-215 s en uno de 163)
@@ -373,9 +607,9 @@ function tarjeta(d){
   if (d.estado === "elegida" || d.estado === "lista") botones = `${mas}<button class="btn sm" data-acc="soltar" data-id="${esc(d.id)}">Cancelar</button>`;
   if (d.estado === "descartada") botones = `${mas}<button class="btn sm" data-acc="volver" data-id="${esc(d.id)}">Recuperar</button>`;
   if (d.estado === "produciendo" || d.estado === "fallo") botones = mas;
-  if (d.estado === "producido") botones = `${mas}${(d.cambios || 0) < MAX_CAMBIOS ? `<button class="btn sm" data-acc="cambiar" data-id="${esc(d.id)}">Cambiar</button>` : ""}<button class="btn sm dark" data-acc="aprobar" data-id="${esc(d.id)}">Aprobar</button>`;
-  if (d.estado === "aprobado") botones = `${mas}${d.driveUrl ? `<a class="btn sm ok" href="${esc(d.driveUrl)}" target="_blank" rel="noopener">Ver en Drive</a>` : `<span class="btn sm" style="flex:1">Pasando a Drive…</span>`}`;
-  const caja = d.estado === "producido" ? `<div class="cambio" hidden><textarea placeholder="¿Qué cambiamos? Ej: la voz más lenta, o la toma del pack con la taza al lado" rows="3"></textarea><div class="acciones"><button class="btn sm" data-acc="nocambio" data-id="${esc(d.id)}">Cancelar</button><button class="btn sm dark" data-acc="enviarcambio" data-id="${esc(d.id)}">Enviar cambio</button></div></div>` : "";
+  if (d.estado === "producido") botones = `${mas}<button class="btn sm dark" data-acc="revisar" data-id="${esc(d.id)}">Revisar</button><button class="btn sm ok" data-acc="aprobar" data-id="${esc(d.id)}">Aprobar</button>`;
+  if (d.estado === "aprobado") botones = `${mas}<button class="btn sm" data-acc="revisar" data-id="${esc(d.id)}">Ver</button>${d.driveUrl ? `<a class="btn sm ok" href="${esc(d.driveUrl)}" target="_blank" rel="noopener">Drive</a>` : `<span class="btn sm" style="flex:1">Pasando a Drive…</span>`}`;
+  const caja = "";
   const nueva = d.fecha === hoy && d.estado === "nueva";
   const des = d.desarmado || {};
   const escenas = (des.escenas || []).length ? `<details><summary>Guion de la novela (escena por escena${prod ? " · tocá una y los dos videos saltan ahí" : ""})</summary><div class="des"><table class="esc">${des.escenas.map(s => `<tr${prod ? ` data-t="${esc(parseFloat(s.t) || 0)}"` : ""}><td>${esc(s.t)}${s.pack ? " 📦" : ""}</td><td>${esc(s.dice)}<br><i>${esc(s.ve)}</i></td></tr>`).join("")}</table></div></details>` : "";
@@ -417,16 +651,7 @@ function tarjeta(d){
 async function accion(id, acc){
   if (acc === "mas") { const c = document.querySelector(`[data-card="${CSS.escape(id)}"]`); c.classList.toggle("abierta");
     c.querySelector('[data-acc="mas"]').textContent = c.classList.contains("abierta") ? "Menos" : "Más"; return; }
-  const card = document.querySelector(`[data-card="${CSS.escape(id)}"]`);
-  if (acc === "cambiar") { card.querySelector(".cambio").hidden = false; card.querySelector("textarea").focus(); return; }
-  if (acc === "nocambio") { card.querySelector(".cambio").hidden = true; return; }
-  if (acc === "enviarcambio") {
-    const nota = card.querySelector("textarea").value.trim();
-    if (!nota) { toast("Escribí qué cambiamos"); return; }
-    try { await fs.updateDoc(fs.doc(fs.db, COL, id), {estado: EST.cambiar, cambioNota: nota, cambioEn: new Date().toISOString(), cambio: quien, cambios: (docs.find(x => x.id === id)?.cambios || 0) + 1}); toast("Enviado: se rehace con tu cambio"); }
-    catch (e) { toast("No se pudo guardar: " + e.code); }
-    return;
-  }
+  if (acc === "revisar") { abrirVisor(id); return; }
   if (acc === "aprobar") {
     try { await fs.updateDoc(fs.doc(fs.db, COL, id), {estado: EST.aprobado, aprobadoEn: new Date().toISOString(), aprobo: quien}); toast("Aprobada: va a Listos para subir"); }
     catch (e) { toast("No se pudo guardar: " + e.code); }
