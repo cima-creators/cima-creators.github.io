@@ -48,9 +48,18 @@ button.met:hover{background:var(--soft)}
 .met.av b{color:var(--am)}.met.mal b{color:var(--bad)}
 .ib{position:absolute;right:14px;top:14px;width:26px;height:26px;border-radius:50%;border:1px solid var(--line2);background:var(--soft);color:var(--txt);font-size:13px;font-weight:700;font-style:italic;font-family:Georgia,serif}
 .ib:hover,.ib.on{background:var(--am);color:#0B0908;border-color:var(--am)}
-.pop{position:absolute;right:0;top:calc(100% + 10px);z-index:4;width:min(460px,100%);max-height:62vh;overflow:auto;background:var(--soft);border:1px solid var(--line2);border-radius:18px;padding:14px 16px;box-shadow:0 24px 70px rgba(0,0,0,.6);text-align:left}
-.pop h4{font-size:13px;font-weight:700;margin:12px 0 4px;display:flex;justify-content:space-between}.pop h4:first-child{margin-top:0}.pop h4 i{font-style:normal;color:var(--am)}
-.pop .r{font-size:12px;padding:5px 0;border-top:1px solid var(--line)}.pop .r b{font-weight:600}.pop .r span{display:block;color:var(--mut)}
+.pop{position:absolute;right:0;top:calc(100% + 10px);z-index:4;width:min(480px,100%);max-height:66vh;scrollbar-width:thin;overflow:auto;background:var(--soft);border:1px solid var(--line2);border-radius:18px;padding:14px 16px;box-shadow:0 24px 70px rgba(0,0,0,.6);text-align:left}
+.pop section+section{margin-top:18px;padding-top:16px;border-top:1px solid var(--line2)}
+.pop h4{font-size:17px;font-weight:700;letter-spacing:-.02em;display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px}.pop h4 i{font-style:normal;color:var(--am);font-size:20px}
+.pop .mo{background:var(--card);border-radius:13px;padding:11px 12px;margin-bottom:7px}
+.pop .mt2{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.pop .mt2 u{width:8px;height:8px;border-radius:50%;background:var(--mut2)}.pop .mt2 u.bad{background:var(--bad)}.pop .mt2 u.am{background:var(--am)}.pop .mt2 u.ok{background:var(--ok)}
+.pop .mt2 b{font-size:13.5px;font-weight:700}.pop .mt2 em{font-style:normal;font-size:12px;font-weight:700;background:var(--soft);border-radius:99px;padding:1px 8px}
+.pop .mt2 small{flex-basis:100%;color:var(--mut);font-size:11.5px;margin-top:-3px;padding-left:16px}
+.pop .cr{display:flex;gap:10px;align-items:baseline;padding:4px 0 4px 16px}
+.pop .cr span{flex:0 0 78px;font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pop .cr div{display:flex;gap:5px;flex-wrap:wrap}
+.pop .cr i{font-style:normal;font-size:12px;font-weight:600;font-variant-numeric:tabular-nums;border:1px solid var(--line2);border-radius:7px;padding:1px 7px;color:var(--txt)}
 .fila-n{margin-bottom:30px}
 .fila-n h3{font-size:17px;font-weight:700;letter-spacing:-.02em;margin:0 4px 12px;display:flex;gap:10px;align-items:baseline}
 .fila-n h3 i{font-style:normal;color:var(--mut2);font-size:13px;font-weight:600}
@@ -337,6 +346,14 @@ function pintar(){
 // las miniaturas se cargan recién cuando la tarjeta entra en pantalla
 const vigia = new IntersectionObserver(es => es.forEach(e => { if(e.isIntersecting){ e.target.preload = "metadata"; e.target.src = e.target.dataset.src + "#t=1"; vigia.unobserve(e.target); } }), {rootMargin:"300px"});
 
+// el error del bot, dicho en criollo para la miniatura de un trabado
+function porque(e){
+  e = String(e || "");
+  const r = [[/FALTA LA FOTO/i,"Falta la foto que nombra la creadora"],[/\[mirada\]/,"La creadora mira el guion: regrabar"],[/TOPE DE GASTO|tope:/i,"Llegó al tope de gasto: mirarlo a mano"],
+    [/crudo con subt/i,"El crudo vino con subtítulos"],[/status code 401|compartid/i,"El Drive de la creadora no está compartido"],[/^motor:|ffmpeg|Errno|render/i,"Falló la edición: se reintenta sola"],
+    [/en espera/i,"En espera"],[/3D|CIENTIFICAS/,"Animación 3D fuera de lugar"],[/b-roll|toma/i,"Una toma no tiene que ver con la frase"],[/subt[ií]tulo|dos textos/i,"Subtítulos encimados"],[/piel|color/i,"Problema de color"],[/sonido|volumen|audio/i,"Problema de sonido"]];
+  const m = r.find(([rx]) => rx.test(e)); return m ? m[1] : (e.replace(/^(taller no pudo arreglar|chequeo del estilo externo): */,"").replace(/^[a-z_]+: */,"").slice(0,70) || "Trabado");
+}
 function irA(v, filtro){ S.vista = v; if(filtro) S.filtro = filtro; try{ history.replaceState(null, "", "#" + v); }catch(e){} pintar(); if(v === "inicio") leerApp(); }
 
 // Inicio: los números de la cola en vivo, lo que falta editar de la app (con el porqué en la «i») y filas de videos
@@ -349,8 +366,9 @@ function pintarInicio(deMarca){
   const app = S.app && sinEditar();
   const v1 = n => S.cargado || Object.keys(items).length ? n : "…", v2 = n => S.completo || !fb || !fb.getDocs ? n : "…";
   const met = (n, l, d, cls, f, extra) => `<${f?"button":"div"} class="met ${cls||""}" ${f?`data-ir="${f}"`:""}>${extra||""}<b>${n}</b><span class="l">${l}</span><span class="d">${d}</span></${f?"button":"div"}>`;
-  const pop = app && S.pop ? `<div class="pop">${app.total ? app.marcas.map(([m, n, ms]) => `<h4>${esc(m)}<i>${n}</i></h4>${ms.map(([mot, qs]) => `<div class="r"><b>${qs.length} · ${esc(mot)}</b><span>${esc(qs.slice(0,10).join(" · "))}${qs.length>10?` · y ${qs.length-10} más`:""}</span></div>`).join("")}`).join("") : "Todo lo que se subió a la app en 14 días ya tiene su editado."}</div>` : "";
-  const mini = ([id,it]) => `<button class="tarj" data-mini="${esc(id)}"><div class="poster">${it.vistaUrl?`<video muted playsinline preload="none" data-src="${esc(it.vistaUrl)}"></video>`:`<span class="sinv">${esc(it.estado==="error" ? String(it.error||"Trabado").replace(/^(taller no pudo arreglar|chequeo del estilo externo): */,"").slice(0,90) : it.estado==="corregir" ? "Corrigiéndose…" : "Editándose…")}</span>`}
+  const pop = app && S.pop ? `<div class="pop">${app.total ? app.marcas.map(([m, n, ms]) => `<section><h4>${esc(m)}<i>${n}</i></h4>${ms.map(([k, c, cs]) => `<div class="mo"><div class="mt2"><u class="${MOTIVOS[k][2]}"></u><b>${MOTIVOS[k][0]}</b><em>${c}</em><small>${MOTIVOS[k][1]}</small></div>
+        ${cs.map(([cre, gs]) => `<div class="cr"><span>${esc(cre)}</span><div>${gs.map(x => `<i>${esc(x)}</i>`).join("")}</div></div>`).join("")}</div>`).join("")}</section>`).join("") : "Todo lo que se subió a la app en 14 días ya tiene su editado."}</div>` : "";
+  const mini = ([id,it]) => `<button class="tarj" data-mini="${esc(id)}"><div class="poster">${it.vistaUrl?`<video muted playsinline preload="none" data-src="${esc(it.vistaUrl)}"></video>`:`<span class="sinv">${esc(it.estado==="error" ? porque(it.error) : it.estado==="corregir" ? "Corrigiéndose…" : "Editándose…")}</span>`}
       <span class="pill e-${esc(it.estado)}">${esc(it.marcaNombre||it.marca)}</span></div><span class="tit">${esc(it.creadora||"Sin creadora")} · ${esc(it.guion||"sin guion")}</span></button>`;
   const fila = (tit, xs, f) => xs.length ? `<div class="fila-n"><h3>${tit}<i>${xs.length}</i><button data-ir="${f}">Ver todos →</button></h3><div class="carr">${xs.slice(0,24).map(mini).join("")}</div></div>` : "";
   const firma = JSON.stringify([marcaF, S.pop, v1(1), v2(1), rev.map(x=>x[0]+x[1].vistaUrl), viejos.length, curso.map(x=>x[0]), err.map(x=>x[0]), sem.length, app && [app.total, app.subidos]]);
@@ -373,26 +391,31 @@ function pintarInicio(deMarca){
 }
 document.addEventListener("click", e => { if(S.pop && !e.target.closest(".pop, #vInfo")){ S.pop = false; pintar(); } });
 // cruza los videos de la app (últimos 14 días, sin editado) con la cola de edición para decir por qué falta cada uno
+const MOTIVOS = {trabado:["Trabados","El control los frenó: hay que mirarlos","bad"], revisar:["Esperan a Abril","Ya están editados","am"], curso:["Editándose","Se están editando o corrigiendo ahora","mut"],
+  sinEntrar:["Sin entrar al editor","Falta el b-roll de la creadora o el bot todavía no pasó","bad"], sinLink:["Sin link de Drive","La creadora no cargó el crudo","bad"],
+  rechazado:["Rechazados","Toma de b-roll o crudo para regrabar","mut"], subiendo:["Subiéndose","Aprobados: están yendo a la app","ok"]};
 function sinEditar(){
   const desde = new Date(Date.now() - 14 * 864e5).toISOString(), g = {}; let sub = 0, total = 0;
   const nom = m => (Object.values(items).find(it => it.marca === m) || {}).marcaNombre || m;
-  const suma = (marca, m, q) => { ((g[marca] = g[marca] || {})[m] = g[marca][m] || []).push(q); total++; };
+  const corto = gn => { const n = String(gn||"").match(/(\d+)(?:-[A-ZÁÉÍÓÚÑ]+)?$/); return n ? n[1] : (String(gn||"").slice(0,18) || "sin guion"); };
+  const suma = (marca, m, d) => { (((g[marca] = g[marca] || {})[m] = g[marca][m] || {})[d.creadora || "Sin creadora"] = g[marca][m][d.creadora || "Sin creadora"] || []).push(corto(d.guion)); total++; };
   for(const [marca, docs] of Object.entries(S.app)){
     if(marcaF !== "todas" && marca !== marcaF) continue;
     for(const d of docs){
       if((d.fecha || "") < desde || d.status === "rejected") continue;
-      const it = items[marca + "__" + d.id], q = `${d.creadora} ${d.guion||""}`.trim();
+      const it = items[marca + "__" + d.id];
       if(it && it.estado === "rechazado" && (it.fuera || /ya no trabaja/i.test(it.nota || ""))) continue;   // sacados a mano: no cuentan
       sub++; if(d.editado) continue;
-      if(!it) suma(marca, d.link ? "No entró al editor: falta el b-roll de la creadora o el bot todavía no pasó" : "La creadora no cargó el link de Drive del crudo", q);
-      else if(it.estado === "revisar") suma(marca, "Ya está editado: espera la revisión de Abril", q);
-      else if(["procesando","corregir"].includes(it.estado)) suma(marca, "Se está editando o corrigiendo ahora", q);
-      else if(it.estado === "error") suma(marca, "Trabado: el control lo frenó", q);
-      else if(it.estado === "rechazado") suma(marca, "Rechazado: es una toma de b-roll o hay que regrabarlo", q);
-      else if(["aprobado","subido"].includes(it.estado)) suma(marca, "Aprobado: se está subiendo a la app", q);
+      if(!it) suma(marca, d.link ? "sinEntrar" : "sinLink", d);
+      else if(it.estado === "revisar") suma(marca, "revisar", d);
+      else if(["procesando","corregir"].includes(it.estado)) suma(marca, "curso", d);
+      else if(it.estado === "error") suma(marca, "trabado", d);
+      else if(it.estado === "rechazado") suma(marca, "rechazado", d);
+      else if(["aprobado","subido"].includes(it.estado)) suma(marca, "subiendo", d);
     }
   }
-  const marcas = Object.entries(g).map(([m, ms]) => [nom(m), Object.values(ms).reduce((s,x) => s + x.length, 0), Object.entries(ms).sort((a,b) => b[1].length - a[1].length)]).sort((a,b) => b[1] - a[1]);
+  const n = cs => Object.values(cs).reduce((s,x) => s + x.length, 0);
+  const marcas = Object.entries(g).map(([m, ms]) => [nom(m), Object.values(ms).reduce((s,cs) => s + n(cs), 0), Object.entries(ms).map(([k, cs]) => [k, n(cs), Object.entries(cs).sort()]).sort((a,b) => b[1] - a[1])]).sort((a,b) => b[1] - a[1]);
   return {total, subidos: sub, marcas};
 }
 async function leerApp(){
