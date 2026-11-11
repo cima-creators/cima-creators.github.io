@@ -130,6 +130,19 @@ summary{cursor:pointer;font-weight:600;font-size:13px}
 .toast.on{opacity:1}
 .vozsel{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .vozsel select{flex:1;min-width:200px}
+/* comparador lado a lado (como la Sala de guiones: lo nuestro al lado del original, Nacho 11/11) */
+@media(min-width:560px){.item.comp{grid-column:span 2}}
+.duo{border-bottom:1px solid var(--line)}
+.duo .par{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line)}
+.duo .vid{aspect-ratio:9/14;border-bottom:0;cursor:pointer}
+.duo-bar{display:flex;gap:9px;align-items:center;padding:8px 12px;background:var(--card)}
+.d-play{width:34px;height:34px;min-width:34px;border-radius:50%;border:1px solid var(--line);background:var(--soft);cursor:pointer;font-size:13px}
+.d-seek{flex:1;accent-color:var(--acc);min-width:60px}
+.d-t{font-size:11.5px;color:var(--mut);font-variant-numeric:tabular-nums}
+.d-aud{border:1px solid var(--line);background:var(--soft);border-radius:99px;padding:5px 11px;font-size:11.5px;font-weight:600;cursor:pointer;white-space:nowrap}
+.chip{cursor:pointer;border:0}
+.esc tr[data-t]{cursor:pointer}
+.esc tr[data-t]:hover td{background:var(--soft)}
 </style>
 </head>
 <body>
@@ -291,6 +304,39 @@ function pintar(){
   }
   $("#grid").innerHTML = lista.map(tarjeta).join("");
   $("#grid").querySelectorAll("[data-acc]").forEach(b => b.onclick = () => accion(b.dataset.id, b.dataset.acc));
+  $("#grid").querySelectorAll(".duo").forEach(armarDuo);
+}
+
+// comparador lado a lado: el original de Ryze y el nuestro corren JUNTOS (un play, una barra), como la Sala de guiones
+function armarDuo(duo){
+  const o = duo.querySelector(".v-orig"), p = duo.querySelector(".v-pulso");
+  const play = duo.querySelector(".d-play"), seek = duo.querySelector(".d-seek"),
+        t = duo.querySelector(".d-t"), aud = duo.querySelector(".d-aud");
+  let audio = "pulso";
+  o.muted = true; p.muted = false;
+  const dur = () => p.duration || o.duration || 0;
+  const fmt = s => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
+  const irA = s => { p.currentTime = s; o.currentTime = s; };
+  const toggle = () => { if (p.paused) { p.play(); o.play().catch(() => {}); } else { p.pause(); o.pause(); } };
+  play.onclick = toggle;
+  o.onclick = toggle; p.onclick = toggle;
+  p.addEventListener("play", () => { play.textContent = "⏸"; if (o.paused) o.play().catch(() => {}); });
+  p.addEventListener("pause", () => { play.textContent = "▶"; o.pause(); });
+  p.addEventListener("ended", () => { o.pause(); play.textContent = "▶"; });
+  p.addEventListener("timeupdate", () => {
+    if (Math.abs(o.currentTime - p.currentTime) > 0.35) o.currentTime = p.currentTime;   // si se desfasan, se re-engancha
+    if (dur()) { seek.value = Math.round(p.currentTime / dur() * 1000); t.textContent = fmt(p.currentTime); }
+  });
+  seek.oninput = () => { if (dur()) irA(seek.value / 1000 * dur()); };
+  aud.onclick = () => {
+    audio = audio === "pulso" ? "ryze" : "pulso";
+    p.muted = audio !== "pulso"; o.muted = audio !== "ryze";
+    aud.textContent = audio === "pulso" ? "🔊 Pulso" : "🔊 Ryze";
+  };
+  duo.closest(".item").querySelectorAll("[data-t]").forEach(el => el.onclick = () => {
+    irA(parseFloat(el.dataset.t) || 0);
+    if (p.paused) { p.play(); o.play().catch(() => {}); }
+  });
 }
 
 function estadoProd(d){
@@ -316,16 +362,20 @@ function tarjeta(d){
   const caja = d.estado === "producido" ? `<div class="cambio" hidden><textarea placeholder="¿Qué cambiamos? Ej: la voz más lenta, o la toma del pack con la taza al lado" rows="3"></textarea><div class="acciones"><button class="btn sm" data-acc="nocambio" data-id="${esc(d.id)}">Cancelar</button><button class="btn sm dark" data-acc="enviarcambio" data-id="${esc(d.id)}">Enviar cambio</button></div></div>` : "";
   const nueva = d.fecha === hoy && d.estado === "nueva";
   const des = d.desarmado || {};
-  const escenas = (des.escenas || []).length ? `<details><summary>Guion de la novela (escena por escena)</summary><div class="des"><table class="esc">${des.escenas.map(s => `<tr><td>${esc(s.t)}${s.pack ? " 📦" : ""}</td><td>${esc(s.dice)}<br><i>${esc(s.ve)}</i></td></tr>`).join("")}</table></div></details>` : "";
-  return `<article class="item ${d.estado === "descartada" ? "fuera" : ""}" data-card="${esc(d.id)}">
+  const escenas = (des.escenas || []).length ? `<details><summary>Guion de la novela (escena por escena${prod ? " · tocá una y los dos videos saltan ahí" : ""})</summary><div class="des"><table class="esc">${des.escenas.map(s => `<tr${prod ? ` data-t="${esc(parseFloat(s.t) || 0)}"` : ""}><td>${esc(s.t)}${s.pack ? " 📦" : ""}</td><td>${esc(s.dice)}<br><i>${esc(s.ve)}</i></td></tr>`).join("")}</table></div></details>` : "";
+  return `<article class="item ${d.estado === "descartada" ? "fuera" : ""}${prod ? " comp" : ""}" data-card="${esc(d.id)}">
     <div class="chead"><div class="av">R</div>
       <div class="who"><b>RYZE · mini novela</b><small>${esc(d.estilo || "")}${(d.packs||[]).length ? ` · 📦 ${(d.packs||[]).length} toma${(d.packs||[]).length === 1 ? "" : "s"} del pack` : ""}${(d.subsQuemados||{}).tiene ? " · subs quemados" : ""}</small></div></div>
-    ${prod ? `<div class="vid final"><video src="${esc(d.finalSubs || d.final)}" preload="metadata" controls playsinline></video><span class="tag hecho">Pulso · ${esc(d.codigo || "")}</span></div>` : `<div class="vid">
+    ${prod ? `<div class="duo"><div class="par">
+      <div class="vid"><video class="v-orig" src="${esc(d.video)}" poster="${esc(d.thumb)}" preload="metadata" muted playsinline></video><span class="tag">Ryze · original</span></div>
+      <div class="vid final"><video class="v-pulso" src="${esc(d.finalSubs || d.final)}" preload="metadata" playsinline></video><span class="tag hecho">Pulso · ${esc(d.codigo || "")}</span></div></div>
+      <div class="duo-bar"><button class="d-play" title="Reproducir los dos juntos">▶</button><input class="d-seek" type="range" min="0" max="1000" value="0" aria-label="Posición"><span class="d-t">0:00</span><button class="d-aud" title="Qué audio escuchás">🔊 Pulso</button></div></div>` : `<div class="vid">
       <video src="${esc(d.video)}" poster="${esc(d.thumb)}" preload="none" controls playsinline></video>
       <span class="tag ${nueva ? "nueva" : ""}">${nueva ? "Nueva · " : ""}${esc(d.duracion || "?")} s</span>
       <span class="tag r">${esc(d.cantada === "cantada" ? "Cantada" : "Hablada")}</span></div>`}
     <div class="cuerpo">
       <div class="meta uno"><span class="pill" style="background:var(--acc-bg);color:var(--acc)">${"★".repeat(d.calidad||1)}${"☆".repeat(5-(d.calidad||1))}</span><span class="pill">${esc(d.dias)} días</span><span class="pill">×${esc(d.dup)} dup</span>${(d.copias||1) > 1 ? `<span class="pill" style="background:var(--acc-bg);color:var(--acc)">${d.copias} iguales</span>` : ""}</div>
+      ${prod && (d.packs||[]).length ? `<div class="meta"><span class="pill" style="background:var(--ok-bg);color:var(--ok)">saltar a</span>${(d.packs||[]).map(p => `<button class="pill chip" data-t="${esc(p.seg)}" title="${esc(p.que_pasa || "")}">📦 ${esc(p.seg)} s</button>`).join("")}</div>` : ""}
       <div class="idea-c clamp2">${esc(d.resumen || d.hook || "")}</div>
       ${estadoProd(d)}
       <div class="extra">
@@ -336,7 +386,6 @@ function tarjeta(d){
         ${d.plan ? `<div class="unas"><h4>Notas del doblaje</h4><div class="txt" style="white-space:pre-line">${esc(d.plan)}</div></div>` : ""}
         <div class="links">Voz: ${esc(d.vozElegida || d.vozSugerida || "")}${(d.vozRef||{}).tono ? ` · original: ${esc(d.vozRef.genero)} ${esc(d.vozRef.tono)}` : ""}</div>
         <div class="links">${esc((d.fuente||"").split(" · ")[0])} · desde ${esc(d.inicio || "?")} · <a href="${esc(d.link)}" target="_blank" rel="noopener">ver anuncio</a></div>
-        ${prod ? `<div class="vid" style="aspect-ratio:16/9"><video src="${esc(d.video)}" preload="none" controls playsinline></video><span class="tag">Original</span></div>` : ""}
         ${escenas}
       </div>
       ${prod ? `<div class="acciones ver">
