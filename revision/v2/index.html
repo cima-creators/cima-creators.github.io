@@ -502,7 +502,7 @@ function pintarCabecera(id, it){
 
 function pintarCuerpo(){
   const id = S.abierto, it = items[id]; if(!it || !$("#cuerpo")) return;
-  const L = loc(id), ns = notasT(it), lin = (editable(it) && it.vistaUrl) ? (it.tomasLinea||[]) : [];
+  const L = loc(id), ns = notasT(it), lin = ((editable(it) || rehacible(it)) && it.vistaUrl) ? (it.tomasLinea||[]) : [];
   const subs = (it.pantallas||[]).map(t=>(t && typeof t==="object")?(t.texto||""):t);
   const nSubs = Object.keys(L.subs).length, nMarc = Object.keys(L.marc).length;
   const secs = [...(lin.length?[["tomas","Tomas",nMarc||lin.length]]:[]), ...(subs.length?[["subs","Subtítulos",nSubs||""]]:[]), ["notas","Notas",ns.filter(n=>n.estado!=="ok").length]];
@@ -594,8 +594,8 @@ function pintarAcciones(){
     $("#vAprobar").onclick = () => { if(n && !confirm(`Tiene ${partes} sin mandar: no se van a corregir. ¿Aprobar igual?`)) return; cerrar(id, {estado:"aprobado"}, "Aprobado: pasa a Editados y a la app"); };
     $("#vMandar").onclick = () => mandar(id, false);
   } else if(rehacible(it)){
-    el.innerHTML = `<span class="res" style="flex-basis:auto">${n ? partes : "Para rehacerlo, dejá una nota o corregí un subtítulo."} · la app sigue con la versión aprobada hasta que apruebes la nueva.</span><span class="sp"></span><button class="btn dark" id="vRehacer" ${n?"":"disabled"}>Rehacer con esto</button>`;
-    $("#vRehacer").onclick = () => { if(confirm("¿Rehacer este video? Vuelve a Para revisar en ~20 min.")) mandar(id, true); };
+    el.innerHTML = `<span class="res" style="flex-basis:auto">${n ? partes : "Para cambiarlo, marcá una toma, dejá una nota o corregí un subtítulo."} · la app sigue con la versión aprobada hasta que apruebes la nueva.</span><span class="sp"></span><button class="btn dark" id="vRehacer" ${n?"":"disabled"}>Cambiar este video</button>`;
+    $("#vRehacer").onclick = () => { if(confirm("¿Cambiar este video ya aprobado? Vuelve a Para revisar. Si es de hace varios días se re-edita entero (~20 min) y pueden cambiar otras tomas.")) mandar(id, true); };
   } else if(it.estado === "error"){
     el.innerHTML = `<span class="sp"></span><button class="btn" id="vReint">Volver a intentar</button>`;
     $("#vReint").onclick = () => cerrar(id, {estado:"corregir", pedido:{}}, "Se vuelve a intentar");
@@ -615,9 +615,12 @@ function mandar(id, rehacer){
     return cerrar(id, {estado:"corregir", pedido:{tomas, por:quien}}, `Listo: se ${tomas.length===1?"cambia esa toma":"cambian esas "+tomas.length+" tomas"} y vuelve en unos minutos`);
   const pantallas = (it.pantallas||[]).map((t,i) => L.subs[i] ?? ((t && typeof t==="object") ? (t.texto||"") : t));
   const txt = ps.map(n => (n.t == null ? "" : `seg ${n.t.toFixed(1).replace(".",",")}: `) + n.texto).join(" | ");
-  const extra = tomas.length ? "Cambiar las tomas de los seg " + tomas.map(m=>m.t.toFixed(1)+(m.nota?" ("+m.nota+")":"")).join(", ") : "";
-  cerrar(id, {estado:"corregir", notasT: enviadas, pedido:{pantallas, broll: rehacer ? true : !!L.broll, nota: [txt, extra].filter(Boolean).join(" | "), por:quien, ...(rehacer?{rehacer:true}:{})}},
-    rehacer ? "Listo: se rehace y vuelve a Para revisar en ~20 min" : "Listo: vuelve editado en ~20 min · la skill aprende de esto");
+  const extra = tomas.length ? "Cambiar SOLO estas tomas y dejar el resto igual: " + tomas.map(m=>"seg "+m.t.toFixed(1)+(m.clip?" → usar «"+m.clip+"»":"")+(m.nota?" ("+m.nota+")":"")).join(", ") : "";
+  // 10/11 (Nacho: cambiar una toma de un aprobado): si todavía están los archivos de trabajo, el bot cambia solo esa toma;
+  // si ya se limpiaron (pasa a los pocos días), lo re-edita con esa indicación
+  const soloTomas = tomas.length && !ps.length && !Object.keys(L.subs).length && !L.broll;
+  cerrar(id, {estado:"corregir", notasT: enviadas, pedido:{pantallas, broll: !!L.broll, nota: [txt, extra].filter(Boolean).join(" | "), por:quien, ...(soloTomas?{tomas}:{}), ...(rehacer?{rehacer:true}:{})}},
+    rehacer ? (soloTomas ? "Listo: se cambia esa toma y vuelve a Para revisar" : "Listo: se rehace y vuelve a Para revisar en ~20 min") : "Listo: vuelve editado en ~20 min · la skill aprende de esto");
 }
 // guarda, limpia lo local de ese video y pasa al siguiente de la lista (para revisar de corrido)
 async function cerrar(id, datos, msg){
