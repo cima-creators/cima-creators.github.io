@@ -603,7 +603,7 @@ button.ref:hover{background:var(--sunken)}
 <form class="gate" id="gate" hidden autocomplete="off">
   <span class="mark" aria-hidden="true"></span>
   <h2 id="gate-t">Sala de guiones</h2>
-  <p>Ingresá la clave para entrar.</p>
+  <p>Ingresá la clave para entrar. Si sos creadora, es la misma contraseña con la que entrás a la app donde subís tus videos.</p>
   <div class="gate-r"><input id="clave" type="password" placeholder="Clave" aria-label="Clave" autocomplete="off" autocapitalize="off" spellcheck="false"><button class="btn pri" type="submit">Entrar</button></div>
   <p class="gate-e" id="gate-e" role="alert" hidden>La clave no es correcta.</p>
 </form>
@@ -1339,10 +1339,11 @@ function arrancar(quien){
     let visto = ''; try { visto = localStorage.getItem('sala-tuto') || ''; } catch (e) {}
     if (!visto) {
       const d = document.createElement('div'); d.className = 'tuto';
-      d.innerHTML = '<div class="tuto-c"><h2>Tu sala de guiones 🎬</h2><ol>' +
+      d.innerHTML = '<div class="tuto-c"><h2>Tu sala de guiones 🎬 · paso a paso</h2><ol>' +
+        '<li><b>Abrila en la computadora</b>: se ve mucho mejor. Si estás con el celu, acostalo (horizontal).</li>' +
         '<li>Entrás siempre con <b>tu contraseña, la misma de la app</b> donde subís los videos.</li>' +
-        '<li>En la lista están <b>tus guiones aprobados</b>. Tocá uno y lo ves <b>lado a lado</b>: el video de referencia y tu guion, con lo que tenés que decir y filmar.</li>' +
-        '<li>Usala <b>en la compu o con el celu acostado (horizontal)</b>: en vertical no se puede comparar con el video.</li>' +
+        '<li>En la lista están <b>tus guiones aprobados</b>. Tocá uno y lo ves <b>lado a lado</b>: a la izquierda el VIDEO ORIGINAL del que sale, a la derecha tu guion con lo que decís, el texto en pantalla y qué se filma.</li>' +
+        '<li>🛑 <b>Lo más importante: mirá el video original ENTERO antes de grabar, y copialo</b>. La <b>energía</b>, el <b>lugar</b>, la <b>ropa</b>, el ritmo y la <b>edición</b>: todo igual al original. Tu guion está calcado de ese video, parte por parte: cuanto más parecido lo grabes, mejor funciona.</li>' +
         '</ol><button class="btn pri" id="tuto-ok">Entendido</button></div>';
       document.body.appendChild(d);
       d.querySelector('#tuto-ok').onclick = () => { d.remove(); try { localStorage.setItem('sala-tuto', '1'); } catch (e) {} };
