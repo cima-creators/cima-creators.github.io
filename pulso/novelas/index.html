@@ -380,7 +380,7 @@ function armarDuo(duo){
   p.addEventListener("pause", () => { play.textContent = "▶"; o.pause(); });
   p.addEventListener("ended", () => { o.pause(); play.textContent = "▶"; });
   p.addEventListener("timeupdate", () => {
-    if (Math.abs(o.currentTime - p.currentTime) > 0.35) o.currentTime = p.currentTime;   // si se desfasan, se re-engancha
+    if (Math.abs(o.currentTime - p.currentTime) > 0.5) o.currentTime = p.currentTime;   // si se desfasan, se re-engancha
     if (dur()) { seek.value = Math.round(p.currentTime / dur() * 1000); t.textContent = fmt(p.currentTime); }
   });
   seek.oninput = () => { if (dur()) irA(seek.value / 1000 * dur()); };
@@ -427,8 +427,8 @@ function pintarVisor(){
   if (firma !== VS.firma){
     VS.firma = firma;
     $("#vbox").innerHTML = `<section class="vesc"><div class="vpar">
-        <div class="vv"><video id="vvO" src="${esc(d.video)}" muted playsinline preload="auto"></video><span class="tag">Ryze · original</span></div>
-        <div class="vv"><video id="vvP" src="${esc(d.finalSubs || d.final)}" playsinline preload="auto"></video><span class="tag hecho">Pulso · ${esc(d.codigo || "")}</span></div></div>
+        <div class="vv"><video id="vvO" src="${esc(d.origPrev || d.video)}" muted playsinline preload="auto"></video><span class="tag">Ryze · original</span></div>
+        <div class="vv"><video id="vvP" src="${esc(d.finalPrev || d.finalSubs || d.final)}" playsinline preload="auto"></video><span class="tag hecho">Pulso · ${esc(d.codigo || "")}</span></div></div>
       <div class="vlt"><div class="pista" id="vPista"><div class="riel"></div><div class="hecho" id="vHecho"></div><div id="vPacks"></div><div id="vMarcas"></div><div class="cz" id="vCz"></div></div>
         <div class="vctr"><span class="tcv" id="vTc"><b>0:00,0</b> / 0:00</span><button class="bi" id="vAtras" title="Atrás 2 s (←)">−2 s</button><button class="bi" id="vPlay" style="min-width:76px">▶ Play</button><button class="bi" id="vAdel" title="Adelante 2 s (→)">+2 s</button><button class="bi" id="vVel" title="Velocidad">${VS.vel}×</button><button class="bi" id="vAud" title="Qué audio escuchás">🔊 Pulso</button></div>
         <div class="vley"><span><i style="background:#B4633A"></i>nota</span><span><i style="background:#E8A66B;border-radius:3px;height:5px;width:12px"></i>toma del pack</span><span>N: nota acá · espacio: play · ← → 2 s · ↑ ↓ otra novela</span></div></div></section>
@@ -448,7 +448,7 @@ function conectarVisor(id){
   p.playbackRate = o.playbackRate = VS.vel;
   const dur = () => p.duration || (dd(id) || {}).duracion || 0;
   const tick = () => {
-    if (Math.abs(o.currentTime - p.currentTime) > 0.35) o.currentTime = p.currentTime;
+    if (Math.abs(o.currentTime - p.currentTime) > 0.5) o.currentTime = p.currentTime;
     const pc = dur() ? Math.min(100, p.currentTime / dur() * 100) : 0;
     $("#vHecho").style.width = pc + "%"; $("#vCz").style.left = pc + "%";
     $("#vTc").innerHTML = `<b>${tcv(p.currentTime)}</b> / ${tcv(dur(), false)}`;
@@ -617,8 +617,8 @@ function tarjeta(d){
     <div class="chead"><div class="av">R</div>
       <div class="who"><b>RYZE · mini novela</b><small>${esc(d.estilo || "")}${(d.packs||[]).length ? ` · 📦 ${(d.packs||[]).length} toma${(d.packs||[]).length === 1 ? "" : "s"} del pack` : ""}${(d.subsQuemados||{}).tiene ? " · subs quemados" : ""}</small></div></div>
     ${prod ? `<div class="duo"><div class="par">
-      <div class="vid"><video class="v-orig" src="${esc(d.video)}" poster="${esc(d.thumb)}" preload="metadata" muted playsinline></video><span class="tag">Ryze · original</span></div>
-      <div class="vid final"><video class="v-pulso" src="${esc(d.finalSubs || d.final)}" preload="metadata" playsinline></video><span class="tag hecho">Pulso · ${esc(d.codigo || "")}</span></div></div>
+      <div class="vid"><video class="v-orig" src="${esc(d.origPrev || d.video)}" poster="${esc(d.thumb)}" preload="metadata" muted playsinline></video><span class="tag">Ryze · original</span></div>
+      <div class="vid final"><video class="v-pulso" src="${esc(d.finalPrev || d.finalSubs || d.final)}" preload="metadata" playsinline></video><span class="tag hecho">Pulso · ${esc(d.codigo || "")}</span></div></div>
       <div class="duo-bar"><button class="d-play" title="Reproducir los dos juntos">▶</button><input class="d-seek" type="range" min="0" max="1000" value="0" aria-label="Posición"><span class="d-t">0:00</span><button class="d-aud" title="Qué audio escuchás">🔊 Pulso</button></div></div>` : `<div class="vid">
       <video src="${esc(d.video)}" poster="${esc(d.thumb)}" preload="none" controls playsinline></video>
       <span class="tag ${nueva ? "nueva" : ""}">${nueva ? "Nueva · " : ""}${esc(d.duracion || "?")} s</span>
