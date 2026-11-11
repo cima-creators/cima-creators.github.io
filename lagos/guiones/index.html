@@ -1338,7 +1338,7 @@ function arrancar(quien){
   }
   if (S.cli && S.rol === 'creadora') {   // minitutorial la primera vez + aviso si la abre con el celu en vertical
     document.body.classList.add('rol-cre');
-    let visto = ''; try { visto = localStorage.getItem('sala-tuto') || ''; } catch (e) {}
+    let visto = ''; try { visto = localStorage.getItem('sala-tuto2') || ''; } catch (e) {}
     if (!visto) {
       const d = document.createElement('div'); d.className = 'tuto';
       d.innerHTML = '<div class="tuto-c"><h2>Tu sala de guiones 🎬 · paso a paso</h2><ol>' +
@@ -1346,9 +1346,10 @@ function arrancar(quien){
         '<li>Entrás siempre con <b>tu contraseña, la misma de la app</b> donde subís los videos.</li>' +
         '<li>En la lista están <b>tus guiones aprobados</b>. Tocá uno y lo ves <b>lado a lado</b>: a la izquierda el VIDEO ORIGINAL del que sale, a la derecha tu guion con lo que decís, el texto en pantalla y qué se filma.</li>' +
         '<li>🛑 <b>Lo más importante: mirá el video original ENTERO antes de grabar, y copialo</b>. La <b>energía</b>, el <b>lugar</b>, la <b>ropa</b>, el ritmo y la <b>edición</b>: todo igual al original. Tu guion está calcado de ese video, parte por parte: cuanto más parecido lo grabes, mejor funciona.</li>' +
+        '<li>📁 <b>Las fotos y capturas ya te las dejamos</b>: en cada guion tocá <b>«Tomas y capturas»</b> y vas a ver una carpeta con todo lo que aparece en pantalla (notas, reseñas, fotos del antes, objetos). Cada archivo tiene adelante el <b>minuto y segundo</b> donde va. Si te falta algo, buscalo en <b>Google o Pinterest</b>.</li>' +
         '</ol><button class="btn pri" id="tuto-ok">Entendido</button></div>';
       document.body.appendChild(d);
-      d.querySelector('#tuto-ok').onclick = () => { d.remove(); try { localStorage.setItem('sala-tuto', '1'); } catch (e) {} };
+      d.querySelector('#tuto-ok').onclick = () => { d.remove(); try { localStorage.setItem('sala-tuto2', '1'); } catch (e) {} };
     }
     let gx = ''; try { gx = sessionStorage.getItem('sala-gira') || ''; } catch (e) {}
     if (!gx) {
