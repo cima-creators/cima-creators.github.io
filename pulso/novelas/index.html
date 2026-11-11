@@ -323,13 +323,14 @@ function tarjeta(d){
       <span class="tag ${nueva ? "nueva" : ""}">${nueva ? "Nueva · " : ""}${esc(d.duracion || "?")} s</span>
       <span class="tag r">${esc(d.cantada === "cantada" ? "Cantada" : "Hablada")}</span></div>`}
     <div class="cuerpo">
-      <div class="meta"><span class="pill" style="background:var(--acc-bg);color:var(--acc)">${"★".repeat(d.calidad||1)}${"☆".repeat(5-(d.calidad||1))}</span>${d.estilo ? `<span class="pill">${esc(d.estilo)}</span>` : ""}<span class="pill">📦 ${(d.packs||[]).length} toma${(d.packs||[]).length === 1 ? "" : "s"} del pack</span>${(d.subsQuemados||{}).tiene ? `<span class="pill">subs ${esc(d.subsQuemados.idioma || "en")} quemados</span>` : ""}${d.parecidaA ? `<span class="pill" style="background:var(--warn-bg);color:var(--warn)">variante</span>` : ""}</div>
+      <div class="meta"><span class="pill" style="background:var(--acc-bg);color:var(--acc)">${"★".repeat(d.calidad||1)}${"☆".repeat(5-(d.calidad||1))}</span>${(d.copias||1) > 1 ? `<span class="pill" style="background:var(--acc-bg);color:var(--acc)">×${d.copias} anuncios iguales</span>` : ""}${d.estilo ? `<span class="pill">${esc(d.estilo)}</span>` : ""}<span class="pill">📦 ${(d.packs||[]).length} toma${(d.packs||[]).length === 1 ? "" : "s"} del pack</span>${(d.subsQuemados||{}).tiene ? `<span class="pill">subs ${esc(d.subsQuemados.idioma || "en")} quemados</span>` : ""}</div>
       <div class="idea-c clamp2">${esc(d.resumen || d.hook || "")}</div>
       ${estadoProd(d)}
       <div class="extra">
         ${prod ? `<div class="links"><a href="${esc(d.finalSubs || d.final)}" target="_blank" rel="noopener" download>Bajar con subtítulos</a>${d.final ? ` · <a href="${esc(d.final)}" target="_blank" rel="noopener" download>sin subtítulos</a>` : ""}${d.costoUsd ? ` · salió USD ${esc(d.costoUsd)}` : ""}</div>` : ""}
         ${(d.personajes||[]).length ? `<div class="unas"><h4>Personajes</h4><div class="txt">${d.personajes.map(p => `<b>${esc(p.quien)}</b>: ${esc(p.descripcion)}`).join("<br>")}</div></div>` : ""}
         ${(d.packs||[]).length ? `<div class="unas"><h4>Dónde aparece el pack (se recrea con el de Pulso)</h4><div class="txt">${d.packs.map(p => `s${esc(p.seg)} · ${esc(p.quien)}: ${esc(p.que_pasa)}`).join("<br>")}</div></div>` : ""}
+        ${(d.dudas||[]).length ? `<div class="unas" style="background:var(--warn-bg)"><h4 style="color:var(--warn)">Dudas de claims (se dejaron como el original)</h4><div class="txt">${d.dudas.map(esc).join("<br>")}</div></div>` : ""}
         ${d.plan ? `<div class="unas"><h4>Notas del doblaje</h4><div class="txt" style="white-space:pre-line">${esc(d.plan)}</div></div>` : ""}
         <div class="links">Voz: ${esc(d.vozElegida || d.vozSugerida || "")}${(d.vozRef||{}).tono ? ` · original: ${esc(d.vozRef.genero)} ${esc(d.vozRef.tono)}` : ""}</div>
         <div class="links">${esc((d.fuente||"").split(" · ")[0])} · desde ${esc(d.inicio || "?")} · <a href="${esc(d.link)}" target="_blank" rel="noopener">ver anuncio</a></div>
