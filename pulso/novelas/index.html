@@ -72,6 +72,8 @@ select{border:1px solid var(--line);background:var(--card);border-radius:14px;pa
 .who small{display:block;color:var(--mut);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .item .meta{flex-wrap:nowrap;overflow:hidden;mask-image:linear-gradient(90deg,#000 88%,transparent);-webkit-mask-image:linear-gradient(90deg,#000 88%,transparent)}
 .item .meta .pill{white-space:nowrap;flex-shrink:0}
+.meta.uno{gap:5px;mask-image:none;-webkit-mask-image:none}
+.meta.uno .pill{padding:4px 9px;font-size:11px;letter-spacing:0}
 .clamp2{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .fmt{font-size:14.5px;font-weight:600;letter-spacing:-.01em}
 .idea-c{font-size:13px;color:var(--mut)}
@@ -317,13 +319,13 @@ function tarjeta(d){
   const escenas = (des.escenas || []).length ? `<details><summary>Guion de la novela (escena por escena)</summary><div class="des"><table class="esc">${des.escenas.map(s => `<tr><td>${esc(s.t)}${s.pack ? " 📦" : ""}</td><td>${esc(s.dice)}<br><i>${esc(s.ve)}</i></td></tr>`).join("")}</table></div></details>` : "";
   return `<article class="item ${d.estado === "descartada" ? "fuera" : ""}" data-card="${esc(d.id)}">
     <div class="chead"><div class="av">R</div>
-      <div class="who"><b>RYZE · mini novela</b><small>${esc(d.dias)} días al aire · ${esc(d.dup)} duplicados${d.activo ? " · sigue prendida" : ""}</small></div></div>
+      <div class="who"><b>RYZE · mini novela</b><small>${esc(d.estilo || "")}${(d.packs||[]).length ? ` · 📦 ${(d.packs||[]).length} toma${(d.packs||[]).length === 1 ? "" : "s"} del pack` : ""}${(d.subsQuemados||{}).tiene ? " · subs quemados" : ""}</small></div></div>
     ${prod ? `<div class="vid final"><video src="${esc(d.finalSubs || d.final)}" preload="metadata" controls playsinline></video><span class="tag hecho">Pulso · ${esc(d.codigo || "")}</span></div>` : `<div class="vid">
       <video src="${esc(d.video)}" poster="${esc(d.thumb)}" preload="none" controls playsinline></video>
       <span class="tag ${nueva ? "nueva" : ""}">${nueva ? "Nueva · " : ""}${esc(d.duracion || "?")} s</span>
       <span class="tag r">${esc(d.cantada === "cantada" ? "Cantada" : "Hablada")}</span></div>`}
     <div class="cuerpo">
-      <div class="meta"><span class="pill" style="background:var(--acc-bg);color:var(--acc)">${"★".repeat(d.calidad||1)}${"☆".repeat(5-(d.calidad||1))}</span>${(d.copias||1) > 1 ? `<span class="pill" style="background:var(--acc-bg);color:var(--acc)">×${d.copias} anuncios iguales</span>` : ""}${d.estilo ? `<span class="pill">${esc(d.estilo)}</span>` : ""}<span class="pill">📦 ${(d.packs||[]).length} toma${(d.packs||[]).length === 1 ? "" : "s"} del pack</span>${(d.subsQuemados||{}).tiene ? `<span class="pill">subs ${esc(d.subsQuemados.idioma || "en")} quemados</span>` : ""}</div>
+      <div class="meta uno"><span class="pill" style="background:var(--acc-bg);color:var(--acc)">${"★".repeat(d.calidad||1)}${"☆".repeat(5-(d.calidad||1))}</span><span class="pill">${esc(d.dias)} días</span><span class="pill">×${esc(d.dup)} dup</span>${(d.copias||1) > 1 ? `<span class="pill" style="background:var(--acc-bg);color:var(--acc)">${d.copias} iguales</span>` : ""}</div>
       <div class="idea-c clamp2">${esc(d.resumen || d.hook || "")}</div>
       ${estadoProd(d)}
       <div class="extra">
