@@ -837,7 +837,8 @@ function contexto(g){   // ángulo e idea del árbol de testeo de la marca
 }
 function notasGuion(g){   // lo que no es guion: va arriba de la tabla solo en «Con notas»
   const fila = (k, v, cls) => v ? '<div><dt>' + k + '</dt><dd' + (cls ? ' class="' + cls + '"' : '') + '>' + esc(v) + '</dd></div>' : '';
-  const d = fila('Por qué', g.fundamento) + fila('VOC', (g.voc || []).join(' · ')) + fila('Dónde', g.lugar) + fila('Código', g.codigo, 'mono');
+  const cre = S.cli && S.rol === 'creadora';   // a la creadora: sin VOC y solo el número, para buscarlo fácil en la app (Nacho, 11/11)
+  const d = fila('Por qué', g.fundamento) + (cre ? '' : fila('VOC', (g.voc || []).join(' · '))) + fila('Dónde', g.lugar) + fila('Número', cre ? g.num : '', 'mono') + (cre ? '' : fila('Código', g.codigo, 'mono'));
   return d ? '<div class="mas-b suelto ng"><dl>' + d + '</dl></div>' : '';
 }
 function alOrigen(){ const g = guionAct(); if (!g) return; S.gan = g.ref; pintarRef(); pintarNuestro(true); }
