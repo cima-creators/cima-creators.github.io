@@ -483,7 +483,12 @@ function irNota(nid){
   pintarCuerpo(); document.querySelector(`[data-nota="${CSS.escape(nid)}"]`)?.scrollIntoView({block:"nearest"});
 }
 
+// 10/11 (Nacho: "no me deja marcar la toma"): la cola cambia a cada rato por otros videos y cada cambio redibujaba el
+// panel; si caía justo entre que apretabas y soltabas un botón, el clic se perdía. Ahora cada parte se redibuja solo
+// si cambió algo SUYO.
+const igual = (el, f) => { f = JSON.stringify(f); if(el.dataset.f === f) return true; el.dataset.f = f; return false; };
 function pintarCabecera(id, it){
+  if(igual($("#vCabe"), [id, it.estado, ver(it), it.nota, it.error, it.revisadoPor, it.driveId, vecino(-1), vecino(1)])) return;
   const estado = (ESTADOS.find(e=>e[0]===tab(it))||[,it.estado])[1];
   const fecha = (it.fechaCrudo||"").slice(0,10).split("-").reverse().slice(0,2).join("/");
   const links = [it.driveId?`<a href="https://drive.google.com/file/d/${esc(it.driveId)}/view" target="_blank" rel="noopener">Drive</a>`:"",
@@ -511,6 +516,7 @@ function pintarCuerpo(){
   document.querySelectorAll("[data-sec]").forEach(b => b.onclick = () => { S.sec = b.dataset.sec; pintarCuerpo(); });
   const c = $("#cuerpo");
   if(c.contains(document.activeElement) && /INPUT|TEXTAREA/.test(document.activeElement.tagName) && c.dataset.sec === S.sec){ pintarPista(); return; }   // está escribiendo: no se le borra
+  if(igual(c, [id, S.sec, S.tomaAb, S.activa, it.estado, ver(it), ns, L.marc, L.broll, (it.tomasLinea||[]).length, (it.notas||[]).length])){ pintarPista(); return; }
   c.dataset.sec = S.sec;
   const ed = editable(it) || rehacible(it);
   if(S.sec === "notas"){
@@ -576,6 +582,7 @@ function conectarForm(id){
 function pintarAcciones(){
   const id = S.abierto, it = items[id], el = $("#vAcc"); if(!it || !el) return;
   if(el.contains(document.activeElement) && document.activeElement.tagName === "INPUT") return;
+  if(igual(el, [id, it.estado, pend(it).length, loc(id), S.rech, it.pedido || 0])) return;
   const L = loc(id), nN = pend(it).length, nT = Object.keys(L.marc).length, nS = Object.keys(L.subs).length, n = nN + nT + nS + (L.broll?1:0);
   const partes = [nN && `${nN} ${nN===1?"nota":"notas"}`, nT && `${nT} ${nT===1?"toma":"tomas"}`, nS && `${nS} ${nS===1?"subtítulo":"subtítulos"}`, L.broll && "todo el b-roll"].filter(Boolean).join(" · ");
   if(editable(it)){
