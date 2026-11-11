@@ -216,21 +216,31 @@ $("#salir").addEventListener("click", () => { try { localStorage.removeItem("rev
 
 async function arrancar(){
   $("#login").hidden = true; $("#app").hidden = false;
-  const [{initializeApp},{getFirestore,collection,doc,onSnapshot,updateDoc},{getAuth,signInAnonymously}] = await Promise.all([
+  pintar();   // el panel aparece al toque, los números llegan cuando contesta la base
+  const [{initializeApp},{initializeFirestore,persistentLocalCache,persistentMultipleTabManager,getFirestore,collection,doc,onSnapshot,updateDoc,getDocs,query,where},{getAuth,signInAnonymously}] = await Promise.all([
     import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js"),
     import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js"),
     import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js")]);
   const app = initializeApp({apiKey:"AIzaSyCTv4DiRCpbCpGYP6E86TPHlkPvaAZTN3g",authDomain:"cleargy-creators.firebaseapp.com",projectId:"cleargy-creators",storageBucket:"cleargy-creators.firebasestorage.app",messagingSenderId:"313543582398",appId:"1:313543582398:web:99fe78991adeea2e7cb4ef"});
   await signInAnonymously(getAuth(app));
-  const db = getFirestore(app);
-  const {getDocs} = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+  // 10/11 (Nacho: "carga muy lento"): la cola entera tardaba 9 s. Ahora queda guardada en el navegador (la segunda vez
+  // abre al instante y solo baja lo que cambió) y primero se pide lo vivo (revisar, editándose, trabados); lo ya
+  // aprobado llega después, sin frenar la pantalla.
+  let db;
+  try { db = initializeFirestore(app, {localCache: persistentLocalCache({tabManager: persistentMultipleTabManager()})}); }
+  catch(e) { db = getFirestore(app); }
   fb = {db, doc, updateDoc, getDocs, collection};
-  let primera = true;
-  onSnapshot(collection(db,"edicion_cola"), snap => {
-    snap.docChanges().forEach(c => { if(c.type==="removed") delete items[c.doc.id]; else items[c.doc.id] = c.doc.data(); });
-    pintar();
-    if(primera){ primera = false; leerApp(); }
-  }, err => { $("#resumen").textContent = "No se pudo leer la cola: " + err.message; });
+  const en = {vivo: new Set(), resto: new Set()};
+  const oir = (cual, estados, alListo) => { let primera = true;
+    onSnapshot(query(collection(db,"edicion_cola"), where("estado","in",estados)), snap => {
+      snap.docChanges().forEach(c => { const id = c.doc.id, otro = cual === "vivo" ? en.resto : en.vivo;
+        if(c.type === "removed"){ en[cual].delete(id); if(!otro.has(id)) delete items[id]; }
+        else { en[cual].add(id); items[id] = c.doc.data(); } });
+      S.cargado = S.cargado || cual === "vivo"; if(cual === "resto") S.completo = true;
+      pintar();
+      if(primera){ primera = false; alListo && alListo(); }
+    }, err => { $("#resumen").textContent = "No se pudo leer la cola: " + err.message; }); };
+  oir("vivo", ["revisar","procesando","corregir","error"], () => oir("resto", ["subido","aprobado","rechazado"], leerApp));
   onSnapshot(collection(db,"edicion_aprendizaje"), snap => {
     const xs = snap.docs.map(d=>d.data()).sort((a,b)=>(b.fecha||"").localeCompare(a.fecha||"")).slice(0,12);
     $("#aprende").hidden = !xs.length;
@@ -252,7 +262,7 @@ function pintar(){
   const cuenta = e => deMarca.filter(([,it])=>tab(it)===e).length;
   const hora = new Date().toLocaleTimeString("es-AR",{hour:"2-digit",minute:"2-digit"});
   const p = cuenta("revisar");
-  $("#resumen").textContent = `Hola ${quien} · ${p ? p + (p===1?" video espera":" videos esperan") + " tu revisión" : "nada esperando"} · ${hora}`;
+  $("#resumen").textContent = !S.cargado && fb !== null && !Object.keys(items).length ? `Hola ${quien} · cargando los videos…` : `Hola ${quien} · ${p ? p + (p===1?" video espera":" videos esperan") + " tu revisión" : "nada esperando"} · ${hora}`;
   const porRevisar = m => todos.filter(([,it]) => (m==="todas"||it.marca===m) && it.estado==="revisar").length;
   $("#marcas").innerHTML = ["todas",...marcas].map(m=>`<button class="mt ${m===marcaF?"on":""}" data-m="${m}">${m==="todas"?"Todas":esc(nom(m))}${porRevisar(m)?`<b>${porRevisar(m)}</b>`:""}</button>`).join("");
   const cls = e => e==="revisar"&&cuenta(e)?"alerta":e==="error"&&cuenta(e)?"mal":"";
@@ -314,14 +324,15 @@ function pintarInicio(deMarca){
   const hace7 = new Date(Date.now() - 7 * 864e5).toISOString().slice(0,10);
   const sem = deMarca.filter(([,it]) => ["subido","aprobado"].includes(it.estado) && (it.fechaEdicion || "") >= hace7);
   const app = S.app && sinEditar();
+  const v1 = n => S.cargado || Object.keys(items).length ? n : "…", v2 = n => S.completo || !fb || !fb.getDocs ? n : "…";
   const met = (n, l, d, cls, f) => `<${f?"button":"div"} class="met ${cls||""}" ${f?`data-ir="${f}"`:""}><b>${n}</b><span class="l">${l}</span><span class="d">${d}</span></${f?"button":"div"}>`;
   $("#vInicio").innerHTML = `<div class="hero"><h2>Sala de<br>edición</h2><p>Lo que se graba, se edita, se corrige y se sube. Todo en un mismo lugar.</p></div>
     <div class="mets">
-      ${met(rev.length, "Por revisar", "Videos editados que esperan a Abril", rev.length ? "av" : "", "revisar")}
-      ${met(viejos.length, "Esperan hace +24 h", "Editados que nadie miró todavía", viejos.length ? "mal" : "", "revisar")}
-      ${met(curso.length, "En edición", "Editándose o corrigiéndose ahora", "", "corregir")}
-      ${met(err.length, "Trabados", "El control los frenó: hay que mirarlos", err.length ? "mal" : "", "error")}
-      ${met(sem.length, "Aprobados", "Editados en los últimos 7 días", "", "subido")}
+      ${met(v1(rev.length), "Por revisar", "Videos editados que esperan a Abril", rev.length ? "av" : "", "revisar")}
+      ${met(v1(viejos.length), "Esperan hace +24 h", "Editados que nadie miró todavía", viejos.length ? "mal" : "", "revisar")}
+      ${met(v1(curso.length), "En edición", "Editándose o corrigiéndose ahora", "", "corregir")}
+      ${met(v1(err.length), "Trabados", "El control los frenó: hay que mirarlos", err.length ? "mal" : "", "error")}
+      ${met(v2(sem.length), "Aprobados", "Editados en los últimos 7 días", "", "subido")}
       ${met(app ? app.total : "…", "Sin editar en la app", app ? `De ${app.subidos} subidos en 14 días` : "Leyendo la app de videos…", app && app.total ? "av" : "")}
     </div>
     ${app && app.total ? `<div class="info"><h3>ⓘ Por qué hay ${app.total} ${app.total===1?"video":"videos"} de la app sin su editado</h3>${app.motivos.map(([m, n, det]) => `<div class="r"><b>${n}</b><div>${esc(m)}${det?`<br><span>${esc(det)}</span>`:""}</div></div>`).join("")}</div>` : ""}`;
