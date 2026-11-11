@@ -132,7 +132,8 @@ summary{cursor:pointer;font-weight:600;font-size:13px}
 .vozsel select{flex:1;min-width:200px}
 /* comparador lado a lado (como la Sala de guiones: lo nuestro al lado del original, Nacho 11/11) */
 @media(min-width:560px){.item.comp{grid-column:span 2}}
-.duo{border-bottom:1px solid var(--line)}
+.duo{border-bottom:1px solid var(--line);position:relative}
+.duo .revtag{position:absolute;top:10px;left:50%;transform:translateX(-50%);z-index:2;box-shadow:0 4px 14px rgba(38,33,30,.35)}
 .duo .par{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line)}
 .duo .vid{aspect-ratio:9/14;border-bottom:0;cursor:pointer}
 .duo-bar{display:flex;gap:9px;align-items:center;padding:8px 12px;background:var(--card)}
@@ -375,7 +376,9 @@ function armarDuo(duo){
   const irA = s => { p.currentTime = s; o.currentTime = s; };
   const toggle = () => { if (p.paused) { p.play(); o.play().catch(() => {}); } else { p.pause(); o.pause(); } };
   play.onclick = toggle;
-  o.onclick = toggle; p.onclick = toggle;
+  // tocar el video abre la revisión con notas (Nacho, 11/11: el botón de abajo no se encontraba)
+  const id = duo.closest(".item")?.dataset.card;
+  o.onclick = p.onclick = () => abrirVisor(id);
   p.addEventListener("play", () => { play.textContent = "⏸"; if (o.paused) o.play().catch(() => {}); });
   p.addEventListener("pause", () => { play.textContent = "▶"; o.pause(); });
   p.addEventListener("ended", () => { o.pause(); play.textContent = "▶"; });
@@ -616,7 +619,7 @@ function tarjeta(d){
   return `<article class="item ${d.estado === "descartada" ? "fuera" : ""}${prod ? " comp" : ""}" data-card="${esc(d.id)}">
     <div class="chead"><div class="av">R</div>
       <div class="who"><b>RYZE · mini novela</b><small>${esc(d.estilo || "")}${(d.packs||[]).length ? ` · 📦 ${(d.packs||[]).length} toma${(d.packs||[]).length === 1 ? "" : "s"} del pack` : ""}${(d.subsQuemados||{}).tiene ? " · subs quemados" : ""}</small></div></div>
-    ${prod ? `<div class="duo"><div class="par">
+    ${prod ? `<div class="duo"><button class="btn sm dark revtag" data-acc="revisar" data-id="${esc(d.id)}">✍️ Revisar con notas</button><div class="par">
       <div class="vid"><video class="v-orig" src="${esc(d.origPrev || d.video)}" poster="${esc(d.thumb)}" preload="metadata" muted playsinline></video><span class="tag">Ryze · original</span></div>
       <div class="vid final"><video class="v-pulso" src="${esc(d.finalPrev || d.finalSubs || d.final)}" preload="metadata" playsinline></video><span class="tag hecho">Pulso · ${esc(d.codigo || "")}</span></div></div>
       <div class="duo-bar"><button class="d-play" title="Reproducir los dos juntos">▶</button><input class="d-seek" type="range" min="0" max="1000" value="0" aria-label="Posición"><span class="d-t">0:00</span><button class="d-aud" title="Qué audio escuchás">🔊 Pulso</button></div></div>` : `<div class="vid">
