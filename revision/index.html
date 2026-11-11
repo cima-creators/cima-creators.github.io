@@ -64,6 +64,7 @@ button.met:hover{background:var(--soft)}
 .tab b{margin-left:5px;color:var(--txt)}
 .tab.on{background:var(--txt);border-color:var(--txt);color:var(--bg)}.tab.on b{color:var(--bg)}
 .tab.alerta:not(.on){border-color:var(--warn);color:var(--warn)}.tab.mal:not(.on){border-color:var(--bad);color:var(--bad)}
+.ord{display:flex;gap:7px;align-items:center;font-size:12px;color:var(--mut);font-weight:600}
 .barra select{border:1px solid var(--line);border-radius:10px;padding:6px 9px;font:inherit;font-size:12px;background:var(--card);color:var(--txt)}
 #lista{display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:20px 14px}
 .tarj{background:none;border:0;padding:0;text-align:left;display:flex;flex-direction:column;gap:7px;min-width:0}
@@ -192,7 +193,7 @@ button.met:hover{background:var(--soft)}
     <button class="btn ch" id="salir">Salir</button>
   </header>
   <div id="vInicio"></div>
-  <div id="vRevision"><div class="barra"><div class="tabs" id="tabs"></div><select id="fCre" aria-label="Creadora"></select></div>
+  <div id="vRevision"><div class="barra"><div class="tabs" id="tabs"></div><select id="fCre" aria-label="Creadora"></select><label class="ord">Ordenar por<select id="fOrd" aria-label="Ordenar por"><option value="nuevos">Últimos editados primero</option><option value="viejos">Primeros editados primero</option><option value="creadora">Creadora</option></select></label></div>
   <div id="lista"></div></div>
   <details id="aprende" hidden><summary>Lo que aprendió de tus correcciones</summary><div id="aprende-l"></div></details>
 </div>
@@ -204,7 +205,7 @@ const $ = s => document.querySelector(s);
 const ESTADOS = [["revisar","Para revisar"],["procesando","Editándose"],["corregir","Corrigiéndose"],["subido","Aprobados"],["rechazado","Rechazados"],["error","Con error"]];
 const VELS = [1, 1.25, 1.5, 2];
 let quien = null, items = {}, fb = null;
-const S = {vista: location.hash === "#revision" ? "revision" : "inicio", app:null, filtro:"revisar", cre:"", abierto:null, firma:"", sec:"notas", vel:1, loc:{}, tNota:null, general:false, activa:null, tomaAb:null, rech:false, orden:[]};
+const S = {ord: (() => { try { return localStorage.getItem("revision_orden") } catch(e){ return null } })() || "nuevos", vista: location.hash === "#revision" ? "revision" : "inicio", app:null, filtro:"revisar", cre:"", abierto:null, firma:"", sec:"notas", vel:1, loc:{}, tNota:null, general:false, activa:null, tomaAb:null, rech:false, orden:[]};
 let marcaF = new URLSearchParams(location.search).get("marca") || "todas";
 try { quien = CLAVES[localStorage.getItem("revision_clave")] || null; S.vel = Number(localStorage.getItem("revision_vel")) || 1; } catch(e) {}
 function toast(t){ const el=$("#toast"); el.textContent=t; el.classList.add("on"); setTimeout(()=>el.classList.remove("on"),2400); }
@@ -295,7 +296,11 @@ function pintar(){
   if(S.cre && !cres.includes(S.cre)) S.cre = "";
   const sel = $("#fCre");
   if(document.activeElement !== sel){ sel.innerHTML = `<option value="">Todas las creadoras (${enTab.length})</option>` + cres.map(c=>`<option ${c===S.cre?"selected":""}>${esc(c)}</option>`).join(""); sel.onchange = () => { S.cre = sel.value; pintar(); }; }
-  const lista = enTab.filter(([,it]) => !S.cre || (it.creadora||"Sin creadora")===S.cre).sort((a,b)=>(a[1].fechaCrudo||"").localeCompare(b[1].fechaCrudo||""));
+  const cuando = it => it.actualizado || it.creado || it.fechaCrudo || "";   // cuándo se editó por última vez
+  const so = $("#fOrd"); so.value = S.ord; so.onchange = () => { S.ord = so.value; try{localStorage.setItem("revision_orden", S.ord)}catch(e){} pintar(); };
+  const lista = enTab.filter(([,it]) => !S.cre || (it.creadora||"Sin creadora")===S.cre).sort((a,b) =>
+    S.ord === "creadora" ? (a[1].creadora||"").localeCompare(b[1].creadora||"") || cuando(b[1]).localeCompare(cuando(a[1]))
+    : S.ord === "viejos" ? cuando(a[1]).localeCompare(cuando(b[1])) : cuando(b[1]).localeCompare(cuando(a[1])));
   S.orden = lista.map(([id])=>id);
   const caja = $("#lista"), ahora = Date.now();
   caja.querySelectorAll(".vacio").forEach(x => x.remove());
