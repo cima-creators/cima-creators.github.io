@@ -631,7 +631,7 @@ const setPref = (k, v) => { try { localStorage.setItem('sala-' + k, v ? '1' : '0
 const CFG = {cliente: "Lagos Lab", cifrado: true, claves: []};
 const MUDANZA = CFG.cliente ? '' : 'https://cima-creators.github.io/lagos/guiones/';   // desde el 10/11 los guiones de Lagos se revisan ahí (guarda en Firebase)
 const FB = {apiKey: 'AIzaSyCTv4DiRCpbCpGYP6E86TPHlkPvaAZTN3g', authDomain: 'cleargy-creators.firebaseapp.com', projectId: 'cleargy-creators', storageBucket: 'cleargy-creators.firebasestorage.app', messagingSenderId: '313543582398', appId: '1:313543582398:web:99fe78991adeea2e7cb4ef'};   // el proyecto de las apps de CIMA
-const S = { cli: !!CFG.cliente, solo: '', rol: '', GUT: [], GAN: [], gf: {estado: 'elegir', fmt: ''}, tab: 'formatos', fmt: null, gan: null, gui: null, gids: [], q: '', filtro: {quien: '', fmt: '', estado: '', angulo: '', idea: ''}, rtab: 'principal',
+const S = { cli: !!CFG.cliente, solo: '', rol: '', GUT: [], GAN: [], gf: {estado: 'elegir', fmt: '', orden: (() => { try { return localStorage.getItem('gan_orden') || ''; } catch (x) { return ''; } })()}, tab: 'formatos', fmt: null, gan: null, gui: null, gids: [], q: '', filtro: {quien: '', fmt: '', estado: '', angulo: '', idea: ''}, rtab: 'principal',
             orig: pref('orig', true), pant: pref('pant', true), det: pref('det', false), mas: false,
             F: [], G: {}, GU: [], rev: {}, notas: [], db: null, me: null, dbOk: false, dbMsg: '', saving: 0, cargado: false };
 
@@ -1168,10 +1168,11 @@ function grupoGan(d){ return GRUPOS_GAN[d.grupo] ? d.grupo : d.fmt === 'OTRO' ? 
 function ordenGan(d){ if (typeof d.orden === 'number') return d.orden; const i = ORDEN_GAN.indexOf(d.fmt); return i < 0 ? 39 : i < 14 ? 10 + i : i === 14 ? 40 : i < 17 ? 60 + i - 15 : 80 + i - 17; }
 function seccionGan(d){ const g = grupoGan(d); return g === 'otros' ? 'Otros formatos' : (d.fmtNombre || d.fmt) + (g === 'marca' && !['F17', 'F18'].includes(d.fmt) ? ' · con experta o dueña' : ''); }
 const HOY_LOCAL = (() => { const h = new Date(); return h.getFullYear() + '-' + String(h.getMonth() + 1).padStart(2, '0') + '-' + String(h.getDate()).padStart(2, '0'); })();
+const CRIT_GAN = {dup: d => (d.ref || {}).dup || 0, dias: d => (d.ref || {}).d || 0, senal: d => (d.ref || {}).senal || 0};   // «Ordenar por»: sin criterio queda por formato
 function ganVisibles(){
   const q = S.q.trim().toLowerCase(), e = S.gf.estado;
   return S.GAN.filter(d => (e === 'elegida' ? ['elegida', 'lista'].includes(d.estado) : d.estado === e) && (!S.gf.fmt || seccionGan(d) === S.gf.fmt) && (!q || ((d.ref || {}).m || '').toLowerCase().includes(q)))
-    .sort((a, b) => ordenGan(a) - ordenGan(b) || String(b.fecha || '').localeCompare(String(a.fecha || '')) || ((b.ref || {}).senal || 0) - ((a.ref || {}).senal || 0) || ((b.ref || {}).dup || 0) - ((a.ref || {}).dup || 0) || ((b.ref || {}).d || 0) - ((a.ref || {}).d || 0));   // por formato (los de creadoras arriba), lo nuevo primero y después lo que tiene más señal
+    .sort((a, b) => (CRIT_GAN[S.gf.orden] ? CRIT_GAN[S.gf.orden](b) - CRIT_GAN[S.gf.orden](a) : 0) || ordenGan(a) - ordenGan(b) || String(b.fecha || '').localeCompare(String(a.fecha || '')) || ((b.ref || {}).senal || 0) - ((a.ref || {}).senal || 0) || ((b.ref || {}).dup || 0) - ((a.ref || {}).dup || 0) || ((b.ref || {}).d || 0) - ((a.ref || {}).d || 0));   // por formato (los de creadoras arriba), lo nuevo primero y después lo que tiene más señal
 }
 function pintarListaGanadores(){   // en esta pestaña la lista de la izquierda filtra por formato, en el orden de trabajo: primero lo que graban las creadoras
   const e = S.gf.estado, deEstado = S.GAN.filter(d => e === 'elegida' ? ['elegida', 'lista'].includes(d.estado) : d.estado === e), sec = {};
@@ -1199,14 +1200,17 @@ function pintarGanadores(){
   const main = $('#main'), vis = ganVisibles(), cuenta = e => S.GAN.filter(d => e === 'elegida' ? ['elegida', 'lista'].includes(d.estado) : d.estado === e).length, prev = ($('#ggrid') || {}).scrollTop || 0;
   let grilla = '', gAnt = '', sAnt = '';
   vis.forEach((d, i) => { const g = grupoGan(d), sc = seccionGan(d);
+    if (CRIT_GAN[S.gf.orden]) { grilla += tarjeta(d); return; }   // ordenado por números: todo junto, sin títulos de formato
     if (g !== gAnt) { gAnt = g; sAnt = ''; grilla += '<div class="ggrp"><i class="dot ' + g + '"></i>' + esc(GRUPOS_GAN[g][0]) + ' <small>' + esc(GRUPOS_GAN[g][1]) + '</small></div>'; }
     if (sc !== sAnt) { sAnt = sc; grilla += '<div class="gsec">' + esc(sc) + ' <span>' + vis.filter(x => grupoGan(x) === g && seccionGan(x) === sc).length + '</span></div>'; }
     grilla += tarjeta(d); });
   const tab = (e, t) => '<button class="tab' + (S.gf.estado === e ? ' on' : '') + '" data-ge="' + e + '" aria-pressed="' + (S.gf.estado === e) + '">' + t + ' <b>' + cuenta(e) + '</b></button>';
   main.innerHTML = '<div class="gan"><div class="gan-h"><div><h1>Ganadores del día</h1><p>Anuncios que llevan 60 días o más al aire. Arriba, los formatos que graba una creadora en su casa; al fondo, los animados y los de fundadora. Con «La quiero» elegís los ángulos y te lo escribo calcado para ' + esc(CFG.cliente) + '.</p></div>' +
-    '<div class="gtabs">' + tab('elegir', 'Para elegir') + tab('elegida', 'Elegidas') + tab('descartada', 'Descartadas') + '</div></div>' +
+    '<div class="gtabs">' + tab('elegir', 'Para elegir') + tab('elegida', 'Elegidas') + tab('descartada', 'Descartadas') + '</div>' +
+    '<select id="gorden" aria-label="Ordenar por" style="flex:none;font:inherit;font-size:13px;padding:7px 10px;border-radius:10px;border:1px solid var(--line);background:var(--sunken);color:inherit">' + [['', 'Ordenar: por formato'], ['dup', 'Más duplicados'], ['dias', 'Más días corriendo'], ['senal', 'Más estrellas']].map(o => '<option value="' + o[0] + '"' + ((S.gf.orden || '') === o[0] ? ' selected' : '') + '>' + o[1] + '</option>').join('') + '</select></div>' +
     '<div class="ggrid scroll" id="ggrid">' + (grilla || '<div class="vacio" style="grid-column:1/-1"><b>' + (S.GAN.length ? 'Nada por acá' : 'Todavía no hay ganadores cargados') + '</b>' + (S.gf.estado === 'elegir' ? 'Mañana llegan los nuevos.' : '') + '</div>') + '</div></div>';
   $('#ggrid').scrollTop = prev;
+  $('#gorden').onchange = e => { S.gf.orden = e.target.value; try { localStorage.setItem('gan_orden', S.gf.orden); } catch (x) {} $('#ggrid').scrollTop = 0; pintarGanadores(); };
   $$('#main [data-ge]').forEach(b => b.onclick = () => { S.gf.estado = b.dataset.ge; S.gf.fmt = ''; pintarLista(); pintarGanadores(); });
   $$('#main .gc').forEach(c => { const id = c.dataset.id, d = S.GAN.find(x => x.id === id);
     c.querySelector('[data-ver]').onclick = () => abrirFicha(id);
