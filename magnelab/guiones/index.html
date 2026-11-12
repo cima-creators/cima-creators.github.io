@@ -1,0 +1,1415 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="robots" content="noindex,nofollow"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,-apple-system,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Guiones MagneLab</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* Layout: mesa de revisión a pantalla completa. Barra arriba, lista a la izquierda, el video de la referencia y, al lado,
+   UNA sola tabla que se desplaza: cada tramo de la referencia con la fila nuestra que lo calca (en Formatos siguen los
+   tres paneles: video · su guion · la plantilla). La decisión y las notas quedan fijas abajo.
+   En pantallas angostas o bajas pasa a una columna con scroll de página y la lista se abre como cajón.
+   Azul de lápiz de corrector para lo activo, resaltador amarillo para lo que se editó. */
+:root{
+  --bg:#F4F2EF;--surface:#FFFFFF;--raised:#FBFAF8;--sunken:#EFECE8;--line:#E7E2DC;--line-2:#D6CFC7;
+  --ink:#1B1816;--ink-2:#4A443F;--ink-3:#847C74;--ink-4:#B3ABA2;
+  --accent:#3D4EDB;--accent-soft:#ECEEFC;--on:#FFFFFF;
+  --ok:#2F8660;--ok-soft:#E3F1EA;--warn:#A8721F;--warn-soft:#F7ECD6;--bad:#BD4F32;--bad-soft:#F8E4DC;--ia:#6D4FC2;--ia-soft:#EDE8FA;
+  --hl:#FFF1B8;--hl-soft:#FFF8DC;--vid:#0E0D0C;
+  --b1:#EADFD6;--b2:#D9E6DE;--b3:#F1E3C4;--b4:#DFDCF0;--b5:#F2D8CE;--b6:#D5E3EC;
+  --sh-1:0 1px 2px rgba(27,24,22,.05);--sh-pop:0 14px 34px -10px rgba(27,24,22,.28),0 2px 6px rgba(27,24,22,.08);
+  --ff:'Geist',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;--mono:'Geist Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+  --gl:max(16px,env(safe-area-inset-left,0px));--gr:max(16px,env(safe-area-inset-right,0px));
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#121110;--surface:#1A1817;--raised:#1F1D1B;--sunken:#272421;--line:#2D2A27;--line-2:#403B37;
+  --ink:#F1ECE7;--ink-2:#CFC8C1;--ink-3:#9A9189;--ink-4:#6E665F;
+  --accent:#8E9BFF;--accent-soft:#22254A;--on:#141312;
+  --ok:#6CC49B;--ok-soft:#1B3327;--warn:#DDAA5C;--warn-soft:#382D18;--bad:#EA8C6B;--bad-soft:#3B2118;--ia:#B7A1FF;--ia-soft:#2A2446;
+  --hl:#5A4C14;--hl-soft:#332C12;--vid:#000;
+  --b1:#3A302A;--b2:#25362E;--b3:#3D3322;--b4:#2E2C40;--b5:#402A22;--b6:#23323B;
+  --sh-1:0 1px 2px rgba(0,0,0,.3);--sh-pop:0 14px 34px -10px rgba(0,0,0,.7),0 2px 6px rgba(0,0,0,.4);color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#121110;--surface:#1A1817;--raised:#1F1D1B;--sunken:#272421;--line:#2D2A27;--line-2:#403B37;
+  --ink:#F1ECE7;--ink-2:#CFC8C1;--ink-3:#9A9189;--ink-4:#6E665F;
+  --accent:#8E9BFF;--accent-soft:#22254A;--on:#141312;
+  --ok:#6CC49B;--ok-soft:#1B3327;--warn:#DDAA5C;--warn-soft:#382D18;--bad:#EA8C6B;--bad-soft:#3B2118;--ia:#B7A1FF;--ia-soft:#2A2446;
+  --hl:#5A4C14;--hl-soft:#332C12;--vid:#000;
+  --b1:#3A302A;--b2:#25362E;--b3:#3D3322;--b4:#2E2C40;--b5:#402A22;--b6:#23323B;
+  --sh-1:0 1px 2px rgba(0,0,0,.3);--sh-pop:0 14px 34px -10px rgba(0,0,0,.7),0 2px 6px rgba(0,0,0,.4);color-scheme:dark}
+
+*,*::before,*::after{box-sizing:border-box}
+html{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--ff);font-size:13px;line-height:1.45;-webkit-font-smoothing:antialiased;margin:0}
+button,input,select,textarea{font:inherit;color:inherit}
+button{-webkit-tap-highlight-color:transparent}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.mono{font-family:var(--mono)}
+
+/* deslizadores */
+.scroll{overflow:auto;scrollbar-gutter:stable}
+.scroll::-webkit-scrollbar{width:12px;height:12px}
+.scroll::-webkit-scrollbar-track{background:transparent}
+.scroll::-webkit-scrollbar-thumb{background:var(--line-2);background-clip:content-box;border:3px solid transparent;border-radius:99px;min-height:36px}
+.scroll::-webkit-scrollbar-thumb:hover{background-color:var(--ink-4)}
+@supports not selector(::-webkit-scrollbar){.scroll{scrollbar-width:thin;scrollbar-color:var(--line-2) transparent}}
+
+/* ---------- estructura general (base: una columna con scroll de página) ---------- */
+.app{display:grid;grid-template-columns:minmax(0,1fr);gap:0;padding-left:var(--gl);padding-right:var(--gr);padding-block:0 16px}
+.top{display:flex;align-items:center;gap:12px;min-height:56px;min-width:0;padding-block:8px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;min-width:0}
+.mark{width:26px;height:26px;border-radius:8px;background:var(--ink);display:grid;place-items:center;flex:none}
+.mark::before{content:"";width:13px;height:10px;background:var(--bg);clip-path:polygon(0 100%,36% 12%,54% 50%,68% 30%,100% 100%)}
+.bname{font-weight:600;font-size:15px;letter-spacing:-.015em;white-space:nowrap}
+.bsel{font-weight:600;font-size:15px;letter-spacing:-.015em;border:1px solid var(--line);background:var(--surface);border-radius:9px;padding:4px 8px;cursor:pointer;max-width:220px}   /* saltar al panel de otra marca (solo equipo) */
+/* minitutorial de las creadoras (primera vez) + aviso de girar el celu en vertical */
+.tuto{position:fixed;inset:0;background:rgba(10,12,16,.55);display:grid;place-items:center;z-index:90;padding:20px}
+.tuto-c{background:var(--surface);border-radius:16px;max-width:430px;padding:22px 22px 18px;box-shadow:0 18px 50px rgba(0,0,0,.28)}
+.tuto-c h2{margin:0 0 12px;font-size:17px;letter-spacing:-.015em}
+.tuto-c ol{margin:0 0 16px;padding-left:20px;display:grid;gap:9px;font-size:13.5px}
+.gira{display:none;position:fixed;left:12px;right:12px;bottom:12px;z-index:80;background:var(--ink);color:var(--bg);border-radius:12px;padding:10px 14px;gap:10px;align-items:center;font-weight:500;box-shadow:0 10px 30px rgba(0,0,0,.3)}
+.gira button{border:0;background:transparent;color:inherit;margin-left:auto;cursor:pointer;font-size:15px;padding:2px 4px}
+@media (orientation:portrait) and (max-width:760px){body.rol-cre .gira{display:flex}}
+.tabs{display:flex;gap:2px;background:var(--sunken);border-radius:10px;padding:3px}
+.tab{border:0;background:transparent;color:var(--ink-3);font-weight:500;padding:6px 12px;border-radius:8px;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:7px;transition:color .12s}
+.tab:hover{color:var(--ink)}
+.tab.on{background:var(--surface);color:var(--ink);box-shadow:var(--sh-1)}
+.tab b{font:500 11px var(--mono);color:var(--ink-3)}
+.top-r{margin-left:auto;display:flex;align-items:center;gap:18px;min-width:0}
+.prog{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--ink-3);white-space:nowrap;font-variant-numeric:tabular-nums}
+.prog .pb{display:flex;width:120px;height:6px;border-radius:99px;overflow:hidden;background:var(--line)}
+.prog .pb i{display:block;height:100%}
+.pb .a{background:var(--ok)}.pb .c{background:var(--warn)}.pb .r{background:var(--bad)}
+.prog b{color:var(--ink);font-weight:600}
+.sync{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--ink-3);white-space:nowrap}
+.sync i{width:7px;height:7px;border-radius:50%;background:var(--ink-4);flex:none}
+.sync.ok i{background:var(--ok)}.sync.off i{background:var(--warn)}.sync.busy i{background:var(--accent);animation:pulso 1s ease-in-out infinite}
+@keyframes pulso{50%{opacity:.3}}
+.menu{width:36px;height:36px;border:1px solid var(--line);background:var(--surface);border-radius:9px;cursor:pointer;display:grid;place-items:center;flex:none}
+.menu i,.menu i::before,.menu i::after{display:block;width:14px;height:1.6px;background:var(--ink);border-radius:2px;content:"";position:relative}
+.menu i::before{position:absolute;top:-4.5px}.menu i::after{position:absolute;top:4.5px}
+
+/* ---------- lista (cajón en una columna, panel fijo en pantalla completa) ---------- */
+.side{background:var(--surface);border:1px solid var(--line);display:flex;flex-direction:column;min-height:0;overflow:hidden;box-shadow:var(--sh-pop);
+  position:fixed;z-index:50;top:0;bottom:0;left:0;width:min(320px,88vw);border-radius:0 16px 16px 0;transform:translateX(-104%);transition:transform .2s ease;
+  padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);padding-left:env(safe-area-inset-left,0px)}
+.nav-open .side{transform:none}
+.veil{position:fixed;inset:0;background:rgba(20,18,16,.4);z-index:40;opacity:0;pointer-events:none;transition:opacity .2s}
+.nav-open .veil{opacity:1;pointer-events:auto}
+.side-h{padding:10px;border-bottom:1px solid var(--line);display:grid;gap:8px;flex:none}
+.search{position:relative}
+.search input{width:100%;height:34px;border:1px solid var(--line);border-radius:9px;background:var(--raised);padding:0 10px 0 31px;outline:0}
+.search input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft);background:var(--surface)}
+.search input::placeholder{color:var(--ink-3)}
+.search::before{content:"";position:absolute;left:11px;top:10px;width:10px;height:10px;border:1.6px solid var(--ink-3);border-radius:50%;pointer-events:none;z-index:1}
+.search::after{content:"";position:absolute;left:20px;top:21px;width:6px;height:1.6px;background:var(--ink-3);transform:rotate(45deg);border-radius:2px;pointer-events:none;z-index:1}
+#filtros{display:grid;gap:6px}
+.fil{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:6px}
+select{height:30px;border:1px solid var(--line);border-radius:8px;background:var(--surface);padding:0 6px;font-size:12px;min-width:0;max-width:100%;cursor:pointer}
+.fest{display:flex;gap:4px}
+.fe{flex:1 1 0;min-width:0;height:26px;border:1px solid var(--line);background:var(--surface);border-radius:7px;font-size:11.5px;color:var(--ink-3);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;font-variant-numeric:tabular-nums;padding:0 4px}
+.fe:hover{border-color:var(--line-2);color:var(--ink)}
+.fe.on{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.side-b{flex:1;min-height:0;padding:6px}
+.grp{font:500 10.5px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);padding:13px 8px 5px}
+.grp:first-child{padding-top:6px}
+/* plegar un grupo de la lista de Ganadores (Nacho, 11/11: «un botón para achicar si no quiero ver las marcas o los formatos») */
+.grp.gbt{display:flex;align-items:center;gap:6px;width:100%;border:0;background:none;cursor:pointer;text-align:left;font:inherit;letter-spacing:inherit;text-transform:inherit;color:inherit}
+.grp.gbt .ch{font-style:normal;display:inline-block;transition:transform .15s;color:var(--ink-4)}
+.grp.gbt.off .ch{transform:rotate(-90deg)}
+.ggrp .pleg-x{border:0;background:none;cursor:pointer;font:inherit;letter-spacing:inherit;text-transform:inherit;color:inherit;display:flex;align-items:center;gap:8px;padding:0;min-width:0}
+.it{display:grid;grid-template-columns:36px minmax(0,1fr) 14px;gap:8px;align-items:center;width:100%;text-align:left;border:0;background:transparent;padding:7px 8px;border-radius:9px;cursor:pointer;color:var(--ink-2);transition:background .1s}
+.it:hover{background:var(--sunken)}
+.it.on{background:var(--accent-soft);color:var(--ink)}
+.it .cod{font:500 11px var(--mono);color:var(--ink-3)}
+.it.on .cod{color:var(--accent)}
+.it .nm{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}
+.it .nm small{display:block;font-weight:400;font-size:11.5px;color:var(--ink-3);overflow:hidden;text-overflow:ellipsis}
+.st{display:block;width:8px;height:8px;border-radius:50%;border:1.5px solid var(--line-2);justify-self:center;flex:none}
+.st.hecho{background:var(--accent);border-color:var(--accent)}
+.st.aprobado{background:var(--ok);border-color:var(--ok)}.st.cambios{background:var(--warn);border-color:var(--warn)}.st.rechazado{background:var(--bad);border-color:var(--bad)}
+.fe.on .st{border-color:currentColor}
+.side-f{padding:9px 12px;border-top:1px solid var(--line);font-size:11.5px;color:var(--ink-3);display:flex;gap:5px;align-items:center;flex-wrap:wrap;flex:none}
+kbd{font:500 10.5px var(--mono);border:1px solid var(--line-2);border-bottom-width:2px;border-radius:5px;padding:0 4px;color:var(--ink-2);background:var(--raised)}
+.nada{padding:18px 12px;color:var(--ink-3);font-size:12.5px;text-align:center}
+
+/* ---------- cabecera del ítem ---------- */
+.main{min-width:0;display:flex;flex-direction:column;gap:12px}
+.head{display:grid;gap:7px;padding:0 2px;flex:none;min-width:0}
+.h-row{display:flex;align-items:flex-start;gap:12px;justify-content:space-between;flex-wrap:wrap}
+.h-id{display:flex;align-items:center;gap:10px;min-width:0;flex:1 1 260px}
+.code{font:500 12px var(--mono);color:var(--accent);background:var(--accent-soft);border-radius:6px;padding:3px 7px;flex:none}
+h1{font-size:21px;font-weight:600;letter-spacing:-.022em;line-height:1.2;margin:0;text-wrap:balance;min-width:0}
+.h-act{display:flex;align-items:center;gap:8px;flex:none}
+.pill{font-size:11.5px;font-weight:500;padding:4px 10px;border-radius:99px;background:var(--sunken);color:var(--ink-3);white-space:nowrap}
+.pill.hecho{background:var(--accent-soft);color:var(--accent)}
+.pill.aprobado{background:var(--ok-soft);color:var(--ok)}.pill.cambios{background:var(--warn-soft);color:var(--warn)}.pill.rechazado{background:var(--bad-soft);color:var(--bad)}
+.nav{display:flex;align-items:center;border:1px solid var(--line);border-radius:9px;background:var(--surface);height:30px;padding:0 2px}
+.nav button{width:26px;height:24px;border:0;background:none;border-radius:6px;cursor:pointer;color:var(--ink-2);font-size:16px;line-height:1;display:grid;place-items:center}
+.nav button:hover:not(:disabled){background:var(--sunken)}
+.nav button:disabled{opacity:.3;cursor:default}
+.nav span{font:500 11.5px var(--mono);color:var(--ink-3);padding:0 5px}
+.meta{display:flex;flex-wrap:wrap;gap:3px 0;font-size:12.5px;color:var(--ink-3);align-items:center}
+.meta > * + *::before{content:"·";margin:0 8px;color:var(--ink-4)}
+.meta b{color:var(--ink);font-weight:500}
+.meta .mono{font-size:11.5px}
+.lnk{border:0;background:none;padding:0;color:var(--ink-2);cursor:pointer;text-decoration:underline;text-decoration-color:var(--line-2);text-underline-offset:3px}
+.lnk:hover{color:var(--accent);text-decoration-color:var(--accent)}
+.desc{font-size:13px;color:var(--ink-2);max-width:120ch;margin:0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;cursor:pointer}
+.desc.open{-webkit-line-clamp:unset;display:block}
+.tl{display:grid;gap:3px;margin-top:3px}
+.tl-row{display:grid;grid-template-columns:74px minmax(0,1fr) 36px;gap:8px;align-items:center;font:500 10.5px var(--mono);color:var(--ink-3);letter-spacing:.05em;text-transform:uppercase}
+.tl-row > b{font-weight:500;text-align:right;letter-spacing:0;font-variant-numeric:tabular-nums}
+.tl-row > b.largo{color:var(--warn)}
+.tl-bar{display:flex;gap:2px;height:20px;min-width:0}
+.tl-bar span{min-width:3px;flex-basis:0;border-radius:5px;display:flex;align-items:center;padding:0 6px;font:500 11px var(--ff);letter-spacing:0;text-transform:none;color:var(--ink);white-space:nowrap;overflow:hidden}
+.tl.una .tl-row{grid-template-columns:minmax(0,1fr)}
+.tl.una .tl-bar{height:24px}
+
+/* ---------- los tres paneles ---------- */
+.ws{display:grid;grid-template-columns:minmax(0,1fr);gap:12px;min-width:0}
+.pane{display:flex;flex-direction:column;min-width:0;min-height:0;background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:var(--sh-1)}
+.pane-h{flex:none;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:0 8px 0 12px;min-height:40px;border-bottom:1px solid var(--line);background:var(--raised)}
+.pane-t{font-weight:600;font-size:12.5px;letter-spacing:-.005em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.pane-x{display:flex;gap:6px;align-items:center;font-size:11.5px;color:var(--ink-3);min-width:0;white-space:nowrap;overflow:hidden;flex:none;max-width:72%}
+.pane-x .num{font-variant-numeric:tabular-nums;overflow:hidden;text-overflow:ellipsis}
+.pane-b{flex:1 1 auto;min-height:0;position:relative}
+.pane-f{flex:none;border-top:1px solid var(--line);padding:8px 12px;font-size:12px;color:var(--ink-3);display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:var(--raised)}
+.xlink{color:var(--ink-3);text-decoration:none;font-size:11.5px;padding:4px 6px;border-radius:6px}
+.xlink:hover{color:var(--accent);background:var(--accent-soft)}
+.tg{border:1px solid var(--line);background:var(--surface);color:var(--ink-3);font-size:11.5px;border-radius:7px;height:24px;padding:0 7px;cursor:pointer;flex:none}
+.tg.on{background:var(--sunken);color:var(--ink);border-color:var(--line-2)}
+.tagc{font:500 10.5px var(--mono);letter-spacing:.03em;padding:2px 7px;border-radius:6px;background:var(--ok-soft);color:var(--ok)}
+.tagc.warn{background:var(--warn-soft);color:var(--warn)}
+
+/* referencia */
+.stage{background:var(--vid);display:grid;place-items:center;overflow:hidden;position:relative;aspect-ratio:9/16;width:100%;max-width:300px;margin:0 auto}
+.stage.h{aspect-ratio:16/9;max-width:none}
+.stage video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;display:block;background:var(--vid)}
+.stage .ph{color:#b5a79f;font-size:12.5px;text-align:center;padding:20px}
+.stage .ph a{color:#f2ece7}
+.zoomv{display:none;position:absolute;top:6px;right:6px;z-index:2;width:28px;height:28px;border:0;border-radius:8px;background:rgba(20,18,16,.62);color:#fff;place-items:center;cursor:pointer;padding:0}
+.refs{flex:none;border-top:1px solid var(--line);padding:6px;display:grid;gap:2px}
+.ref{display:grid;grid-template-columns:16px minmax(0,1fr);gap:9px;align-items:center;text-align:left;border:0;background:none;padding:6px 8px;border-radius:8px;cursor:pointer;width:100%}
+button.ref:hover{background:var(--sunken)}
+.ref i{width:14px;height:14px;border-radius:50%;border:1.5px solid var(--line-2);display:block}
+.ref.on i{border:4.5px solid var(--accent)}
+.ref b{display:block;font-weight:500;font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ref small{display:block;font-size:11.5px;color:var(--ink-3);font-variant-numeric:tabular-nums}
+.ref.solo{grid-template-columns:minmax(0,1fr);cursor:default}
+
+/* guion de la referencia */
+.p-tr .pane-b{max-height:62vh}
+.blk{display:flex;align-items:center;gap:8px;padding:12px 12px 4px;font:500 10.5px var(--mono);letter-spacing:.07em;text-transform:uppercase;color:var(--ink-2)}
+.blk i{width:8px;height:8px;border-radius:3px;flex:none}
+.blk span{margin-left:auto;color:var(--ink-4);letter-spacing:0}
+.seg{display:grid;grid-template-columns:36px minmax(0,1fr);gap:8px;padding:7px 12px;cursor:pointer;transition:background .1s}
+.seg:hover{background:var(--raised)}
+.seg .t{font:400 11px var(--mono);color:var(--ink-4);padding-top:3px}
+.seg .es{font-size:13.5px;line-height:1.5}
+.seg .or{font-size:12px;color:var(--ink-3);margin-top:2px;line-height:1.45}
+.seg .ps{margin-top:5px;display:grid;gap:3px}
+.seg .ps span{font-size:11.5px;color:var(--ink-3);padding-left:8px;border-left:2px solid var(--line-2);line-height:1.4}
+.seg.lk{background:var(--hl-soft)}
+.seg.act{background:var(--accent-soft)}
+.seg.act .t{color:var(--accent)}
+.no-orig .seg .or,.no-pant .seg .ps{display:none}
+.mas{display:block;padding:0}
+.mas summary{cursor:pointer;list-style:none;padding:9px 12px;font-weight:500;color:var(--ink-2);display:flex;justify-content:space-between;align-items:center;gap:8px;white-space:nowrap}
+.mas summary::-webkit-details-marker{display:none}
+.mas summary::after{content:"";width:6px;height:6px;border-right:1.6px solid var(--ink-3);border-bottom:1.6px solid var(--ink-3);transform:rotate(-135deg);margin:3px 4px 0}
+.mas[open] summary::after{transform:rotate(45deg);margin-top:-3px}
+.mas-b{max-height:min(42vh,320px);padding:2px 12px 12px;color:var(--ink-2);font-size:12.5px}
+.mas-b p{margin:0 0 10px;line-height:1.5;color:var(--ink)}
+.mas-b dl{margin:0;display:grid;gap:6px}
+.mas-b dl div{display:grid;grid-template-columns:92px minmax(0,1fr);gap:10px}
+.mas-b dt{color:var(--ink-3)}
+.mas-b dd{margin:0}
+
+/* nuestro guion */
+.stabs{display:flex;gap:2px;margin-left:-6px;min-width:0}
+.stabs button{border:0;background:none;font-size:12.5px;font-weight:500;color:var(--ink-3);padding:5px 9px;border-radius:7px;cursor:pointer;white-space:nowrap}
+.stabs button:hover{color:var(--ink)}
+.stabs button.on{background:var(--sunken);color:var(--ink);font-weight:600}
+.p-our{container-type:inline-size;container-name:our}
+.g-h,.fila{display:grid;grid-template-columns:108px minmax(0,1fr) 32%}
+:where(.sim) .g-h,:where(.sim) .fila{grid-template-columns:108px minmax(0,1fr)}
+.g-h{position:sticky;top:0;z-index:2;background:var(--raised);border-bottom:1px solid var(--line);font:500 10.5px var(--mono);letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3)}
+.g-h > div{padding:8px 12px}
+.fila{border-bottom:1px solid var(--line);transition:background .15s}
+.fila:last-child{border-bottom:0}
+.fila > div{padding:14px 12px;min-width:0}
+.fila.lk{background:var(--hl-soft)}
+.fila.now{background:var(--accent-soft)}
+.et b{display:block;font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;line-height:1.35;overflow-wrap:anywhere}
+.et small{display:block;font-size:11px;color:var(--ink-3);margin-top:2px;line-height:1.35;overflow-wrap:anywhere}
+.tc{margin-top:8px;display:inline-flex;align-items:center;gap:5px;font:500 10.5px var(--mono);color:var(--accent);background:var(--accent-soft);border:0;border-radius:5px;padding:2px 6px;cursor:pointer}
+.tc::before{content:"";border-left:5px solid currentColor;border-top:3.5px solid transparent;border-bottom:3.5px solid transparent}
+.tc:hover:not(:disabled):not(.own){background:var(--accent);color:var(--on)}
+.tc:disabled{color:var(--ink-3);background:var(--sunken);cursor:default}
+.tc.own{color:var(--ink-3);background:var(--sunken);cursor:default}
+.tc.own::before{display:none}
+.di{font-size:14.5px;line-height:1.6}
+@container our (max-width:660px){
+  .g-h,.fila{grid-template-columns:104px minmax(0,1fr)}
+  .g-h .h3{display:none}
+  .fila > .ve{grid-column:2;padding-top:0;margin-top:-5px;display:flex;flex-wrap:wrap;gap:6px 10px;align-items:baseline}
+  .fila > .ve .placa{margin-bottom:0}
+  .fila > .ve .filma{flex:1 1 190px}
+}
+@container our (max-width:440px){
+  .g-h{display:none}
+  .fila{grid-template-columns:minmax(0,1fr)}
+  .fila > .et{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding-bottom:0}
+  .fila > .et small,.fila .tc{margin-top:0}
+  .fila > .di{padding-top:6px}
+  .fila > .ve{grid-column:1}
+}
+.ed{border-radius:5px;outline:0;overflow-wrap:anywhere;transition:background .12s,box-shadow .12s}
+.ed[contenteditable="true"]{cursor:text}
+.ed[contenteditable="true"]:hover{background:var(--sunken);box-shadow:0 0 0 4px var(--sunken)}
+.ed[contenteditable="true"]:focus{background:var(--surface);box-shadow:0 0 0 4px var(--surface),0 0 0 6px var(--accent)}
+.ed:empty::before{content:attr(data-ph);color:var(--ink-4)}
+.ed.mod,.ed.mod[contenteditable="true"]:hover{background:var(--hl);box-shadow:0 0 0 4px var(--hl);color:var(--ink)}
+.placa{display:inline-block;max-width:100%;background:var(--ink);color:var(--surface);font-weight:600;font-size:10.5px;letter-spacing:.04em;text-transform:uppercase;line-height:1.4;padding:4px 8px;border-radius:6px;margin-bottom:9px}
+.placa[contenteditable="true"]:hover{background:var(--ink-2);box-shadow:none}
+.placa[contenteditable="true"]:focus{background:var(--ink);box-shadow:0 0 0 2px var(--surface),0 0 0 4px var(--accent)}
+.placa.mod,.placa.mod[contenteditable="true"]:hover{background:var(--hl);color:var(--ink);box-shadow:none}
+.placa:empty{background:transparent;color:var(--ink-4);text-transform:none;font-weight:400;letter-spacing:0;border:1px dashed var(--line-2);padding:3px 7px}
+.fila:not(:hover) .placa:empty:not(:focus){display:none}
+.filma{font-size:12.5px;line-height:1.5;color:var(--ink-3)}
+.chg{display:inline-flex;align-items:center;gap:7px;color:var(--ink-2)}
+.chg i{width:10px;height:10px;border-radius:3px;background:var(--hl);border:1px solid var(--line-2)}
+.linkbtn{border:0;background:none;color:var(--ink-2);font-size:12px;text-decoration:underline;text-underline-offset:3px;cursor:pointer;padding:0}
+.linkbtn:hover{color:var(--accent)}
+.est-r{display:grid;grid-template-columns:136px minmax(0,1fr);gap:14px;padding:13px 12px;border-bottom:1px solid var(--line)}
+.est-r:last-child{border-bottom:0}
+.est-r .n{display:grid;grid-template-columns:10px minmax(0,1fr);gap:8px;font-weight:600;font-size:12.5px;align-items:start}
+.est-r .n i{width:9px;height:9px;border-radius:3px;margin-top:4px}
+.est-r .n small{display:block;font:400 11px var(--mono);color:var(--ink-3);margin-top:2px}
+.est-r p{margin:0;font-size:13.5px;line-height:1.5}
+.est-r p.ve{color:var(--ink-3);font-size:12.5px;margin-top:5px}
+.rules{padding:14px 14px 18px;display:grid;gap:20px}
+.rules h3{font:500 10.5px var(--mono);letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3);margin:0 0 9px}
+.rules ul{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.rules li{display:grid;grid-template-columns:14px minmax(0,1fr);gap:8px;font-size:13.5px;line-height:1.45}
+.rules li::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--ok);margin-top:7px;justify-self:center}
+.rules .no li::before{background:var(--bad);border-radius:1px;transform:rotate(45deg)}
+.rules p{margin:0;font-size:13.5px;line-height:1.5}
+
+/* ---------- referencia y nuestro guion, juntos y alineados ---------- */
+.ws.uno .p-tr{display:none}
+.c-h{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);position:sticky;top:0;z-index:3;height:32px;background:var(--raised);border-bottom:1px solid var(--line);font:500 10.5px var(--mono);letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3)}
+.c-h > div{padding:0 12px;line-height:31px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.c-h > div + div{border-left:1px solid var(--line)}
+.c-h b{font-weight:500;color:var(--ink)}
+.sec{display:flex;align-items:center;gap:8px;min-height:32px;padding:6px 12px;background:var(--surface);border-bottom:1px solid var(--line);font:500 10.5px var(--mono);letter-spacing:.07em;text-transform:uppercase;color:var(--ink);position:sticky;top:32px;z-index:2}
+.sec i{width:8px;height:8px;border-radius:3px;flex:none}
+.sec span{color:var(--ink-4);letter-spacing:0}
+.sec em{margin-left:auto;font:400 11.5px var(--ff);letter-spacing:0;text-transform:none;color:var(--ink-3);white-space:nowrap;font-variant-numeric:tabular-nums}
+.sec em.largo{color:var(--warn)}
+.bd{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);border-bottom:1px solid var(--line);transition:background .15s}
+.bd:last-child{border-bottom:0}
+.bd-l{min-width:0;background:var(--raised);border-right:1px solid var(--line);padding:5px 0}
+.bd-r{min-width:0;container-type:inline-size;container-name:our}
+.bd .seg{padding:8px 12px}
+.bd .seg:hover{background:var(--sunken)}
+.bd .seg.rep{opacity:.55}
+.bd .fila + .fila{border-top:1px dashed var(--line-2)}
+.bd .fila{border-bottom:0;grid-template-columns:120px minmax(0,1fr) 32%}
+:where(.sim) .bd .fila{grid-template-columns:120px minmax(0,1fr)}
+.bd .fila > .et{padding-right:4px}
+.bd .et b{overflow-wrap:break-word}
+@container our (max-width:660px){.bd .fila{grid-template-columns:120px minmax(0,1fr)}}
+@container our (max-width:440px){.bd .fila{grid-template-columns:minmax(0,1fr)}}
+.bd.now{background:var(--accent-soft)}
+.bd.now .bd-l{background:transparent}
+.vac{padding:10px 12px;font-size:12px;line-height:1.45;color:var(--ink-3)}
+.vac b{display:block;font:500 10.5px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);margin-bottom:2px}
+.vac.warn b{color:var(--warn)}
+.vac .ps{margin-top:5px;display:grid;gap:3px}
+.vac .ps span{padding-left:8px;border-left:2px solid var(--line-2)}
+.no-pant .vac .ps{display:none}
+.antes{margin-top:9px;font-size:12px;line-height:1.45;color:var(--ink-3);padding-left:9px;border-left:2px solid var(--hl)}
+.antes b{font-weight:500;color:var(--ink-2)}
+/* nota por parte: pedir un cambio sin tener que escribir el texto nuevo */
+.nb{display:inline-flex;margin-top:8px;border:0;background:none;padding:2px 0;font:500 11px var(--ff);color:var(--ink-4);cursor:pointer;border-radius:5px;white-space:nowrap}
+.fila:hover .nb,.nb:hover,.nb:focus-visible{color:var(--accent)}
+.pd{display:block;margin-top:10px;padding:6px 9px 7px;background:var(--surface);border:1px solid var(--line-2);border-left:2px solid var(--accent);border-radius:0 7px 7px 0}
+.pd span{display:block;font:500 10px var(--mono);letter-spacing:.07em;text-transform:uppercase;color:var(--accent);margin-bottom:2px}
+.pd textarea{display:block;width:100%;min-height:20px;border:0;outline:0;background:none;resize:none;overflow:hidden;font:400 13px/1.5 var(--ff);color:var(--ink);padding:0;field-sizing:content}
+.pd textarea::placeholder{color:var(--ink-3)}
+.pd:focus-within{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+/* cambio hecho a partir de una nota: qué se pidió, qué se hizo y cómo decía antes */
+.hc{padding:8px 11px 9px;background:var(--surface);border:1px solid var(--ok);border-radius:10px;font-size:12px;line-height:1.45;color:var(--ink-2);box-shadow:var(--sh-pop, 0 10px 30px rgba(0,0,0,.18))}
+.hc > b{display:block;font:500 10px var(--mono);letter-spacing:.07em;text-transform:uppercase;color:var(--ok);margin-bottom:2px}
+.hc p{margin:0}
+.hc p + p{margin-top:3px}
+.hc i{font-style:normal;color:var(--ink-3)}
+/* el «Cambio hecho» no ocupa espacio: queda como chip ⓘ y el detalle abre en popup (Nacho, 11/11) */
+.hc2{display:inline-block;position:relative;margin-top:6px}
+.hc2>summary{list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:5px;font:600 10px var(--mono);letter-spacing:.05em;text-transform:uppercase;color:var(--ok);background:var(--ok-soft);border-radius:99px;padding:3px 9px}
+.hc2>summary::-webkit-details-marker{display:none}
+.hc2>summary i{display:inline-grid;place-items:center;width:13px;height:13px;border:1.5px solid var(--ok);border-radius:50%;font:700 9px var(--ff);font-style:normal}
+.hc2[open]>.hc{position:absolute;z-index:40;top:calc(100% + 6px);left:0;width:min(360px,76vw)}
+@container our (max-width:440px){.fila .nb{margin:-8px 0 -8px auto;padding:10px 0 10px 16px}}
+.mas-b.suelto{max-height:none;padding:14px}
+.stabs{overflow-x:auto;scrollbar-width:none}
+.stabs::-webkit-scrollbar{display:none}
+@container our (max-width:620px){
+  .c-h{display:none}
+  .sec{top:0}
+  .bd{grid-template-columns:minmax(0,1fr)}
+  .bd-l{border-right:0;border-bottom:1px dashed var(--line-2)}
+  .bd-l::before{content:"Referencia";display:block;padding:5px 12px 0;font:500 10px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-4)}
+  .p-our .pane-x > .tg,.p-our .pane-x .num,.p-our .pane-x .tagc:not(.warn){display:none}
+}
+/* «Solo guion»: lo que se dice de cada lado y nada más. «Con notas» trae el texto en pantalla, la toma y el porqué */
+.modo{display:inline-flex;flex:none}
+.p-our .pane-x{margin-left:auto;flex:0 1 auto}
+.modo .tg:first-child{border-radius:7px 0 0 7px}
+.modo .tg + .tg{border-radius:0 7px 7px 0;margin-left:-1px}
+#tl .tl-row:last-child .tl-bar{height:10px}
+#tl .tl-row:last-child .tl-bar span{font-size:0;padding:0;border-radius:4px}
+.ng{border-bottom:1px solid var(--line);background:var(--raised)}
+.ng dd.mono{font:400 11.5px var(--mono)}
+.sim .bd .seg .ps,.sim .fila > .ve,.sim .g-h .h3,.sim .bd .tc,.sim .sec span,.sim .sec em:not(.largo),.sim .antes .porq{display:none}
+.sim .p-our .pane-x > .tg,.sim .p-our .pane-x .num,.sim .p-our .pane-x .tagc:not(.warn){display:none}
+/* de qué referencia sale el guion */
+.ref em{display:inline-block;margin-top:4px;font:500 10px var(--mono);font-style:normal;letter-spacing:.05em;text-transform:uppercase;color:var(--on);background:var(--accent);border-radius:5px;padding:2px 6px;white-space:nowrap}
+.ref em.pri{color:var(--ink-2);background:var(--sunken)}
+/* ángulo, idea y citas del VOC */
+.ctx{display:flex;gap:6px;align-items:center;min-width:0;flex-wrap:wrap}
+.chip{display:inline-flex;align-items:baseline;gap:7px;max-width:100%;min-width:0;font-size:12.5px;line-height:1.35;padding:3px 9px 3px 8px;border-radius:7px;background:var(--surface);border:1px solid var(--line)}
+.chip > i{font:500 10px var(--mono);font-style:normal;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3);flex:none}
+.chip b{font-weight:600}
+.chip small{font-size:11.5px;color:var(--ink-3);white-space:nowrap}
+.chip.ang{border-color:transparent}
+.chip.ang > i{color:var(--ink-2)}
+.it .nm small b{font-weight:400;color:var(--ink-4)}
+
+/* ---------- barra de revisión ---------- */
+.rev{flex:none;display:flex;align-items:flex-end;gap:8px;flex-wrap:wrap;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:8px;box-shadow:var(--sh-1);
+  position:sticky;bottom:max(8px,env(safe-area-inset-bottom,0px));z-index:20}
+.dec{display:flex;gap:6px;flex:1 1 100%}
+.dec .btn{flex:1 1 0;justify-content:center}
+.btn{height:36px;display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line-2);background:var(--surface);border-radius:9px;padding:0 13px;font-weight:500;cursor:pointer;white-space:nowrap;transition:background .12s,border-color .12s,color .12s}
+.btn:hover:not(:disabled){background:var(--raised);border-color:var(--ink-4)}
+.btn i{width:8px;height:8px;border-radius:50%;flex:none}
+.btn.ok i{background:var(--ok)}.btn.warn i{background:var(--warn)}.btn.bad i{background:var(--bad)}
+.btn.ok.on{background:var(--ok);border-color:var(--ok);color:var(--on)}
+.btn.warn.on{background:var(--warn);border-color:var(--warn);color:var(--on)}
+.btn.bad.on{background:var(--bad);border-color:var(--bad);color:var(--on)}
+.btn.on i{background:currentColor}
+.btn.pri{background:var(--ink);border-color:var(--ink);color:var(--surface);height:32px;border-radius:8px}
+.btn.pri:hover:not(:disabled){background:var(--ink-2);border-color:var(--ink-2)}
+.btn:disabled{opacity:.45;cursor:default}
+.btn b{font:500 11px var(--mono);color:var(--ink-3)}
+.btn .angosto{display:none}
+.comp{flex:1 1 150px;min-width:0;display:flex;align-items:flex-end;gap:6px;background:var(--raised);border:1px solid var(--line);border-radius:10px;padding:1px 1px 1px 12px;transition:border-color .12s,box-shadow .12s}
+.comp:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft);background:var(--surface)}
+.comp textarea{flex:1;min-width:0;border:0;background:transparent;resize:none;outline:0;font-size:13.5px;line-height:1.45;padding:6px 0;height:32px;max-height:132px;display:block}
+.comp textarea::placeholder{color:var(--ink-3)}
+.pop{position:absolute;right:8px;bottom:calc(100% + 8px);width:min(420px,calc(100% - 16px));max-height:min(440px,60vh);background:var(--surface);border:1px solid var(--line-2);border-radius:12px;box-shadow:var(--sh-pop);padding:6px;z-index:30;animation:sube .14s ease-out}
+.pop-h{font:500 10.5px var(--mono);letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3);padding:8px 10px 6px}
+.nota{padding:9px 10px;font-size:13px;line-height:1.45;white-space:pre-wrap;overflow-wrap:anywhere}
+.nota + .nota{border-top:1px solid var(--line)}
+.nota small{display:block;font-size:11.5px;color:var(--ink-3);margin-top:3px;white-space:normal}
+.nota.vac{color:var(--ink-3)}
+.toasts{position:fixed;left:50%;bottom:calc(92px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);display:grid;gap:6px;z-index:60;pointer-events:none;justify-items:center}
+.toast{background:var(--ink);color:var(--surface);font-size:12.5px;font-weight:500;padding:8px 14px;border-radius:99px;box-shadow:var(--sh-pop);animation:sube .16s ease-out}
+@keyframes sube{from{opacity:0;transform:translateY(6px)}}
+.vacio{background:var(--surface);border:1px solid var(--line);border-radius:14px;text-align:center;padding:56px 20px;color:var(--ink-3)}
+.vacio b{display:block;color:var(--ink);font-size:15px;font-weight:600;margin-bottom:6px}
+.sk{min-height:260px;background:linear-gradient(100deg,var(--surface) 30%,var(--raised) 50%,var(--surface) 70%);background-size:300% 100%;animation:brilla 1.4s linear infinite}
+@keyframes brilla{to{background-position:-150% 0}}
+
+/* ---------- ganadores del día: tarjetas con el formato de la app de estáticos ---------- */
+.gan{display:flex;flex-direction:column;gap:12px;min-height:0;flex:1 1 auto}
+.gan-h{display:flex;gap:14px;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;padding:0 2px}
+.gan-h p{margin:4px 0 0;color:var(--ink-3);font-size:13px;max-width:78ch}
+.gtabs{display:flex;gap:2px;background:var(--sunken);border-radius:10px;padding:3px;flex:none}
+.ggrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,232px),1fr));grid-auto-rows:max-content;gap:12px;align-content:start;min-height:0;flex:1 1 auto;padding:2px 2px 12px}
+.gc{background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:hidden;display:flex;flex-direction:column;box-shadow:var(--sh-1)}
+.gc-h{display:flex;align-items:center;gap:10px;padding:12px 12px 10px}
+.av{width:36px;height:36px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;font-weight:600;font-size:15px;flex:none}
+.who{min-width:0;flex:1}
+.who b{display:block;font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.who b span{color:var(--ink-3);font-weight:400}
+.who small{display:flex;align-items:center;gap:6px;color:var(--ink-3);font-size:12px;white-space:nowrap;overflow:hidden}
+.who small i{width:8px;height:8px;border-radius:50%;background:var(--ok);flex:none}
+.ext{color:var(--ink-3);display:grid;place-items:center;width:32px;height:32px;border-radius:9px;flex:none;text-decoration:none;font-size:15px}
+.ext:hover{background:var(--sunken);color:var(--ink)}
+.gc-img{display:block;flex:none;position:relative;border:0;padding:0;width:100%;aspect-ratio:4/5;background:var(--vid);cursor:pointer;overflow:hidden}
+.gc-img img{width:100%;height:100%;object-fit:cover;display:block}
+.gc-img .dur{position:absolute;left:8px;top:8px;background:rgba(20,18,16,.72);color:#fff;font:500 11px var(--mono);padding:3px 7px;border-radius:99px}
+.gc-img::after{content:"";position:absolute;left:50%;top:50%;width:44px;height:44px;margin:-22px 0 0 -22px;border-radius:50%;background:rgba(20,18,16,.6)}
+.gc-img::before{content:"";position:absolute;left:50%;top:50%;z-index:1;margin:-8px 0 0 -5px;border-left:14px solid #fff;border-top:8px solid transparent;border-bottom:8px solid transparent}
+.gc-b{padding:12px;display:flex;flex-direction:column;gap:8px;flex:1}
+.pills{display:flex;flex-wrap:wrap;gap:5px}
+.pl{font-size:11.5px;font-weight:500;padding:2px 9px;border-radius:99px;background:var(--sunken);color:var(--ink-2);white-space:nowrap}
+.pl.a{background:var(--accent-soft);color:var(--accent);letter-spacing:.04em}
+.pl.f{background:var(--b2);color:var(--ink)}
+.pl.ok{background:var(--ok-soft);color:var(--ok)}
+.pl.env,em.env{background:#fff1e0;color:#b45309;font-style:normal;font-weight:600}
+em.env{font-size:10.5px;padding:1px 6px;border-radius:99px;margin-left:4px;white-space:nowrap}
+:root[data-theme="dark"] .pl.env,:root[data-theme="dark"] em.env{background:#3a2a14;color:#fbbf6a}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .pl.env,:root:not([data-theme="light"]) em.env{background:#3a2a14;color:#fbbf6a}}
+.pl.hoy{background:var(--accent);color:var(--on)}
+/* color por grupo: verde = lo graba una creadora en su casa · ámbar = formato nuevo · violeta = animado con IA · gris = fundadora, detrás de escena */
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;flex:none;background:var(--ink-4)}
+.dot.propios{background:var(--accent,#2563eb)}.dot.creadora{background:var(--ok)}.dot.otros{background:var(--warn)}.dot.ia{background:var(--ia)}.dot.marca{background:var(--ink-4)}.dot.competencia{background:#8b5cf6}
+.pl.cmp{background:#8b5cf61a;color:#6d28d9;font-weight:600}   /* la competencia directa, bien a la vista */
+.pl.f{display:inline-flex;align-items:center;gap:6px;max-width:100%}.pl.f span{overflow:hidden;text-overflow:ellipsis}
+.it.g{grid-template-columns:14px minmax(0,1fr) auto}.it.g .dot{justify-self:center}
+.ggrp{grid-column:1/-1;display:flex;align-items:center;gap:8px;margin:14px 2px 0;font:600 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2)}
+.ggrp{white-space:nowrap}.ggrp:first-child{margin-top:2px}.ggrp small{font:400 12px var(--ff);letter-spacing:0;text-transform:none;color:var(--ink-3);white-space:normal;min-width:0}
+.ggrp::after{content:"";flex:1;height:1px;background:var(--line)}
+.gsec{grid-column:1/-1;display:flex;align-items:center;gap:8px;margin:6px 2px -4px;font-size:13.5px;font-weight:600;color:var(--ink)}
+.gsec span{font:500 11px var(--mono);color:var(--ink-3)}
+.gc h3{margin:0;font-size:14.5px;font-weight:600;letter-spacing:-.01em;line-height:1.35}
+.gc p{margin:0;font-size:12.5px;color:var(--ink-3);line-height:1.45}
+.clamp2{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.clamp3{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.gacc{display:flex;gap:8px;margin-top:auto;padding-top:4px}
+.gacc .btn{flex:1;justify-content:center;height:34px}
+.btn.si{background:var(--ink);border-color:var(--ink);color:var(--surface)}
+.btn.si:hover:not(:disabled){background:var(--ink-2);border-color:var(--ink-2)}
+.btn.no{color:var(--bad)}
+.ficha{position:fixed;inset:0;z-index:70;background:rgba(20,18,16,.5);display:grid;place-items:center;padding:max(12px,env(safe-area-inset-top,0px)) max(12px,env(safe-area-inset-right,0px)) max(12px,env(safe-area-inset-bottom,0px)) max(12px,env(safe-area-inset-left,0px))}
+.fx{background:var(--surface);border-radius:18px;box-shadow:var(--sh-pop);width:min(940px,100%);max-height:100%;display:grid;grid-template-columns:minmax(0,320px) minmax(0,1fr);overflow:hidden}
+.fx-v{background:var(--vid);display:grid;place-items:center;min-height:0}
+.fx-v video{width:100%;height:100%;max-height:min(86vh,720px);object-fit:contain;display:block;background:var(--vid)}
+.fx-b{padding:16px;display:flex;flex-direction:column;gap:10px;min-width:0;min-height:0;overflow:auto}
+.lbl{font:500 10.5px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)}
+.fx-b p{margin:2px 0 0;font-size:13.5px;line-height:1.5}
+.idea{background:var(--accent-soft);border-radius:12px;padding:10px 12px}
+.idea .lbl{color:var(--accent)}
+.angs{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+.ang{border:1px dashed var(--line-2);background:transparent;color:var(--ink-3);border-radius:99px;padding:5px 12px;font-size:12.5px;font-weight:500;cursor:pointer}
+.ang::before{content:'+ ';opacity:.7}
+.ang.on::before{content:'✓ ';opacity:1}
+.angn{font-size:12px;color:var(--ink-3);margin-top:6px}
+.ang.on{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.fx-b textarea{width:100%;border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:16px;background:var(--raised);resize:vertical;min-height:54px;outline:0}
+.fx-b textarea:focus{border-color:var(--accent)}
+.fx-b details{font-size:12.5px;color:var(--ink-2)}
+.fx-b summary{cursor:pointer;color:var(--ink-3)}
+.fx-b details div{margin-top:6px;display:grid;gap:4px;line-height:1.45}
+@media (max-width:719.98px){.fx{grid-template-columns:minmax(0,1fr);overflow:auto}.fx-v video{max-height:46vh}.fx-b{overflow:visible}}
+@media (min-width:1100px) and (min-height:640px){.ggrid{overflow:auto}}
+
+/* ---------- clave de entrada ---------- */
+.gate{min-height:100vh;min-height:100dvh;display:grid;place-content:center;justify-items:center;gap:10px;padding:24px var(--gr) 24px var(--gl);text-align:center}
+.gate .mark{width:40px;height:40px;border-radius:12px}
+.gate .mark::before{width:20px;height:15px}
+.gate h2{margin:6px 0 0;font-size:20px;font-weight:600;letter-spacing:-.02em}
+.gate p{margin:0;color:var(--ink-3);font-size:13.5px}
+.gate-r{display:flex;gap:8px;margin-top:10px;width:min(320px,100%)}
+.gate input{flex:1;min-width:0;height:40px;border:1px solid var(--line-2);border-radius:10px;background:var(--surface);padding:0 12px;font-size:16px;outline:0}
+.gate input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.gate .btn.pri{height:40px;border-radius:10px;padding:0 16px}
+.gate .gate-e{color:var(--bad)}
+/* ---------- versión para el cliente: solo sus guiones, sin revisión ---------- */
+.cli .fest,.cli .prog,.cli .sync,.cli .tagc,.cli:not(.conest) .pill,.cli:not(.conest) .it .st{display:none}
+.pd.cl{border-left-color:var(--warn)}
+.pd.cl span{color:var(--warn)}
+.pd.cl p{margin:0;font-size:13px;line-height:1.5;color:var(--ink)}
+.aviso{background:var(--warn-soft);color:var(--ink);border-radius:10px;padding:8px 12px;font-size:12.5px;line-height:1.45}
+.aviso a{color:var(--accent);font-weight:500}
+
+/* ---------- dos columnas ---------- */
+@media (min-width:720px){
+  .ws{grid-template-columns:minmax(200px,260px) minmax(0,1fr)}
+  .p-our{grid-column:1/-1}
+  .ws.uno .p-our{grid-column:auto}
+  .ws.uno .p-vid{align-self:start;position:sticky;top:8px}
+  .stage{max-width:none}
+  .dec{flex:none}.dec .btn{flex:none}
+}
+@media (max-width:719.98px){
+  .prog .pb{display:none}
+  .sync span{display:none}
+  .rev{gap:6px;padding:6px}
+  .dec{gap:4px}
+  .dec .btn{padding:0 6px;gap:6px;min-width:0}
+  .btn .ancho{display:none}
+  .btn .angosto{display:inline}
+  .tl-row{grid-template-columns:74px minmax(0,1fr) 34px}
+  .tl-bar{height:12px}
+  .tl-bar span{font-size:0;padding:0;border-radius:4px}
+  .est-r{grid-template-columns:minmax(0,1fr);gap:6px}
+}
+/* ---------- celular: el video chico acompaña la lectura, la barra de revisión ocupa una fila, la cabecera se achica ---------- */
+@media (max-width:719.98px){
+  .top{flex-wrap:nowrap;gap:10px;min-height:52px}
+  .bname{display:none}
+  .tabs{min-width:0}
+  .main{gap:10px}
+  .h-row{flex-wrap:nowrap;align-items:center}
+  .h-id{flex:1 1 auto}
+  h1{font-size:19px}
+  .pill{display:none}
+  .ctx{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
+  .ctx::-webkit-scrollbar{display:none}
+  .chip{flex:none}
+  .zoomv{display:grid}
+  .p-vid:not(.gr){--mh:clamp(150px,23vh,200px);position:sticky;top:calc(env(safe-area-inset-top,0px) + 6px);z-index:15;display:grid;grid-template-columns:calc(var(--mh) * 9 / 16) minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);height:var(--mh);box-shadow:var(--sh-pop)}
+  .p-vid:not(.gr):has(.stage.h){grid-template-columns:46% minmax(0,1fr)}
+  .p-vid:not(.gr) .stage{grid-column:1;grid-row:1/3;width:100%;height:100%;max-width:none;aspect-ratio:auto;margin:0}
+  .p-vid:not(.gr) .pane-h{grid-column:2;min-height:34px;padding:0 4px 0 10px;gap:6px}
+  .p-vid:not(.gr) .refs{grid-column:2;border-top:0;padding:4px;min-height:0;align-content:start}
+  .p-vid:not(.gr) .ref{padding:5px 6px;gap:7px}
+  .p-vid.mini .stage{cursor:pointer}
+  .p-vid.mini .stage::after{content:"";position:absolute;left:50%;top:50%;z-index:1;width:40px;height:40px;margin:-20px 0 0 -20px;border-radius:50%;background:rgba(20,18,16,.62);pointer-events:none;transition:opacity .15s}
+  .p-vid.mini .stage::before{content:"";position:absolute;left:50%;top:50%;z-index:2;margin:-8px 0 0 -5px;border-left:13px solid #fff;border-top:8px solid transparent;border-bottom:8px solid transparent;pointer-events:none;transition:opacity .15s}
+  .p-vid.mini .stage.pl::after,.p-vid.mini .stage.pl::before{opacity:0}
+  .rev{align-items:center}
+  .dec{flex:1 1 0;min-width:0}
+  .dec .btn{font-size:12.5px;padding:0 4px;gap:5px}
+  .rev > .btn{flex:none;padding:0 9px}
+  .rev .comp{display:none;order:-1;flex:1 1 100%}
+  .rev.abierta .comp{display:flex}
+  .toasts{bottom:calc(108px + env(safe-area-inset-bottom,0px))}
+  .pd textarea,.comp textarea,.search input,select{font-size:16px}   /* con menos de 16px el iPhone hace zoom al escribir */
+  .comp textarea{height:36px}
+  .di{font-size:16px;line-height:1.5}
+  .seg .es{font-size:14.5px}
+  .fila .ed,.pd textarea{scroll-margin-top:220px;scroll-margin-bottom:80px}   /* al escribir, que no quede tapado por el video ni por la barra */
+}
+@media (max-width:520px){.prog{display:none}.top-r{gap:10px}}
+
+/* ---------- pantalla completa: nada scrollea salvo los paneles ---------- */
+@media (min-width:1100px) and (min-height:640px){
+  html,body{height:100%}
+  body{overflow:hidden}
+  .app{height:100%;grid-template-columns:268px minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);column-gap:14px;padding-block:0 14px}
+  .top{grid-column:1/-1;flex-wrap:nowrap}
+  .menu,.veil{display:none}
+  .side{position:static;transform:none;width:auto;border-radius:14px;box-shadow:var(--sh-1);padding:0;transition:none;z-index:auto}
+  .main{min-height:0}
+  .ws{flex:1 1 auto;min-height:0;grid-template-columns:minmax(210px,min(300px,30vh)) minmax(0,.86fr) minmax(0,1.3fr);grid-template-rows:minmax(0,1fr)}
+  .p-our{grid-column:auto}
+  .ws.uno{grid-template-columns:minmax(210px,min(300px,30vh)) minmax(0,1fr)}
+  .ws.uno .p-vid{align-self:stretch;position:relative;top:auto}
+  .stage{flex:1 1 auto;min-height:150px;aspect-ratio:auto;max-width:none}
+  .stage.h{flex:none;aspect-ratio:16/9}
+  .refs{max-height:40%;overflow:auto}
+  .p-tr .pane-b{max-height:none}
+  .rev{position:relative;bottom:auto;flex-wrap:nowrap}
+  .toasts{bottom:96px}
+}
+@media (min-width:1100px) and (min-height:640px) and (max-height:780px){.desc{-webkit-line-clamp:1}}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head><body>
+
+<form class="gate" id="gate" hidden autocomplete="off">
+  <span class="mark" aria-hidden="true"></span>
+  <h2 id="gate-t">Sala de guiones</h2>
+  <p>Ingresá la clave para entrar. Si sos creadora, es la misma contraseña con la que entrás a la app donde subís tus videos.</p>
+  <div class="gate-r"><input id="clave" type="password" placeholder="Clave" aria-label="Clave" autocomplete="off" autocapitalize="off" spellcheck="false"><button class="btn pri" type="submit">Entrar</button></div>
+  <p class="gate-e" id="gate-e" role="alert" hidden>La clave no es correcta.</p>
+</form>
+<div class="app" id="app" hidden>
+  <header class="top">
+    <button class="menu" id="menu" aria-label="Abrir la lista"><i></i></button>
+    <div class="brand"><span class="mark" aria-hidden="true"></span><span class="bname">Sala de guiones</span></div>
+    <div class="tabs" role="tablist" aria-label="Qué se revisa">
+      <button class="tab" id="t-ganadores" role="tab" aria-selected="false" hidden>Ganadores <b id="n-ganadores">0</b></button>
+      <button class="tab on" id="t-formatos" role="tab" aria-selected="true">Formatos <b id="n-formatos">0</b></button>
+      <button class="tab" id="t-guiones" role="tab" aria-selected="false">Guiones <b id="n-guiones">0</b></button>
+      <button class="tab" id="t-prod" role="tab" aria-selected="false" hidden>Del equipo <b id="n-prod">0</b></button>
+    </div>
+    <div class="top-r">
+      <div class="prog" id="prog"></div>
+      <div class="sync busy" id="sync" role="status"><i></i><span>Conectando…</span></div>
+    </div>
+  </header>
+  <aside class="side" id="side" aria-label="Lista">
+    <div class="side-h">
+      <div class="search"><input id="q" type="search" placeholder="Buscar formato" aria-label="Buscar" autocomplete="off"></div>
+      <div id="filtros" hidden></div>
+    </div>
+    <div class="side-b scroll" id="lista"></div>
+    <div class="side-f"><kbd>⌥</kbd><kbd>↓</kbd> siguiente <kbd>⌥</kbd><kbd>↑</kbd> anterior</div>
+  </aside>
+  <div class="veil" id="veil"></div>
+  <main class="main" id="main">
+    <div class="ws"><div class="pane sk"></div><div class="pane sk"></div><div class="pane sk p-our"></div></div>
+  </main>
+</div>
+<div class="ficha" id="ficha" hidden></div>
+<div class="toasts" id="toasts" role="status" aria-live="polite"></div>
+
+<script>
+const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fmtT = s => { s = Math.max(0, Math.round(Number(s) || 0)); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
+const COLS = ['var(--b1)', 'var(--b2)', 'var(--b3)', 'var(--b4)', 'var(--b5)', 'var(--b6)'];
+const RIT = 3.5;   // palabras por segundo de nuestras creadoras
+const EST = {aprobado: 'Aprobado', cambios: 'Con cambios', rechazado: 'Rechazado', hecho: 'Cambio hecho', '': 'Sin revisar'};
+const CAMPOS = ['etapa', 'dice', 'texto', 'filma'];
+const palabras = t => (String(t || '').match(/[\wáéíóúñü]+/gi) || []).length;
+const hash = o => { const s = JSON.stringify(o); let h = 5381; for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0; return String(h); };
+const pref = (k, d) => { try { const v = localStorage.getItem('sala-' + k); return v === null ? d : v === '1'; } catch (e) { return d; } };
+const setPref = (k, v) => { try { localStorage.setItem('sala-' + k, v ? '1' : '0'); } catch (e) {} };
+// cliente: nombre de la marca en la versión que se le comparte (la arma creativos/formatos/cliente.py)
+// claves: [huella SHA-256, huella de respaldo, quién]; quién vacío = ve todo, nombre de una creadora = ve solo sus guiones
+// cifrado (la versión que va a GitHub, repo público): no hay claves ni datos en la página; cada clave abre su paquete cifrado d/<id>.json
+const CFG = {cliente: "MagneLab", cifrado: true, claves: []};
+const MUDANZA = CFG.cliente ? '' : 'https://cima-creators.github.io/lagos/guiones/';   // desde el 10/11 los guiones de Lagos se revisan ahí (guarda en Firebase)
+const FB = {apiKey: 'AIzaSyCTv4DiRCpbCpGYP6E86TPHlkPvaAZTN3g', authDomain: 'cleargy-creators.firebaseapp.com', projectId: 'cleargy-creators', storageBucket: 'cleargy-creators.firebasestorage.app', messagingSenderId: '313543582398', appId: '1:313543582398:web:99fe78991adeea2e7cb4ef'};   // el proyecto de las apps de CIMA
+const S = { cli: !!CFG.cliente, solo: '', rol: '', GUT: [], GAN: [], gf: {estado: 'elegir', fmt: '', orden: (() => { try { return localStorage.getItem('gan_orden') || ''; } catch (x) { return ''; } })()}, pleg: (() => { try { return JSON.parse(localStorage.getItem('gan_pleg') || '{}'); } catch (x) { return {}; } })(), tab: 'formatos', sub: 'solas', fmt: null, gan: null, gui: null, gids: [], q: '', filtro: {quien: '', fmt: '', estado: '', angulo: '', idea: ''}, rtab: 'principal',
+            orig: pref('orig', true), pant: pref('pant', true), det: pref('det', false), mas: false,
+            F: [], G: {}, GU: [], rev: {}, notas: [], db: null, me: null, dbOk: false, dbMsg: '', saving: 0, cargado: false };
+
+const colorBloque = (nombre, lista) => { const i = lista.indexOf(nombre); return COLS[(i < 0 ? 0 : i) % COLS.length]; };
+// Roles de la versión de la marca (vienen en el paquete que abre cada clave): equipo = CIMA, revisa igual que en la Sala · marca = ve lo aprobado y deja notas · creadora = ve lo aprobado
+const esRevisor = () => !S.cli || S.rol === 'equipo';
+// «Del equipo»: guiones que una creadora NO puede grabar y editar sola (mezcla de creadoras, IA, fundadora) van en su propia pestaña (Nacho, 11/11)
+const NOSOLA = g => /^(IA \(|Fundadora|Las |.+ y .+)/.test((g && g.quien) || '');
+const GUsub = () => S.GU.filter(g => NOSOLA(g) === (S.sub === 'prod'));
+const esMarca = () => S.cli && S.rol === 'marca';
+const soloAprobados = () => S.cli && S.rol !== 'equipo';
+const horneado = id => S.cli && id.startsWith('gui-') ? ((S.GUT.find(g => 'gui-' + g.codigo === id) || {}).estado || '') : '';   // estado con el que se publicó, por si la base no conecta
+const estadoDe = id => (S.rev[id] && S.rev[id].estado) || (S.dbOk ? '' : horneado(id));
+function visibles(){   // la marca y las creadoras ven solo lo aprobado, y lo que Nacho aprueba aparece solo
+  const antes = S.GU.map(g => g.codigo).join();
+  S.GU = soloAprobados() ? S.GUT.filter(g => estadoDe('gui-' + g.codigo) === 'aprobado') : S.GUT;
+  return antes !== S.GU.map(g => g.codigo).join();
+}
+const HB = {};   // hash de la versión publicada de cada guion o plantilla
+function hashItem(id){ if (!HB[id]) { const x = id.startsWith('fmt-') ? S.F.find(f => 'fmt-' + f.id === id) : S.GUT.find(g => 'gui-' + g.codigo === id); HB[id] = hash(((x && (x.filas || x.plantilla)) || []).map(normal)); } return HB[id]; }
+const hechosDe = id => { const rv = S.rev[id] || {}; return rv.hechos && rv.hsobre === hashItem(id) ? rv.hechos : {}; };   // cambios que hizo Claude sobre esta versión
+const estadoVista = id => estadoDe(id) || (Object.keys(hechosDe(id)).length ? 'hecho' : '');
+const sinNum = t => S.solo && /ventas|compras|roas/i.test(t || '') ? '' : (t || '');   // la creadora no ve los números de la marca
+const itemId = () => S.tab === 'formatos' ? 'fmt-' + S.fmt : 'gui-' + S.gui;
+const nombreFmt = id => (S.F.find(f => f.id === id) || {}).nombre || id;
+const guionAct = () => S.GU.find(x => x.codigo === S.gui);
+function toast(t){ const el = document.createElement('div'); el.className = 'toast'; el.textContent = t; $('#toasts').appendChild(el); setTimeout(() => el.remove(), 2200); }
+
+/* ---------- datos y conexión ---------- */
+async function cargar(){
+  const j = async (u, d) => { try { const r = await fetch(u, {cache: 'no-store'}); return r.ok ? await r.json() : d; } catch (e) { return d; } };
+  const [F, G, GU] = S.paquete ? [S.paquete.formatos || [], S.paquete.ganadores || {}, S.paquete.guiones || []] : await Promise.all([j('data/formatos.json', []), j('data/ganadores.json', {}), j('data/guiones.json', [])]);
+  const grupos = []; F.forEach(f => { if (!grupos.includes(f.grupo || 'Formatos')) grupos.push(f.grupo || 'Formatos'); });
+  S.F = grupos.flatMap(g => F.filter(f => (f.grupo || 'Formatos') === g)); S.G = G; S.GUT = S.solo ? GU.filter(g => g.quien === S.solo) : GU; visibles(); S.cargado = true;
+  if (S.cli) S.tab = 'guiones';
+  leerHash();
+  if (!S.fmt && S.F.length) S.fmt = S.F[0].id;
+  if (!S.gui && S.GU.length) S.gui = S.GU[0].codigo;
+  if (S.cli) $('#app').classList.toggle('conest', soloAprobados());
+  render(); if (!S.cli || CFG.cifrado) conectar();
+}
+function leerHash(){
+  const h = (location.hash || '').slice(1);
+  if (h === 'ganadores' && S.cli && S.rol === 'equipo') { S.tab = 'ganadores'; return true; }
+  if (h.startsWith('g-') && S.GU.some(g => g.codigo === h.slice(2))) { S.tab = 'guiones'; S.gui = h.slice(2); S.sub = NOSOLA(S.GU.find(g => g.codigo === S.gui)) ? 'prod' : 'solas'; return true; }
+  if (!S.cli && h && S.F.some(f => f.id === h)) { S.tab = 'formatos'; S.fmt = h; return true; }
+  return false;
+}
+async function conectar(){
+  const sin = msg => { S.dbMsg = msg; pintarSync(); pintarNuestro(true); actualizarRevision(); };
+  let db = null, user = null;
+  if (CFG.cifrado) { try { db = await conectarFirebase(); } catch (e) {} S.me = (S.paquete && S.paquete.nombre) || ''; }
+  else { if (!window.claude || !claude.use) return sin('Vista sin conexión: no se guarda'); try { db = await claude.use('db'); user = await claude.use('user'); } catch (e) {} }
+  if (!db) return sin('No se pudo conectar: no se guarda');
+  S.db = db; if (!CFG.cifrado) { try { S.me = user ? await user.id() : null; } catch (e) {} }
+  pintarSync(); pintarNuestro(true); actualizarRevision();
+  const t = setTimeout(() => { if (!S.dbOk) { S.dbMsg = 'La base tarda en responder'; pintarSync(); } }, 10000);
+  db.collection('revision').onSnapshot(snap => {
+    const r = {}; snap.docs.forEach(d => { r[d.id] = d.data(); });
+    S.rev = r; if (!snap.metadata || !snap.metadata.fromCache) { S.dbOk = true; S.dbMsg = ''; clearTimeout(t); }
+    if (visibles()) { if (!S.GU.some(g => g.codigo === S.gui)) S.gui = (S.GU[0] || {}).codigo || null; render(); return; }   // cambió lo que esta persona puede ver
+    pintarFiltros(); pintarLista(); pintarProgreso(); pintarSync(); actualizarRevision(); pintarNuestro(false);
+  }, e => { S.dbMsg = 'La base no responde (' + (e.code || 'error') + ')'; clearTimeout(t); pintarSync(); actualizarRevision(); });
+  if (db.ganadores && esRevisor()) db.ganadores.onSnapshot(docs => { S.GAN = docs; $('#t-ganadores').hidden = false; $('#n-ganadores').textContent = docs.filter(d => d.estado === 'elegir').length;
+    if (S.tab === 'ganadores') { pintarLista(); if ($('#ficha').hidden) pintarGanadores(); } else if (!S.ganVisto && !location.hash && docs.some(d => d.estado === 'elegir')) { S.ganVisto = true; irGanadores(); } });
+  db.collection('notas').orderBy('fecha', 'asc').onSnapshot(snap => {
+    S.notas = snap.docs.map(d => Object.assign({id: d.id}, d.data())); actualizarRevision();
+  }, () => {});
+}
+async function conectarFirebase(){   // la revisión vive en Firebase, documento <marca>/sala: un JSON {revision, notas}, como el estado de las apps de CIMA
+  const V = 'https://www.gstatic.com/firebasejs/10.12.0/firebase-';
+  const [A, F, U] = await Promise.all([import(V + 'app.js'), import(V + 'firestore.js'), import(V + 'auth.js')]);
+  const app = A.initializeApp(FB); await U.signInAnonymously(U.getAuth(app));
+  const fs = F.getFirestore(app), prueba = new URLSearchParams(location.search).has('prueba');   // ?prueba usa la marca de pruebas (smoketest)
+  const ref = F.doc(fs, prueba ? 'smoketest' : S.paquete.marca, 'sala');
+  const vacio = () => ({revision: {}, notas: []}), leer = d => { try { return Object.assign(vacio(), d.exists() ? JSON.parse(d.data().data) : {}); } catch (e) { return vacio(); } };
+  let est = vacio(), cache = true, listo = false; const subs = {revision: [], notas: []}, errs = [];
+  const foto = c => c === 'notas' ? {docs: est.notas.map(n => ({id: n.id, data: () => n}))} : {docs: Object.entries(est.revision).map(([id, d]) => ({id, data: () => d})), metadata: {fromCache: cache}};
+  F.onSnapshot(ref, d => { est = leer(d); cache = d.metadata.fromCache; listo = true; Object.keys(subs).forEach(c => subs[c].forEach(f => f(foto(c)))); }, e => errs.forEach(f => f(e)));
+  const cambiar = fn => F.runTransaction(fs, async t => { const e = leer(await t.get(ref)); fn(e); t.set(ref, {data: JSON.stringify(e), savedAt: new Date().toISOString()}); });
+  const col = c => ({ onSnapshot(cb, err){ subs[c].push(cb); if (err) errs.push(err); if (listo) cb(foto(c)); return () => {}; }, orderBy(){ return this; },
+    doc(id){ id = id || 'n' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); return {
+      set: d => cambiar(e => { if (c === 'notas') e.notas = e.notas.filter(n => n.id !== id).concat([Object.assign({id}, d)]); else e.revision[id] = d; }),
+      merge: d => cambiar(e => { const x = Object.assign({}, e.revision[id] || {}, d); Object.keys(x).forEach(k => { if (x[k] === null) delete x[k]; }); e.revision[id] = x; }) }; } });
+  const qG = F.query(F.collection(fs, 'estaticos'), F.where('marca', '==', POOL()));
+  const ganadores = { onSnapshot: (cb, err) => F.onSnapshot(qG, x => cb(x.docs.map(d => Object.assign({id: d.id}, d.data()))), err || (() => {})),
+                      guardar: (id, c) => F.setDoc(F.doc(fs, 'estaticos', id), Object.assign({}, c, {actualizado: new Date().toISOString()}), {merge: true}) };
+  return { ganadores, collection: col, doc(p){ const [c, id] = p.split('/'); return col(c).doc(id); } };
+}
+function pintarSync(){
+  let cls = 'busy', txt = 'Conectando…';
+  if (S.dbMsg) { cls = 'off'; txt = S.dbMsg; } else if (S.saving) { txt = 'Guardando…'; } else if (S.dbOk) { cls = 'ok'; txt = 'Guardado'; }
+  const el = $('#sync'); el.className = 'sync ' + cls; el.title = txt; el.querySelector('span').textContent = txt;
+}
+function pintarProgreso(){
+  const ids = S.tab === 'formatos' ? S.F.map(f => 'fmt-' + f.id) : GUsub().map(g => 'gui-' + g.codigo), n = ids.length || 1;
+  const c = e => ids.filter(i => estadoDe(i) === e).length, a = c('aprobado'), k = c('cambios'), r = c('rechazado');
+  $('#prog').innerHTML = '<div class="pb" role="img" aria-label="' + a + ' aprobados, ' + k + ' con cambios, ' + r + ' rechazados"><i class="a" style="width:' + (100 * a / n) + '%"></i><i class="c" style="width:' + (100 * k / n) + '%"></i><i class="r" style="width:' + (100 * r / n) + '%"></i></div><span><b>' + a + '</b> de ' + ids.length + ' aprobados</span>';
+}
+
+/* ---------- lista ---------- */
+const verEnvio = () => !S.cli || S.rol === 'equipo';   // la marca «📨 Enviado por …» es para el equipo: dice qué aprobar primero
+function lista(){
+  const q = S.q.trim().toLowerCase();
+  if (S.tab === 'ganadores') return [];
+  if (S.tab === 'formatos') return S.F.filter(f => !q || (f.id + ' ' + f.nombre + ' ' + (f.grupo || '')).toLowerCase().includes(q));
+  const fl = S.filtro;
+  return GUsub().filter(g => (!fl.quien || g.quien === fl.quien) && (!fl.fmt || g.fmt === fl.fmt) && (!fl.angulo || g.angulo === fl.angulo) && (!fl.idea || g.idea === fl.idea) &&
+    (!fl.estado || estadoVista('gui-' + g.codigo) === (fl.estado === 'sin' ? '' : fl.estado)) &&
+    (!q || (g.num + ' ' + g.titulo + ' ' + g.quien + ' ' + nombreFmt(g.fmt) + ' ' + (g.angulo || '') + ' ' + (g.idea || '') + ' ' + (g.envia || '')).toLowerCase().includes(q)))
+    .map((g, i) => [g, i]).sort((a, b) => (verEnvio() ? (b[0].envia ? 1 : 0) - (a[0].envia ? 1 : 0) : 0) || a[1] - b[1]).map(x => x[0]);
+}
+function render(){
+  ['ganadores', 'formatos'].forEach(t => { const b = $('#t-' + t); b.classList.toggle('on', S.tab === t); b.setAttribute('aria-selected', S.tab === t); });
+  const enG = S.tab === 'guiones';
+  $('#t-guiones').classList.toggle('on', enG && S.sub !== 'prod'); $('#t-guiones').setAttribute('aria-selected', enG && S.sub !== 'prod');
+  const prod = S.GU.filter(NOSOLA), tp = $('#t-prod');
+  tp.hidden = !prod.length; tp.classList.toggle('on', enG && S.sub === 'prod'); tp.setAttribute('aria-selected', enG && S.sub === 'prod');
+  $('#n-prod').textContent = prod.length;
+  $('#n-formatos').textContent = S.F.length; $('#n-guiones').textContent = S.GU.length - prod.length;
+  $('#q').placeholder = S.tab === 'formatos' ? 'Buscar formato' : S.tab === 'ganadores' ? 'Buscar marca' : 'Buscar guion';
+  pintarFiltros(); pintarLista(); pintarProgreso(); pintarSync(); pintarMain();
+}
+function pintarFiltros(){
+  const box = $('#filtros'); if (box.contains(document.activeElement)) return;
+  if (S.tab !== 'guiones' || !S.GU.length) { box.hidden = true; box.innerHTML = ''; return; }
+  box.hidden = false;
+  const GS = GUsub();
+  const fl = S.filtro, qs = [...new Set(GS.map(g => g.quien))], fs = [...new Set(GS.map(g => g.fmt))];
+  const as = [...new Set(GS.map(g => g.angulo).filter(Boolean))], is = [...new Set(GS.filter(g => !fl.angulo || g.angulo === fl.angulo).map(g => g.idea).filter(Boolean))];
+  const n = e => GS.filter(g => estadoVista('gui-' + g.codigo) === e).length;
+  const fe = (v, cls, tit, cnt) => '<button class="fe' + (fl.estado === v ? ' on' : '') + '" data-fe="' + v + '" title="' + tit + '" aria-label="' + tit + '" aria-pressed="' + (fl.estado === v) + '">' + (cls === null ? '' : '<i class="st ' + cls + '"></i>') + cnt + '</button>';
+  box.innerHTML = '<div class="fil"><select id="fq" aria-label="Creadora"><option value="">Todas</option>' + qs.map(q => '<option' + (q === fl.quien ? ' selected' : '') + '>' + esc(q) + '</option>').join('') + '</select>' +
+    '<select id="ff" aria-label="Formato"><option value="">Todos los formatos</option>' + fs.map(f => '<option value="' + esc(f) + '"' + (f === fl.fmt ? ' selected' : '') + '>' + esc(nombreFmt(f)) + '</option>').join('') + '</select></div>' +
+    (as.length ? '<div class="fil"><select id="fa" aria-label="Ángulo"><option value="">Ángulo: todos</option>' + as.map(a => '<option' + (a === fl.angulo ? ' selected' : '') + '>' + esc(a) + '</option>').join('') + '</select>' +
+      '<select id="fi" aria-label="Idea"><option value="">Idea: todas</option>' + is.map(a => '<option' + (a === fl.idea ? ' selected' : '') + '>' + esc(a) + '</option>').join('') + '</select></div>' : '') +
+    '<div class="fest" role="group" aria-label="Estado">' + fe('', null, 'Todos', 'Todos') + (n('hecho') || fl.estado === 'hecho' ? fe('hecho', 'hecho', 'Con cambios hechos, para que los mires', n('hecho')) : '') + fe('sin', '', 'Sin revisar', n('')) + fe('aprobado', 'aprobado', 'Aprobados', n('aprobado')) + fe('cambios', 'cambios', 'Con cambios', n('cambios')) + fe('rechazado', 'rechazado', 'Rechazados', n('rechazado')) + '</div>';
+  $('#fq').onchange = e => { S.filtro.quien = e.target.value; pintarLista(); pintarNav(); };
+  $('#ff').onchange = e => { S.filtro.fmt = e.target.value; pintarLista(); pintarNav(); };
+  const fa = $('#fa'), fi = $('#fi');
+  if (fa) fa.onchange = e => { S.filtro.angulo = e.target.value; if (S.filtro.idea && !S.GU.some(g => g.idea === S.filtro.idea && (!S.filtro.angulo || g.angulo === S.filtro.angulo))) S.filtro.idea = ''; e.target.blur(); pintarFiltros(); pintarLista(); pintarNav(); };
+  if (fi) fi.onchange = e => { S.filtro.idea = e.target.value; pintarLista(); pintarNav(); };
+  box.querySelectorAll('[data-fe]').forEach(b => b.onclick = () => { S.filtro.estado = b.dataset.fe; b.blur(); pintarFiltros(); pintarLista(); pintarNav(); });
+}
+function pintarLista(){
+  if (S.tab === 'ganadores') return pintarListaGanadores();
+  const box = $('#lista'), items = lista(); let grupo = null, h = '';
+  if (S.tab === 'formatos') h = items.map(f => {
+    const cab = (f.grupo || 'Formatos') !== grupo ? '<div class="grp">' + esc(grupo = f.grupo || 'Formatos') + '</div>' : '', st = estadoVista('fmt-' + f.id);
+    return cab + '<button class="it' + (f.id === S.fmt ? ' on' : '') + '" data-id="' + esc(f.id) + '"' + (f.id === S.fmt ? ' aria-current="true"' : '') + '><span class="cod">' + esc(f.id) + '</span><span class="nm">' + esc(f.nombre) + '</span><i class="st ' + st + '" title="' + EST[st] + '"></i></button>';
+  }).join('');
+  else h = items.map(g => { const st = estadoVista('gui-' + g.codigo);
+    return '<button class="it' + (g.codigo === S.gui ? ' on' : '') + '" data-id="' + esc(g.codigo) + '"' + (g.codigo === S.gui ? ' aria-current="true"' : '') + '><span class="cod">' + esc(g.num) + '</span><span class="nm">' + esc(g.titulo) + (g.envia && verEnvio() ? '<em class="env" title="Lo mandó ' + esc(g.envia) + ': aprobalo primero">📨 ' + esc(g.envia) + '</em>' : '') + (g.sello && verEnvio() ? '<em class="env" title="' + esc(g.sello) + '">🔁</em>' : '') + '<small>' + esc(g.quien) + ' · ' + esc(nombreFmt(g.fmt)) + (g.idea ? ' <b>· ' + esc(g.idea) + '</b>' : '') + '</small></span><i class="st ' + st + '" title="' + EST[st] + '"></i></button>';
+  }).join('');
+  box.innerHTML = h || '<div class="nada">' + (S.q || S.filtro.quien || S.filtro.fmt || S.filtro.estado || S.filtro.angulo || S.filtro.idea ? 'Nada coincide con el filtro.' : S.tab === 'formatos' ? 'Todavía no hay formatos cargados.' : 'Los guiones aparecen acá cuando estén escritos.') + '</div>';
+  box.querySelectorAll('[data-id]').forEach(b => b.onclick = () => ir(S.tab, b.dataset.id));
+}
+function ir(tab, id){
+  S.tab = tab; if (tab === 'formatos') S.fmt = id; else S.gui = id;
+  S.gan = null; S.rtab = 'principal'; S.mas = false;
+  try { history.replaceState(null, '', '#' + (tab === 'formatos' ? (id || '') : 'g-' + (id || ''))); } catch (e) {}
+  $('#app').classList.remove('nav-open'); render();
+  const on = $('#lista .it.on'); if (on) on.scrollIntoView({block: 'nearest'});
+  if (!matchMedia('(min-width:1100px) and (min-height:640px)').matches) window.scrollTo({top: 0});
+}
+function vecinos(){ const ids = lista().map(x => S.tab === 'formatos' ? x.id : x.codigo), i = ids.indexOf(S.tab === 'formatos' ? S.fmt : S.gui); return {ids, i}; }
+function mover(d){ const {ids, i} = vecinos(); if (i >= 0 && ids[i + d]) ir(S.tab, ids[i + d]); }
+function pintarNav(){
+  const box = $('#nav'); if (!box) return; const {ids, i} = vecinos();
+  box.innerHTML = '<button id="prev" aria-label="Anterior"' + (i <= 0 ? ' disabled' : '') + '>‹</button><span>' + (i < 0 ? '–' : i + 1) + '/' + ids.length + '</span><button id="next" aria-label="Siguiente"' + (i < 0 || i >= ids.length - 1 ? ' disabled' : '') + '>›</button>';
+  $('#prev').onclick = () => mover(-1); $('#next').onclick = () => mover(1);
+}
+
+/* ---------- vista del ítem ---------- */
+function contexto(g){   // ángulo e idea del árbol de testeo de la marca
+  if (!g.angulo && !g.idea) return '';
+  const angs = [...new Set(S.GU.map(x => x.angulo).filter(Boolean))];
+  return '<div class="ctx">' + (g.angulo ? '<span class="chip ang" style="background:' + colorBloque(g.angulo, angs) + '"><i>Ángulo</i><b>' + esc(g.angulo) + '</b></span>' : '') +
+    (g.idea ? '<span class="chip"><i>Idea</i><b>' + esc(g.idea) + '</b>' + (sinNum(g.idea_dato) ? '<small>' + esc(g.idea_dato) + '</small>' : '') + '</span>' : '') + '</div>';
+}
+function notasGuion(g){   // lo que no es guion: va arriba de la tabla solo en «Con notas»
+  const fila = (k, v, cls) => v ? '<div><dt>' + k + '</dt><dd' + (cls ? ' class="' + cls + '"' : '') + '>' + esc(v) + '</dd></div>' : '';
+  const cre = S.cli && S.rol === 'creadora';   // a la creadora: sin VOC y solo el número, para buscarlo fácil en la app (Nacho, 11/11)
+  const d = fila('Por qué', g.fundamento) + (cre ? '' : fila('VOC', (g.voc || []).join(' · '))) + fila('Dónde', g.lugar) + fila('Número', cre ? g.num : '', 'mono') + (cre ? '' : fila('Código', g.codigo, 'mono'));
+  return d ? '<div class="mas-b suelto ng"><dl>' + d + '</dl></div>' : '';
+}
+function alOrigen(){ const g = guionAct(); if (!g) return; S.gan = g.ref; pintarRef(); pintarNuestro(true); }
+function pintarMain(){
+  const main = $('#main'); if (!S.cargado) return;
+  if (S.tab === 'ganadores') { main.classList.remove('sim'); return pintarGanadores(); }
+  const esF = S.tab === 'formatos', f = esF ? S.F.find(x => x.id === S.fmt) : null, g = esF ? null : guionAct();
+  if (esF && !f) { main.innerHTML = '<div class="vacio"><b>Elegí un formato</b>En la lista están los formatos con sus anuncios ganadores.</div>'; return; }
+  if (!esF && !g) { main.innerHTML = '<div class="vacio"><b>Todavía no hay guiones</b>Cada guion aparece acá con el video de su referencia y, al lado, la referencia y el nuestro tramo por tramo.</div>'; return; }
+  const fmt = esF ? f : (S.F.find(x => x.id === g.fmt) || {});
+  const gids = esF ? (f.ganadores || []).filter(id => S.G[id]) : [g.ref].concat((fmt.ganadores || []).filter(id => id !== g.ref)).filter(id => S.G[id]);
+  if (!S.gan || !gids.includes(S.gan)) S.gan = esF ? (f.principal && gids.includes(f.principal) ? f.principal : gids[0]) : gids[0];
+  S.gids = gids;
+  const st = estadoVista(itemId());
+  const acc = '<div class="h-act"><span class="pill ' + st + '" id="pill">' + EST[st] + '</span><div class="nav" id="nav"></div></div>';
+  let cab;
+  if (esF) {
+    const est = f.estructura || [], nombres = est.map(e => e.bloque);
+    cab = '<div class="h-row"><div class="h-id"><span class="code">' + esc(f.id) + '</span><h1>' + esc(f.nombre) + '</h1></div>' + acc + '</div>' +
+      '<div class="meta"><span><b>' + esc(f.grupo || '') + '</b></span>' + (f.chips || []).map(c => '<span>' + esc(c) + '</span>').join('') + '</div>' +
+      (f.que_es ? '<p class="desc" id="desc" title="Clic para leerlo entero">' + esc(f.que_es) + '</p>' : '') +
+      (est.length ? '<div class="tl una"><div class="tl-row"><div class="tl-bar">' + est.map(e => '<span style="flex-grow:' + (e.pct || 10) + ';background:' + colorBloque(e.bloque, nombres) + '" title="' + esc(e.bloque + (e.cuanto ? ' · ' + e.cuanto : '')) + '">' + esc(e.bloque) + '</span>').join('') + '</div></div></div>' : '');
+  } else {
+    cab = '<div class="h-row"><div class="h-id"><span class="code">' + esc(g.num) + '</span><h1>' + esc(g.titulo) + '</h1></div>' + acc + '</div>' +
+      '<div class="meta"><span><b>' + esc(g.quien) + '</b></span><span>' + (S.cli ? esc(fmt.nombre || g.fmt) : '<button class="lnk" id="irfmt" title="Ver el formato">' + esc(fmt.nombre || g.fmt) + '</button>') + '</span>' + (S.G[g.ref] ? '<span>Sale de <button class="lnk" id="irref" title="Ver la referencia de la que se calcó">' + esc(S.G[g.ref].marca || g.ref) + '</button></span>' : '') +
+      (g.envia && verEnvio() ? '<span class="pl env" title="Lo mandó ' + esc(g.envia) + ': aprobalo primero para que lo graben">📨 Enviado por ' + esc(g.envia) + '</span>' : '') +
+      (g.sello && verEnvio() ? '<span class="pl env" title="Rearmado con los dolores y las palabras del VOC, ya aprobado">' + esc(g.sello) + '</span>' : '') +
+      (g.broll ? '<span><a class="lnk" href="' + esc(g.broll) + '" target="_blank" rel="noopener" title="Carpeta con las capturas y fotos que pide este guion">📁 Tomas y capturas</a></span>' : '') +
+      '</div>' + contexto(g) + '<div class="tl" id="tl"></div>';
+  }
+  main.classList.toggle('sim', !esF && !S.det);
+  if (!esF && MUDANZA) cab = '<div class="aviso">La revisión de los guiones de Lagos se mudó a <a href="' + MUDANZA + '" target="_blank" rel="noopener">cima-creators.github.io/lagos/guiones</a>: ahí aprobás, editás y dejás notas, y lo ven Giuliano y las creadoras. Lo que marques acá ya no cuenta.</div>' + cab;
+  main.innerHTML = '<div class="head">' + cab + '</div>' +
+    '<div class="ws"><section class="pane p-vid" id="p-vid" aria-label="Referencia"></section><section class="pane p-tr" id="p-tr" aria-label="Guion de la referencia"></section><section class="pane p-our" id="p-our" aria-label="' + (esF ? 'Plantilla' : 'Nuestro guion') + '"></section></div>' +
+    '<div class="rev" id="rev"></div>';
+  const d = $('#desc'); if (d) d.onclick = () => d.classList.toggle('open');
+  const irf = $('#irfmt'); if (irf) irf.onclick = () => ir('formatos', g.fmt);
+  const irr = $('#irref'); if (irr) irr.onclick = () => alOrigen();
+  pintarNav(); pintarRef(); pintarNuestro(true); montarRevision();
+}
+
+/* ---------- referencia: video y su guion ---------- */
+const verOrig = () => S.orig && S.tab !== 'guiones';   // en Guiones la referencia va solo en castellano
+const enlazado = () => { const g = S.tab === 'guiones' ? guionAct() : null; return !!(g && g.ref === S.gan); };
+const unido = () => enlazado() && (guionAct().filas || []).some(r => r.ref);   // la referencia y el nuestro van en una sola tabla, tramo por tramo
+function segHTML(g, s, cls){
+  const ps = (g.texto_en_pantalla || []).filter(p => p.inicio >= s.inicio - 0.3 && p.inicio < s.fin).map(p => '<span>' + esc(p.es || p.texto) + '</span>').join('');
+  const orig = (s.original && s.original !== s.es) ? '<div class="or">' + esc(s.original) + '</div>' : '';
+  return '<div class="seg' + (cls || '') + '" data-t="' + s.inicio + '" data-fin="' + s.fin + '"><div class="t">' + fmtT(s.inicio) + '</div><div><div class="es">' + esc(s.es || s.original) + '</div>' + orig + (ps ? '<div class="ps">' + ps + '</div>' : '') + '</div></div>';
+}
+function botonesRef(g, largo){
+  const hayOrig = S.tab !== 'guiones' && (g.transcripcion || []).some(s => s.original && s.original !== s.es), hayPant = (g.texto_en_pantalla || []).length > 0;
+  return (hayOrig ? '<button class="tg' + (S.orig ? ' on' : '') + '" id="tg-orig" aria-pressed="' + S.orig + '" title="La frase en el idioma del anuncio">' + (largo ? 'Idioma original' : 'Original') + '</button>' : '') +
+         (hayPant ? '<button class="tg' + (S.pant ? ' on' : '') + '" id="tg-pant" aria-pressed="' + S.pant + '" title="El texto que aparece escrito en el video">' + (largo ? 'Texto en pantalla' : 'Pantalla') + '</button>' : '');
+}
+function ligarBotonesRef(pintar){
+  const to = $('#tg-orig'); if (to) to.onclick = () => { S.orig = !S.orig; setPref('orig', S.orig); pintar(); };
+  const tp = $('#tg-pant'); if (tp) tp.onclick = () => { S.pant = !S.pant; setPref('pant', S.pant); pintar(); };
+}
+function porQueHTML(g){
+  const como = g.como || {}, prod = g.producto || {};
+  const fila = (k, v) => (v !== undefined && v !== null && v !== '' && v !== 'null') ? '<div><dt>' + k + '</dt><dd>' + esc(v) + '</dd></div>' : '';
+  const entra = [prod.segundo_en_que_aparece != null ? 'aparece en el segundo ' + prod.segundo_en_que_aparece : '', prod.segundo_en_que_se_nombra != null ? 'se nombra en el ' + prod.segundo_en_que_se_nombra : '', prod.como_entra].filter(x => x && x !== 'null').join(' · ');
+  const ficha = fila('Quién aparece', como.quien_aparece) + fila('Lugar', como.lugar) + fila('Encuadre', como.encuadre) + fila('Props', como.props) + fila('Gráficos', como.elementos_graficos) + fila('Subtítulos', como.subtitulos) + fila('Música', como.musica) + fila('Cortes', como.cortes_aprox) + fila('El producto', entra);
+  return (g.por_que ? '<p>' + esc(g.por_que) + '</p>' : '') + (ficha ? '<dl>' + ficha + '</dl>' : '');
+}
+function pintarRef(){
+  const g = S.G[S.gan] || {}, gids = S.gids, gui = S.tab === 'guiones' ? guionAct() : null, fmt = S.tab === 'formatos' ? S.F.find(x => x.id === S.fmt) : null, uno = unido();
+  const sinRef = S.cli && !!gui && !S.G[gui.ref];   // en la versión del cliente no van las referencias de otras marcas de CIMA
+  const ws = $('.ws'); if (ws) ws.classList.toggle('uno', uno || sinRef);
+  const v = g.video ? '<video id="vid" src="' + esc(g.video) + '" controls playsinline preload="metadata"></video>'
+                    : '<div class="ph">' + (sinRef ? 'La referencia de este guion es de otra marca y no se muestra.' : 'Este anuncio no está cargado en la Sala.') + (g.link ? '<br><a href="' + esc(g.link) + '" target="_blank" rel="noopener">Verlo en el original</a>' : '') + '</div>';
+  const sub = x => esc([sinNum(x.dato), x.dur ? fmtT(x.dur) : ''].filter(Boolean).join(' · '));
+  const sello = id => gui && gui.ref && id === gui.ref ? '<em>De acá sale el guion</em>' : (fmt && fmt.principal === id && gids.length > 1 ? '<em class="pri">Principal del formato</em>' : '');
+  $('#p-vid').innerHTML = '<div class="pane-h"><span class="pane-t">Referencia</span><span class="pane-x">' + (gids.length > 1 ? '<span class="num">' + (gids.indexOf(S.gan) + 1) + ' de ' + gids.length + '</span>' : '') +
+    (g.link ? '<a class="xlink" href="' + esc(g.link) + '" target="_blank" rel="noopener">Original ↗</a>' : '') + '</span></div>' +
+    '<div class="stage' + (g.horizontal ? ' h' : '') + '">' + v + (g.video ? '<button class="zoomv" id="zoomv" aria-label="Agrandar o achicar el video" title="Agrandar o achicar el video"><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M9.5 2.5h4v4M6.5 13.5h-4v-4M13.5 2.5 9 7M2.5 13.5 7 9" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>' : '') + '</div>' +
+    '<div class="refs scroll"' + (sinRef ? ' hidden' : '') + '>' + (gids.length > 1 ? gids.map(id => { const x = S.G[id] || {}; return '<button class="ref' + (id === S.gan ? ' on' : '') + '" data-gan="' + esc(id) + '" aria-pressed="' + (id === S.gan) + '"><i></i><span><b>' + esc(x.marca || id) + '</b><small>' + sub(x) + '</small>' + sello(id) + '</span></button>'; }).join('')
+                                                   : '<div class="ref solo"><span><b>' + esc(g.marca || S.gan || 'Sin referencia') + '</b><small>' + sub(g) + '</small>' + sello(S.gan) + '</span></div>') + '</div>';
+
+  if (uno || sinRef) $('#p-tr').innerHTML = '';
+  else {
+    const bl = g.bloques || [], nombres = bl.map(b => b.bloque); let ult = null;
+    const segs = (g.transcripcion || []).map(s => {
+      const b = bl.find(b => s.inicio >= b.inicio - 0.3 && s.inicio < b.fin); let cab = '';
+      if (b && b !== ult) { cab = '<div class="blk"><i style="background:' + colorBloque(b.bloque, nombres) + '"></i>' + esc(b.bloque) + '<span>' + fmtT(b.inicio) + '–' + fmtT(b.fin) + '</span></div>'; ult = b; }
+      return cab + segHTML(g, s);
+    }).join('');
+    const pq = porQueHTML(g);
+    $('#p-tr').innerHTML = '<div class="pane-h"><span class="pane-t">Guion de la referencia</span><span class="pane-x">' + botonesRef(g) + '</span></div>' +
+      '<div class="pane-b scroll' + (verOrig() ? '' : ' no-orig') + (S.pant ? '' : ' no-pant') + '" id="trans">' + (segs || '<div class="nada">Este anuncio no tiene voz: el texto va en pantalla.</div>') + '</div>' +
+      (pq ? '<details class="pane-f mas" id="mas"' + (S.mas ? ' open' : '') + '><summary>Por qué funciona y cómo se grabó</summary><div class="mas-b scroll">' + pq + '</div></details>' : '');
+    ligarBotonesRef(pintarRef);
+    const mas = $('#mas'); if (mas) mas.ontoggle = () => { S.mas = mas.open; };
+    $$('#trans .seg[data-t]').forEach(s => s.onclick = () => { irA(Number(s.dataset.t)); marcarNuestras(Number(s.dataset.t), Number(s.dataset.fin)); });
+  }
+  $$('#p-vid [data-gan]').forEach(b => b.onclick = () => { S.gan = b.dataset.gan; pintarRef(); pintarNuestro(true); });
+  const vid = $('#vid'); if (vid) vid.ontimeupdate = alTiempo;
+  const zv = $('#zoomv'); if (zv) zv.onclick = e => { e.stopPropagation(); const pv = $('#p-vid'); if (pv.classList.toggle('gr')) pv.scrollIntoView({block: 'start'}); videoChico(); };
+  if (vid) { const st = vid.closest('.stage'); vid.onplay = vid.onpause = () => st.classList.toggle('pl', !vid.paused); st.onclick = () => { if ($('#p-vid').classList.contains('mini')) { if (vid.paused) vid.play().catch(() => {}); else vid.pause(); } }; }
+  videoChico();
+}
+const CEL = matchMedia('(max-width:719.98px)');
+function videoChico(){   // en celular el video va chico y acompaña la lectura: sin controles nativos, se toca para reproducir o pausar
+  const pv = $('#p-vid'), v = $('#vid'); if (!pv) return;
+  const chico = CEL.matches && !pv.classList.contains('gr'); pv.classList.toggle('mini', chico); if (v) v.controls = !chico;
+}
+CEL.addEventListener('change', videoChico);
+function irA(t){ const v = $('#vid'); if (v) { v.currentTime = t; v.play().catch(() => {}); } }
+function aLaVista(box, el, arriba){
+  if (!box || !el || box.scrollHeight <= box.clientHeight + 4) return;
+  const r = el.getBoundingClientRect(), b = box.getBoundingClientRect(), tope = arriba || 36;
+  if (r.top < b.top + tope || r.bottom > b.bottom - 12) box.scrollTop += r.top - b.top - tope - 28;
+}
+function alTiempo(){
+  const v = $('#vid'); if (!v) return; const t = v.currentTime, uno = unido(), tr = uno ? $('#our-b') : $('#trans'); let act = null;
+  if (tr) tr.querySelectorAll('.seg[data-t]').forEach(s => { const on = t >= Number(s.dataset.t) && t < Number(s.dataset.fin); s.classList.toggle('act', on && !(v.paused && t === 0)); if (on && !act) act = s; });
+  if (uno) {   // una sola tabla: se marca el tramo entero y la tabla lo sigue
+    if (!tr) return; let banda = null;
+    const vivo = !(v.paused && t === 0);   // antes de darle play no se marca nada
+    const bs = [...tr.querySelectorAll('.bd[data-a]')];   // el tramo activo es el último que ya empezó: entre dos tramos no queda un hueco sin marcar
+    if (vivo) bs.forEach(b => { if (Number(b.dataset.a) <= t + 0.05) banda = b; });
+    bs.forEach(b => b.classList.toggle('now', b === banda));
+    if (banda && !v.paused && !tr.contains(document.activeElement)) aLaVista(tr, banda, 72);
+    return;
+  }
+  if (act && !v.paused) aLaVista(tr, act);
+  if (!enlazado()) return;
+  let fila = null; $$('#p-our .fila[data-a]').forEach(r => { const on = t >= Number(r.dataset.a) && t < Number(r.dataset.b); r.classList.toggle('now', on); if (on) fila = r; });
+  const box = $('#our-b'); if (fila && !v.paused && box && !box.contains(document.activeElement)) aLaVista(box, fila);
+}
+function marcarNuestras(a, b){   // al tocar una frase de la referencia, se marcan las filas nuestras que la calcan
+  if (!enlazado() || unido()) return; let primera = null;
+  $$('#p-our .fila[data-a]').forEach(r => { const on = Number(r.dataset.a) < b && Number(r.dataset.b) > a; r.classList.toggle('lk', on); if (on && !primera) primera = r; });
+  if (primera) aLaVista($('#our-b'), primera);
+  clearTimeout(marcarNuestras.t); marcarNuestras.t = setTimeout(() => $$('#p-our .fila.lk').forEach(r => r.classList.remove('lk')), 2400);
+}
+function marcarRef(a, b, ver){   // al pasar por una fila nuestra, se marca el tramo de la referencia que calca
+  let primera = null;
+  $$('#trans .seg[data-t]').forEach(s => { const on = a != null && Number(s.dataset.t) < b && Number(s.dataset.fin) > a; s.classList.toggle('lk', on); if (on && !primera) primera = s; });
+  if (ver && primera) aLaVista($('#trans'), primera);
+}
+function bandas(ref, raw){   // une cada fila nuestra con el tramo de la referencia que calca; lo que sobra de un lado queda a la vista
+  const segs = (ref.transcripcion || []).map(s => Object.assign({}, s, {f: Math.max(s.fin, s.inicio + .5)}));
+  const solape = (s, rf) => Math.min(s.f, rf[1]) - Math.max(s.inicio, rf[0]);
+  const dueno = segs.map(s => { let best = -1, bo = 0; raw.forEach((r, i) => { if (!r.ref) return; const o = solape(s, r.ref); if (o > bo + 1e-9) { bo = o; best = i; } }); return best; });
+  // una fila sin frase propia comparte el tramo con la fila vecina que se quedó con esa frase (una frase de la referencia dicha en dos filas nuestras)
+  const grupo = raw.map((r, i) => { if (!r.ref) return -1; if (dueno.includes(i)) return i; let best = -1, bo = 0; segs.forEach((s, k) => { const o = solape(s, r.ref); if (dueno[k] >= 0 && o > bo + 1e-9) { bo = o; best = dueno[k]; } }); return best >= 0 ? best : -2 - i; });
+  const B = []; let cur = null;
+  raw.forEach((r, i) => {
+    if (!r.ref) { B.push({filas: [i], segs: [], propia: true}); cur = null; return; }
+    if (cur && cur.g === grupo[i]) { cur.filas.push(i); cur.a = Math.min(cur.a, r.ref[0]); cur.b = Math.max(cur.b, r.ref[1]); return; }
+    cur = {g: grupo[i], filas: [i], segs: [], a: r.ref[0], b: r.ref[1]}; B.push(cur);
+  });
+  const usado = new Set();
+  B.forEach(x => { if (x.propia || x.g < 0) return; const mios = segs.filter((s, k) => dueno[k] === x.g); if (usado.has(x.g)) x.rep = mios; else { usado.add(x.g); x.segs = mios; } });
+  segs.forEach((s, k) => { if (dueno[k] >= 0) return; const pos = B.findIndex(x => !x.propia && x.a > s.inicio), n = {filas: [], segs: [s], a: s.inicio, b: s.fin, hueco: true}; if (pos < 0) B.push(n); else B.splice(pos, 0, n); });
+  return B;
+}
+
+/* ---------- nuestro guion / plantilla, editable ---------- */
+function filasBase(){
+  if (S.tab === 'formatos') { const f = S.F.find(x => x.id === S.fmt); return (f && f.plantilla) || []; }
+  const g = guionAct(); return (g && g.filas) || [];
+}
+function normal(r){ return {etapa: r.etapa || '', dice: r.dice || '', texto: r.texto || '', filma: r.filma != null ? r.filma : (r.ve || '')}; }
+function vigentes(){   // los cambios guardados valen solo si se hicieron sobre esta versión del guion
+  const raw = filasBase(), base = raw.map(normal), rv = S.rev[itemId()] || {};
+  const ok = !!rv.filas && (rv.sobre ? rv.sobre === hash(base) : rv.filas.length === base.length);
+  const ed = ok ? rv.filas.map(normal) : null;
+  return {raw, base, ed, viejo: !!rv.filas && !ok, filas: ed || base};
+}
+function pintarNuestro(forzar){
+  const box = $('#p-our'); if (!box) return;
+  const foco = document.activeElement;
+  if (!forzar && box.contains(foco) && (foco.isContentEditable || foco.tagName === 'TEXTAREA')) return;
+  const esF = S.tab === 'formatos', g = esF ? null : guionAct(), uno = unido();
+  const f = S.F.find(x => x.id === (esF ? S.fmt : (g || {}).fmt)) || {};
+  if (S.rtab === 'porque' && !uno) S.rtab = 'principal';
+  const prev = $('#our-b') ? $('#our-b').scrollTop : 0;
+  let cuerpo = '', pie = '', extra = '', clase = '', modo = '';
+  if (S.rtab === 'estructura') {
+    const est = f.estructura || [], nombres = est.map(e => e.bloque);
+    cuerpo = est.map(e => '<div class="est-r"><div class="n"><i style="background:' + colorBloque(e.bloque, nombres) + '"></i><span>' + esc(e.bloque) + (e.cuanto ? '<small>' + esc(e.cuanto) + '</small>' : '') + '</span></div><div><p>' + esc(e.que_va) + '</p>' + (e.como_se_ve ? '<p class="ve">' + esc(e.como_se_ve) + '</p>' : '') + '</div></div>').join('') || '<div class="nada">Este formato todavía no tiene la estructura cargada.</div>';
+    extra = '<span>Sale de ' + (f.ganadores || []).length + ' ganador' + ((f.ganadores || []).length === 1 ? '' : 'es') + '</span>';
+  } else if (S.rtab === 'reglas') {
+    const ul = (xs, cls) => '<ul' + (cls ? ' class="' + cls + '"' : '') + '>' + xs.map(r => '<li>' + esc(r) + '</li>').join('') + '</ul>';
+    cuerpo = '<div class="rules">' + ((f.reglas || []).length ? '<div><h3>Reglas del formato</h3>' + ul(f.reglas) + '</div>' : '') + ((f.errores || []).length ? '<div class="no"><h3>Lo que lo rompe</h3>' + ul(f.errores) + '</div>' : '') + (f.cuando ? '<div><h3>Cuándo usarlo</h3><p>' + esc(f.cuando) + '</p></div>' : '') + '</div>';
+  } else if (S.rtab === 'porque') {
+    cuerpo = '<div class="mas-b suelto">' + (porQueHTML(S.G[g.ref] || {}) || '<p>Esta referencia no tiene la ficha cargada.</p>') + '</div>';
+  } else {
+    const {raw, base, ed, viejo, filas} = vigentes(), ce = S.db && esRevisor() ? 'true' : 'false', enl = enlazado(), calc = raw.filter(r => r.ref).length;
+    const cel = (i, k, val, cls, ph) => '<div class="ed ' + cls + '" contenteditable="' + ce + '" data-i="' + i + '" data-k="' + k + '" data-ph="' + esc(ph) + '">' + esc(val) + '</div>';
+    const PD = esF ? {} : pedidos(base), HC = esRevisor() ? hechosDe(itemId()) : {}, CL = !esF && esRevisor() && S.cli ? notasDe('cliente', base) : {};
+    const filaHTML = (r, i) => {
+      const o = base[i] || {}, rf = (raw[i] || {}).ref, m = k => (ed && esRevisor() && (r[k] || '') !== (o[k] || '')) ? ' mod' : '', p = r.etapa.split(' · ');
+      const chip = esF ? '' : rf ? '<button class="tc" data-ir="' + rf[0] + '"' + (enl ? '' : ' disabled') + ' title="' + (enl ? 'Ver este tramo en la referencia' : 'Calca la referencia principal de este guion') + '">' + fmtT(rf[0]) + '</button>' : (calc && !uno ? '<span class="tc own" title="Esta fila no está en la referencia">propia</span>' : '');
+      const antes = (!esF && i === 0 && g.hook_antes) ? '<div class="antes"><b>Hook aprobado antes:</b> ' + esc(g.hook_antes) + '<span class="porq"> Cambió para abrir como abre la referencia.</span></div>' : '';
+      const nb = (esF || !S.db || !(esRevisor() || esMarca())) ? '' : '<button class="nb" data-nota="' + i + '"' + (PD[i] ? ' hidden' : '') + ' title="' + (esMarca() ? 'Dejar una nota sobre esta parte' : 'Dejar una nota para que Claude cambie esta parte') + '">+ Nota</button>';
+      return '<div class="fila"' + (rf ? ' data-a="' + rf[0] + '" data-b="' + rf[1] + '"' : '') + '><div class="et"><b>' + esc(p[0]) + '</b>' + (p.length > 1 ? '<small>' + esc(p.slice(1).join(' · ')) + '</small>' : '') + chip + nb + '</div>' +
+        '<div class="di">' + cel(i, 'dice', r.dice, 'dicho' + m('dice'), 'Sin texto') + antes + (HC[i] ? hechoHTML(HC[i]) : '') + (CL[i] ? '<div class="pd cl"><span>Nota de ' + esc(CFG.cliente) + '</span><p>' + esc(CL[i]) + '</p></div>' : '') + (PD[i] ? pedidoHTML(i, PD[i]) : '') + '</div>' +
+        '<div class="ve">' + (esF ? '' : cel(i, 'texto', r.texto, 'placa' + m('texto'), '+ texto en pantalla')) + cel(i, 'filma', r.filma, 'filma' + m('filma'), 'Sin indicación') + '</div></div>';
+    };
+    if (uno) {   // una sola tabla: a la izquierda el tramo de la referencia, a la derecha la fila nuestra que lo calca
+      const ref = S.G[g.ref] || {}, bl = ref.bloques || [], nombres = bl.map(b => b.bloque), B = bandas(ref, raw);
+      const blq = t => bl.find(b => t >= b.inicio - 0.3 && t < b.fin) || null;
+      B.forEach(x => { x.blq = x.propia ? null : blq(x.a); });
+      B.forEach((x, i) => { if (!x.blq) { const a = B.slice(0, i).reverse().find(y => y.blq), d = B.slice(i + 1).find(y => y.blq); x.blq = (a || d || {}).blq || null; } });
+      const nuestros = b => B.filter(x => x.blq === b).reduce((n, x) => n + x.filas.reduce((m, i) => m + palabras(filas[i].dice), 0), 0) / RIT;
+      const pant = (a, b) => (ref.texto_en_pantalla || []).filter(p => p.inicio >= a - 0.3 && p.inicio < b).map(p => '<span>' + esc(p.es || p.texto) + '</span>').join('');
+      let ult = null;
+      cuerpo = '<div class="cmp"><div class="c-h"><div>Referencia · <b>' + esc(ref.marca || '') + '</b></div><div>Nuestro guion · <b>' + esc(g.quien) + '</b></div></div>' + B.map(x => {
+        let cab = '';
+        if (x.blq && x.blq !== ult) { ult = x.blq; const d = x.blq.fin - x.blq.inicio, n = nuestros(x.blq);
+          cab = '<div class="sec"><i style="background:' + colorBloque(x.blq.bloque, nombres) + '"></i>' + esc(x.blq.bloque) + '<span>' + fmtT(x.blq.inicio) + '–' + fmtT(x.blq.fin) + '</span><em' + (n > d * 1.3 + 2 ? ' class="largo" title="El nuestro dura más de 1,3 veces este bloque"' : '') + '>Referencia ' + Math.round(d) + ' s · Nuestro ' + Math.round(n) + ' s</em></div>'; }
+        const ps = x.propia ? '' : pant(x.a, x.b);
+        const izq = x.propia ? '<div class="vac"><b>No está en la referencia</b>' + (/pide/i.test(filas[x.filas[0]].etapa) ? 'La pide la marca.' : 'La sumamos nosotros.') + '</div>'
+                  : x.segs.length ? x.segs.map(s => segHTML(ref, s)).join('')
+                  : x.rep ? x.rep.map(s => segHTML(ref, s, ' rep')).join('')
+                  : '<div class="vac"><b>Sin voz · ' + fmtT(x.a) + '–' + fmtT(x.b) + '</b>' + (ps ? 'En pantalla:<div class="ps">' + ps + '</div>' : 'Solo imagen.') + '</div>';
+        const der = x.filas.length ? x.filas.map(i => filaHTML(filas[i], i)).join('') : '<div class="vac warn"><b>Sin calcar</b>Este tramo de la referencia no está en el nuestro.</div>';
+        return cab + '<div class="bd' + (x.propia ? ' propia' : '') + (x.hueco ? ' hueco' : '') + '"' + (x.propia ? '' : ' data-a="' + x.a + '" data-b="' + x.b + '"') + '><div class="bd-l">' + izq + '</div><div class="bd-r">' + der + '</div></div>';
+      }).join('') + '</div>';
+      clase = ' no-orig' + (S.pant ? '' : ' no-pant'); extra = botonesRef(ref, true);
+    } else cuerpo = '<div class="g"><div class="g-h"><div>' + (esF ? 'Fila' : 'Momento') + '</div><div>' + (esF ? 'Qué se dice' : 'Lo que dice') + '</div><div class="h3">' + (esF ? 'Qué se ve' : 'Pantalla y toma') + '</div></div>' + filas.map(filaHTML).join('') + '</div>';
+    if (!esF) { const pal = filas.reduce((n, r) => n + palabras(r.dice), 0);
+      modo = '<span class="modo" role="group" aria-label="Cuánto mostrar"><button class="tg' + (S.det ? '' : ' on') + '" data-md="s" aria-pressed="' + !S.det + '" title="Solo lo que se dice, de cada lado">Solo guion</button>' +
+        '<button class="tg' + (S.det ? ' on' : '') + '" data-md="n" aria-pressed="' + S.det + '" title="Suma el texto en pantalla, qué se filma, las citas del VOC y el porqué del guion">Con notas</button></span>';
+      if (S.det) cuerpo = notasGuion(g) + cuerpo;
+      extra += '<span class="num">' + pal + ' palabras · ' + Math.round(pal / RIT) + ' s</span>' + (calc ? '<span class="tagc" title="Filas que calcan un tramo de la referencia">Calco ' + calc + '/' + raw.length + '</span>' : '<span class="tagc warn" title="Todavía no está calcado de su referencia">Sin calcar</span>'); }
+    pie = ed ? '<span class="chg"><i></i>Tiene cambios tuyos, marcados en amarillo.</span><button class="linkbtn" id="volver">Volver al original</button>'
+        : '<span>' + (viejo ? 'Este guion se reescribió después de tus cambios. Se muestra la versión nueva.' : S.db ? (esF ? 'Hacé clic en cualquier texto para cambiarlo. Se guarda solo.' : 'Clic en un texto para cambiarlo, o «+ Nota» para pedirme el cambio de esa parte. Se guarda solo.') : esc(S.dbMsg || 'Conectando…')) + '</span>';
+    if (!esF && !enl && S.G[g.ref]) pie = '<span>Estás viendo otra referencia del formato. Este guion sale de <b>' + esc(S.G[g.ref].marca || g.ref) + '</b>.</span><button class="linkbtn" id="alorigen">Volver a esa</button>' + (ed ? pie : '');
+  }
+  const tabs = [['principal', esF ? 'Plantilla' : uno ? 'Lado a lado' : 'Nuestro guion'], ['estructura', 'Estructura'], ['reglas', 'Reglas']].concat(uno ? [['porque', 'Por qué funciona']] : []).filter(t => !S.cli || t[0] === 'principal' || t[0] === 'porque');
+  if (S.cli && !esRevisor()) pie = '';
+  box.innerHTML = '<div class="pane-h"><div class="stabs" role="tablist">' + tabs.map(([k, n]) => '<button role="tab" class="' + (S.rtab === k ? 'on' : '') + '" aria-selected="' + (S.rtab === k) + '" data-rt="' + k + '">' + n + '</button>').join('') + '</div><span class="pane-x">' + extra + '</span>' + modo + '</div>' +
+    '<div class="pane-b scroll' + clase + '" id="our-b">' + cuerpo + '</div>' + (pie ? '<div class="pane-f">' + pie + '</div>' : '');
+  if (!forzar) $('#our-b').scrollTop = prev;
+  box.querySelectorAll('[data-rt]').forEach(b => b.onclick = () => { S.rtab = b.dataset.rt; pintarNuestro(true); });
+  box.querySelectorAll('[data-md]').forEach(b => b.onclick = () => ponerModo(b.dataset.md === 'n'));
+  box.querySelectorAll('textarea[data-pd]').forEach(ta => ligarPedido(ta, ta.closest('.fila').querySelector('.nb')));
+  box.querySelectorAll('[data-nota]').forEach(b => b.onclick = () => { const di = b.closest('.fila').querySelector('.di'); b.hidden = true; di.insertAdjacentHTML('beforeend', pedidoHTML(b.dataset.nota, '')); const ta = di.querySelector('textarea[data-pd]'); ligarPedido(ta, b); ta.focus(); });
+  box.querySelectorAll('[contenteditable="true"]').forEach(el => { el.onblur = guardarCelda; el.onpaste = pegarPlano; });
+  box.querySelectorAll('.tc[data-ir]').forEach(b => b.onclick = () => { const tr = b.closest('.fila'); irA(Number(b.dataset.ir)); if (!uno) marcarRef(Number(tr.dataset.a), Number(tr.dataset.b), true); });
+  const ob = $('#our-b');
+  if (uno) { ligarBotonesRef(() => { const y = ob.scrollTop; pintarNuestro(true); $('#our-b').scrollTop = y; }); ob.querySelectorAll('.seg[data-t]').forEach(s => s.onclick = () => irA(Number(s.dataset.t))); ob.onmouseover = ob.onmouseleave = null; alTiempo(); }
+  else { ob.onmouseover = e => { const tr = e.target.closest && e.target.closest('.fila[data-a]'); if (tr && enlazado()) marcarRef(Number(tr.dataset.a), Number(tr.dataset.b), false); }; ob.onmouseleave = () => marcarRef(null); }
+  const v = $('#volver'); if (v) v.onclick = () => escribir(itemId(), {filas: null, sobre: null}).then(() => toast('Volvió al original'));
+  const ao = $('#alorigen'); if (ao) ao.onclick = alOrigen;
+  pintarTiempos();
+}
+/* nota por parte del guion: la deja Nacho, la lee Claude y cambia esa fila */
+const campoNota = () => esMarca() ? 'cliente' : 'pedidos', sobreDe = c => c === 'cliente' ? 'csobre' : 'psobre';
+function notasDe(campo, base){ const rv = S.rev[itemId()] || {}; return rv[campo] && rv[sobreDe(campo)] === hash(base) ? rv[campo] : {}; }
+function pedidos(base){ return notasDe(campoNota(), base); }
+function hechoHTML(h){
+  let f = ''; try { f = h.fecha ? new Date(h.fecha).toLocaleDateString('es-AR', {day: 'numeric', month: 'short'}) : ''; } catch (e) {}
+  return '<details class="hc2"><summary><i>i</i>Cambio hecho' + (f ? ' · ' + esc(f) : '') + '</summary><div class="hc">' +
+    (h.nota && h.nota !== h.que ? '<p><i>Tu nota:</i> ' + esc(h.nota) + '</p>' : '') + (h.que ? '<p>' + esc(h.que) + '</p>' : '') + (h.antes ? '<p><i>Antes:</i> ' + esc(h.antes) + '</p>' : '') + '</div></details>';
+}
+function pedidoHTML(i, t){ return '<label class="pd' + (esMarca() ? ' cl' : '') + '"><span>' + (esMarca() ? 'Tu nota sobre esta parte' : 'Nota para cambiar esta parte') + '</span><textarea data-pd="' + i + '" rows="1" placeholder="' + (esMarca() ? '¿Qué cambiarías acá?' : '¿Qué querés que cambie acá?') + '">' + esc(t) + '</textarea></label>'; }
+function ligarPedido(ta, boton){
+  const alto = () => { if (!ta.scrollHeight) return; ta.style.height = 'auto'; ta.style.height = ta.scrollHeight + 'px'; };
+  ta.oninput = alto; alto();
+  ta.onkeydown = e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); ta.blur(); } else if (e.key === 'Escape') { ta.value = ta.defaultValue; ta.blur(); } };
+  ta.onblur = () => guardarPedido(ta, boton);
+}
+async function guardarPedido(ta, boton){
+  const i = ta.dataset.pd, val = ta.value.replace(/\s+/g, ' ').trim(), id = itemId(), {base} = vigentes(), act = pedidos(base);
+  if ((act[i] || '') === val) { if (!val) { ta.onblur = null; const pd = ta.closest('.pd'); if (pd) pd.remove(); if (boton) boton.hidden = false; } return; }
+  const nuevo = Object.assign({}, act); if (val) nuevo[i] = val; else delete nuevo[i];
+  const campo = campoNota(), hay = Object.keys(nuevo).length > 0, cambios = {[campo]: hay ? nuevo : null, [sobreDe(campo)]: hay ? hash(base) : null};
+  if (campo === 'pedidos' && val && !['cambios', 'rechazado'].includes(estadoDe(id))) cambios.estado = 'cambios';   // una nota del equipo es un pedido de cambio
+  await escribir(id, cambios); toast(val ? 'Nota guardada' : 'Nota borrada');
+}
+function ponerModo(det){   // «Solo guion» o «Con notas»: la fila que se estaba leyendo queda en el mismo lugar
+  if (S.det === det) return;
+  const ob = $('#our-b'), interno = ob.scrollHeight > ob.clientHeight + 4, pv = $('#p-vid');
+  const linea = interno ? ob.getBoundingClientRect().top + 70 : (pv && getComputedStyle(pv).position === 'sticky' ? Math.max(0, pv.getBoundingClientRect().bottom) : 0) + 10;
+  const k = [...ob.querySelectorAll('.fila')].findIndex(el => el.getBoundingClientRect().bottom > linea), y0 = k > 0 ? $$('#our-b .fila')[k].getBoundingClientRect().top : 0;
+  S.det = det; setPref('det', det); $('#main').classList.toggle('sim', !det); pintarNuestro(true);
+  const el = $$('#our-b .fila')[k]; if (!el || k <= 0) return;
+  const d = el.getBoundingClientRect().top - y0; if (interno) $('#our-b').scrollTop += d; else window.scrollBy(0, d);
+}
+function pegarPlano(e){ e.preventDefault(); const t = (e.clipboardData || window.clipboardData).getData('text/plain'); document.execCommand('insertText', false, t.replace(/\s*\n+\s*/g, ' ')); }
+async function guardarCelda(e){
+  const el = e.target, i = Number(el.dataset.i), k = el.dataset.k, val = el.innerText.replace(/\s+/g, ' ').trim();
+  const id = itemId(), {base, filas: act} = vigentes(), filas = JSON.parse(JSON.stringify(act));
+  if (!filas[i] || (filas[i][k] || '') === val) return;
+  filas[i][k] = val;
+  const igual = filas.every((r, j) => CAMPOS.every(c => (r[c] || '') === ((base[j] || {})[c] || '')));
+  await escribir(id, igual ? {filas: null, sobre: null} : {filas, sobre: hash(base)});
+  toast(igual ? 'Volvió al original' : 'Cambio guardado');
+}
+function pintarTiempos(){   // dos líneas de tiempo a la misma escala: la referencia por bloques y el nuestro por filas
+  const box = $('#tl'), g = S.tab === 'guiones' ? guionAct() : null; if (!box || !g) return;
+  const ref = S.G[g.ref] || {}, bl = ref.bloques || [], nombres = bl.map(b => b.bloque), {raw, filas} = vigentes();
+  const rd = Number(ref.dur) || (bl.length ? bl[bl.length - 1].fin : 0), nu = filas.map((r, i) => ({n: (r.etapa || '').split(' · ')[0], s: palabras(r.dice) / RIT, rf: (raw[i] || {}).ref}));
+  const nd = nu.reduce((a, x) => a + x.s, 0), mx = Math.max(rd, nd, 1);
+  const col = rf => { if (!rf || !bl.length) return 'var(--line)'; const m = (rf[0] + rf[1]) / 2, b = bl.find(b => m >= b.inicio && m < b.fin) || bl[bl.length - 1]; return colorBloque(b.bloque, nombres); };
+  const seg = (s, c, n, t) => '<span style="flex-grow:' + Math.max(s, .01).toFixed(2) + ';background:' + c + '" title="' + esc(t) + '">' + esc(n) + '</span>';
+  const linea = (nom, segs, d, largo) => '<div class="tl-row"><span>' + nom + '</span><div><div class="tl-bar" style="width:' + (100 * d / mx).toFixed(1) + '%">' + segs + '</div></div><b' + (largo ? ' class="largo" title="Dura más de 1,3 veces la referencia"' : '') + '>' + fmtT(d) + '</b></div>';
+  box.innerHTML = (bl.length ? linea('Referencia', bl.map(b => seg(b.fin - b.inicio, colorBloque(b.bloque, nombres), b.bloque, b.bloque + ' · ' + fmtT(b.inicio) + '–' + fmtT(b.fin))).join(''), rd, false) : '') +
+    linea('Nuestro', nu.map(x => seg(x.s, col(x.rf), x.n.charAt(0) + x.n.slice(1).toLowerCase(), x.n + ' · ' + Math.round(x.s) + ' s' + (x.rf ? '' : ' · no está en la referencia'))).join(''), nd, rd > 0 && nd > rd * 1.3 + 1);
+}
+let cola = Promise.resolve();
+function escribir(id, cambios){
+  if (!S.db) return Promise.resolve();
+  S.saving++; pintarSync();
+  cola = cola.then(async () => {
+    const actual = Object.assign({}, S.rev[id] || {}, cambios, {fecha: new Date().toISOString(), por: S.me || ''});
+    Object.keys(actual).forEach(k => { if (actual[k] === null) delete actual[k]; });
+    S.rev = Object.assign({}, S.rev, {[id]: actual});
+    pintarLista(); pintarProgreso(); actualizarRevision();   // se ve al toque; la base confirma después
+    try { const ref = S.db.doc('revision/' + id); if (ref.merge) await ref.merge(Object.assign({}, cambios, {fecha: actual.fecha, por: actual.por})); else await ref.set(actual); } catch (err) { S.dbMsg = 'No se guardó (' + (err.code || 'error') + ')'; toast('No se pudo guardar'); }
+    S.saving--; pintarFiltros(); pintarLista(); pintarProgreso(); pintarSync(); actualizarRevision(); pintarNuestro(false);
+  });
+  return cola;
+}
+
+/* ---------- barra de revisión ---------- */
+function montarRevision(){
+  const box = $('#rev'); if (!box) return;
+  if (S.cli && !esRevisor()) { box.hidden = true; return; }
+  box.innerHTML = '<div class="comp"><textarea id="nota" rows="1" aria-label="Sugerencias y cambios"></textarea><button class="btn pri" id="enviar"><span>Guardar<span class="ancho"> nota</span></span></button></div>' +
+    '<button class="btn" id="vernotas" aria-expanded="false" aria-controls="pop">Notas <b id="n-notas">0</b></button>' +
+    '<div class="dec" role="group" aria-label="Decisión">' +   /* los botones de decisión a la derecha (Nacho, 11/11) */
+    '<button class="btn ok" data-st="aprobado"><i></i>Aprobar</button><button class="btn warn" data-st="cambios"><i></i><span class="ancho">Pedir cambios</span><span class="angosto">Cambios</span></button><button class="btn bad" data-st="rechazado"><i></i>Rechazar</button></div>' +
+    '<div class="pop scroll" id="pop" hidden></div>';
+  box.querySelectorAll('[data-st]').forEach(b => b.onclick = () => { const id = itemId(), nuevo = estadoDe(id) === b.dataset.st ? null : b.dataset.st; escribir(id, {estado: nuevo}).then(() => toast(nuevo ? EST[nuevo] : 'Sin revisar')); });
+  const ta = $('#nota'); ta.oninput = () => { ta.style.height = '32px'; ta.style.height = Math.min(132, ta.scrollHeight) + 'px'; };
+  $('#enviar').onclick = guardarNota;
+  $('#vernotas').onclick = e => { e.stopPropagation(); abrirNotas($('#pop').hidden); };
+  $('#pop').onclick = e => e.stopPropagation(); box.querySelector('.comp').onclick = e => e.stopPropagation();
+  actualizarRevision();
+}
+function abrirNotas(si){ const p = $('#pop'), b = $('#vernotas'); if (!p) return; p.hidden = !si; b.setAttribute('aria-expanded', si); $('#rev').classList.toggle('abierta', !!si); }
+function actualizarRevision(){
+  const box = $('#rev'); if (!box || !$('#nota')) return;
+  const id = itemId(), st = estadoDe(id), dis = !S.db, que = S.tab === 'formatos' ? 'este formato' : 'este guion';
+  const pill = $('#pill'), sv = estadoVista(id); if (pill) { pill.className = 'pill ' + sv; pill.textContent = EST[sv]; }
+  box.querySelectorAll('[data-st]').forEach(b => { const on = b.dataset.st === st; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); b.disabled = dis; });
+  $('#nota').disabled = dis; $('#enviar').disabled = dis;
+  $('#nota').placeholder = dis ? (S.dbMsg || 'Conectando…') : 'Sugerencias y cambios…';
+  const notas = S.notas.filter(n => n.item === id); $('#n-notas').textContent = notas.length;
+  const cuando = f => { try { return new Date(f).toLocaleString('es-AR', {day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'}); } catch (e) { return ''; } };
+  $('#pop').innerHTML = '<div class="pop-h">Notas de ' + que + '</div>' + (notas.map(n => '<div class="nota">' + esc(n.texto) + '<small>' + cuando(n.fecha) + (n.estado ? ' · ' + EST[n.estado] : '') + (n.hecho ? ' · Resuelta' : '') + '</small></div>').join('') || '<div class="nota vac">Todavía no hay notas. Lo que escribas abajo queda guardado acá.</div>');
+}
+async function guardarNota(){
+  const ta = $('#nota'), env = $('#enviar'), t = ta.value.trim(), id = itemId(); if (!t || !S.db) return;
+  env.disabled = true; S.saving++; pintarSync();
+  try { await S.db.collection('notas').doc().set({item: id, texto: t, estado: estadoDe(id), fecha: new Date().toISOString(), por: S.me || ''}); ta.value = ''; ta.style.height = '32px'; toast('Nota guardada'); abrirNotas(true); }
+  catch (err) { S.dbMsg = 'No se guardó la nota (' + (err.code || 'error') + ')'; toast('No se pudo guardar la nota'); }
+  S.saving--; env.disabled = false; pintarSync(); actualizarRevision();
+}
+
+/* ---------- ganadores del día ---------- */
+const ESTRELLAS = n => '★'.repeat(Math.max(0, Math.min(5, n || 0))) + '☆'.repeat(5 - Math.max(0, Math.min(5, n || 0)));
+const angulosMarca = () => (S.paquete && S.paquete.angulos && S.paquete.angulos.length) ? S.paquete.angulos : [...new Set(S.GUT.map(g => g.angulo).filter(a => a && a !== 'Producto y oferta'))];   // los de clientes.json; si no, los de los guiones
+const POOL = () => (S.paquete && S.paquete.pool) || 'ganadores';   // de qué pool salen los Ganadores de esta marca (campo `marca` de los docs de `estaticos`)
+function irGanadores(){ S.tab = 'ganadores'; try { history.replaceState(null, '', '#ganadores'); } catch (e) {} $('#app').classList.remove('nav-open'); render(); }
+const GRUPOS_GAN = {propios: ['Nuestras marcas', 'videos con 40 ventas o más de los reportes pro'], competencia: ['Competencia', 'la competencia directa de la marca: sus anuncios que más escalan'], creadora: ['Para creadoras', 'las graba una creadora sola en su casa'], otros: ['Otros formatos', 'no están en nuestra lista, pero se pueden grabar en casa'],
+  ia: ['Animados', 'se hacen con IA'], marca: ['No son para creadoras', 'habla la dueña, una experta o alguien de la marca']};
+const COMP_M = () => (S.paquete && S.paquete.competencia_m) || [];   // nombres de la competencia directa (clientes.json → competencia_nombres)
+const esComp = d => d.grupo !== 'propios' && COMP_M().includes(((d.ref || {}).m) || '');
+const ORDEN_GAN = ['F01', 'F02', 'F03', 'F04', 'AD', 'F08', 'F09', 'F11', 'F23', 'F07', 'F05', 'F16', 'F22', 'F12', 'OTRO', 'F13', 'AN', 'F17', 'F18'];   // el que manda es el `orden` que graba ganadores_dia.py; esto es por si falta
+function grupoGan(d){ return esComp(d) ? 'competencia' : d.grupo !== 'propios' && d.fmt === 'F22' ? 'marca' : d.grupo !== 'propios' && d.fmt === 'F16' ? 'ia' : GRUPOS_GAN[d.grupo] ? d.grupo : d.fmt === 'OTRO' ? 'otros' : ['F13', 'AN'].includes(d.fmt) ? 'ia' : ['F17', 'F18'].includes(d.fmt) ? 'marca' : 'creadora'; }   // F22 (mezcla) y F16 (pizarra IA) no van a «Para creadoras»: una sola no los graba (Nacho, 11/11)
+function ordenGan(d){ if (esComp(d)) return 5; if (d.grupo !== 'propios' && d.fmt === 'F22') return 82; if (d.grupo !== 'propios' && d.fmt === 'F16') return 62; if (typeof d.orden === 'number') return d.orden; const i = ORDEN_GAN.indexOf(d.fmt); return i < 0 ? 39 : i < 14 ? 10 + i : i === 14 ? 40 : i < 17 ? 60 + i - 15 : 80 + i - 17; }
+function seccionGan(d){ const g = grupoGan(d); return g === 'propios' || g === 'competencia' ? (((d.ref || {}).m) || GRUPOS_GAN[g][0]) : g === 'otros' ? 'Otros formatos' : (d.fmtNombre || d.fmt) + (g === 'marca' && !['F17', 'F18'].includes(d.fmt) ? ' · con experta o dueña' : ''); }
+function fmtPropio(d){ const g = grupoGan(d); return (g === 'propios' || g === 'competencia') && d.fmt && d.fmt !== 'PRO' ? {fmt: d.fmt, fmtNombre: d.fmtNombre} : null; }   // el formato etiquetado de un propio o de la competencia: aparece también en esa sección
+const HOY_LOCAL = (() => { const h = new Date(); return h.getFullYear() + '-' + String(h.getMonth() + 1).padStart(2, '0') + '-' + String(h.getDate()).padStart(2, '0'); })();
+const CRIT_GAN = {ventas: d => (d.ref || {}).compras || 0, dup: d => (d.ref || {}).dup || 0, dias: d => (d.ref || {}).d || 0, senal: d => (d.ref || {}).senal || 0};   // «Ordenar por»: sin criterio queda por formato
+function ganVisibles(){
+  const q = S.q.trim().toLowerCase(), e = S.gf.estado;
+  return S.GAN.filter(d => (e === 'elegida' ? ['elegida', 'lista'].includes(d.estado) : d.estado === e) && (!S.gf.fmt || seccionGan(d) === S.gf.fmt || (fmtPropio(d) && seccionGan(fmtPropio(d)) === S.gf.fmt)) && (!q || ((d.ref || {}).m || '').toLowerCase().includes(q)))
+    .sort((a, b) => ((b.envia ? 1 : 0) - (a.envia ? 1 : 0)) || (CRIT_GAN[S.gf.orden] ? CRIT_GAN[S.gf.orden](b) - CRIT_GAN[S.gf.orden](a) : 0) || ordenGan(a) - ordenGan(b) || String(seccionGan(a)).localeCompare(String(seccionGan(b))) || String(b.fecha || '').localeCompare(String(a.fecha || '')) || ((b.ref || {}).senal || 0) - ((a.ref || {}).senal || 0) || ((b.ref || {}).dup || 0) - ((a.ref || {}).dup || 0) || ((b.ref || {}).d || 0) - ((a.ref || {}).d || 0));   // por formato (los de creadoras arriba), cada marca junta, lo nuevo primero y después lo que tiene más señal
+}
+function pintarListaGanadores(){   // en esta pestaña la lista de la izquierda filtra por formato, en el orden de trabajo: primero lo que graban las creadoras
+  const e = S.gf.estado, deEstado = S.GAN.filter(d => e === 'elegida' ? ['elegida', 'lista'].includes(d.estado) : d.estado === e), sec = {};
+  deEstado.forEach(d => { const k = seccionGan(d); (sec[k] = sec[k] || {n: 0, o: ordenGan(d), g: grupoGan(d)}).n++;
+    const p = fmtPropio(d); if (p) { const k2 = seccionGan(p); (sec[k2] = sec[k2] || {n: 0, o: ordenGan(p), g: grupoGan(p)}).n++; } });   // el propio cuenta también en la sección de su formato
+  const fila = (id, nombre, c, g) => '<button class="it g' + (S.gf.fmt === id ? ' on' : '') + '" data-gf="' + esc(id) + '"><i class="dot ' + (g || '') + '"></i><span class="nm">' + esc(nombre) + '</span><span class="cod">' + c + '</span></button>';
+  let h = fila('', 'Todos', deEstado.length, ''), ant = '';
+  Object.keys(sec).sort((a, b) => sec[a].o - sec[b].o).forEach(k => {
+    if (sec[k].g !== ant) { ant = sec[k].g; h += '<button class="grp gbt' + (S.pleg[ant] ? ' off' : '') + '" data-pleg="' + esc(ant) + '" aria-expanded="' + !S.pleg[ant] + '"><i class="ch">▾</i>' + esc(GRUPOS_GAN[ant][0]) + '</button>'; }
+    if (!S.pleg[sec[k].g] || S.gf.fmt === k) h += fila(k, k, sec[k].n, sec[k].g); });
+  $('#lista').innerHTML = h;
+  $$('#lista [data-gf]').forEach(b => b.onclick = () => { S.gf.fmt = b.dataset.gf; $('#app').classList.remove('nav-open'); pintarLista(); pintarGanadores(); });
+  $$('#lista [data-pleg]').forEach(b => b.onclick = () => plegar(b.dataset.pleg));
+}
+function plegar(g){ S.pleg[g] = !S.pleg[g]; try { localStorage.setItem('gan_pleg', JSON.stringify(S.pleg)); } catch (x) {} pintarLista(); pintarGanadores(); }
+function tarjeta(d){
+  const r = d.ref || {}, marca = S.paquete && S.paquete.marca, idea = ((d.ideas || {})[marca] || {}).idea || d.porque || '', para = d.para || {};
+  const pie = d.estado === 'elegir' ? '<button class="btn no" data-no>No</button><button class="btn si" data-si>La quiero</button>'
+            : d.estado === 'descartada' ? '<button class="btn" data-volver>Volver a verla</button>'
+            : '<button class="btn" data-volver>Deshacer</button>';
+  return '<article class="gc" data-id="' + esc(d.id) + '"><div class="gc-h"><span class="av">' + esc((r.m || '?').charAt(0).toUpperCase()) + '</span><div class="who"><b>' + esc(r.m || '') + (r.pais ? ' <span>· ' + esc(String(r.pais).split(',')[0]) + '</span>' : '') + '</b><small><i></i>' + (r.compras ? esc(r.compras) + ' ventas · ROAS ' + esc(String(r.roas).replace('.', ',')) : esc(r.d) + ' días al aire') + '</small></div>' +
+    (r.link ? '<a class="ext" href="' + esc(r.link) + '" target="_blank" rel="noopener" title="Ver el anuncio original" aria-label="Ver el anuncio original">↗</a>' : '') + '</div>' +
+    '<button class="gc-img" data-ver aria-label="Ver el video">' + (d.img ? '<img loading="lazy" src="' + esc(d.img) + '" alt="">' : '') + (r.dur ? '<span class="dur">' + fmtT(r.dur) + '</span>' : '') + '</button>' +
+    '<div class="gc-b"><div class="pills"><span class="pl a" title="Señal: días al aire, duplicados, tamaño de la marca y nivel">' + ESTRELLAS(r.senal) + '</span>' + (r.compras ? '<span class="pl ok" title="Compras en el reporte pro">' + esc(r.compras) + ' ventas</span><span class="pl">ROAS ' + esc(String(r.roas).replace('.', ',')) + '</span>' : '') + (r.d ? '<span class="pl" title="Días que lleva corriendo">' + esc(r.d) + ' días</span>' : '') + (r.dup > 1 ? '<span class="pl">' + esc(r.dup) + ' dup.</span>' : '') + (d.fecha === HOY_LOCAL && d.estado === 'elegir' ? '<span class="pl hoy">Hoy</span>' : '') + (esComp(d) ? '<span class="pl cmp">Competencia</span>' : '') + '<span class="pl f" title="' + esc(GRUPOS_GAN[grupoGan(d)][0]) + '"><i class="dot ' + grupoGan(d) + '"></i><span>' + esc(d.fmtNombre || d.fmt) + '</span></span></div>' +
+    '<h3 class="clamp2">' + esc(d.hook || '') + '</h3><p class="clamp3">' + esc(idea) + '</p>' +
+    (d.estado === 'elegida' || d.estado === 'lista' ? '<div class="pills">' + (d.envia ? '<span class="pl env">📨 Enviado por ' + esc(d.envia) + '</span>' : '') + (para.angulos || []).map(a => '<span class="pl ok">' + esc(a) + '</span>').join('') + (d.estado === 'lista' ? '<span class="pl ok">Guion hecho' + (d.guiones ? ': ' + esc(d.guiones) : '') + '</span>' : '<span class="pl">Falta escribirlo</span>') + '</div>' : '') +
+    '<div class="gacc">' + pie + '</div></div></article>';
+}
+function pintarGanadores(){
+  const main = $('#main'), vis = ganVisibles(), cuenta = e => S.GAN.filter(d => e === 'elegida' ? ['elegida', 'lista'].includes(d.estado) : d.estado === e).length, prev = ($('#ggrid') || {}).scrollTop || 0;
+  let grilla = '', gAnt = '', sAnt = '';
+  vis.forEach((d, i) => { const g = grupoGan(d), sc = seccionGan(d), pleg = !S.gf.fmt && !!S.pleg[g];
+    if (CRIT_GAN[S.gf.orden]) { grilla += tarjeta(d); return; }   // ordenado por números: todo junto, sin títulos de formato
+    if (g !== gAnt) { gAnt = g; sAnt = '';
+      grilla += '<div class="ggrp"><button class="pleg-x" data-pleg="' + esc(g) + '" aria-expanded="' + !pleg + '"><i class="dot ' + g + '"></i>' + esc(GRUPOS_GAN[g][0]) +
+        (pleg ? ' <small>plegado · ' + vis.filter(x => grupoGan(x) === g).length + ' — tocá para abrir</small>' : ' <small>' + esc(GRUPOS_GAN[g][1]) + '</small>') + '</button></div>'; }
+    if (pleg) return;   // grupo plegado: queda el título solo
+    if (sc !== sAnt) { sAnt = sc; grilla += '<div class="gsec">' + esc(sc) + ' <span>' + vis.filter(x => grupoGan(x) === g && seccionGan(x) === sc).length + '</span></div>'; }
+    grilla += tarjeta(d); });
+  const tab = (e, t) => '<button class="tab' + (S.gf.estado === e ? ' on' : '') + '" data-ge="' + e + '" aria-pressed="' + (S.gf.estado === e) + '">' + t + ' <b>' + cuenta(e) + '</b></button>';
+  main.innerHTML = '<div class="gan"><div class="gan-h"><div><h1>' + esc((S.paquete && S.paquete.pool_titulo) || 'Ganadores del día') + '</h1><p>' + esc((S.paquete && S.paquete.pool_txt) || 'Anuncios que llevan 60 días o más al aire. Arriba, los nuestros con 40 ventas o más; después, los formatos que graba una creadora en su casa; al fondo, los animados y los de fundadora.') + ' Con «La quiero» elegís los ángulos y te lo escribo calcado para ' + esc(CFG.cliente) + '.</p></div>' +
+    '<div class="gtabs">' + tab('elegir', 'Para elegir') + tab('elegida', 'Elegidas') + tab('descartada', 'Descartadas') + '</div>' +
+    '<select id="gorden" aria-label="Ordenar por" style="flex:none;font:inherit;font-size:13px;padding:7px 10px;border-radius:10px;border:1px solid var(--line);background:var(--sunken);color:inherit">' + [['', 'Ordenar: por formato'], ['ventas', 'Más ventas'], ['dup', 'Más duplicados'], ['dias', 'Más días corriendo'], ['senal', 'Más estrellas']].map(o => '<option value="' + o[0] + '"' + ((S.gf.orden || '') === o[0] ? ' selected' : '') + '>' + o[1] + '</option>').join('') + '</select></div>' +
+    '<div class="ggrid scroll" id="ggrid">' + (grilla || '<div class="vacio" style="grid-column:1/-1"><b>' + (S.GAN.length ? 'Nada por acá' : 'Todavía no hay ganadores cargados') + '</b>' + (S.gf.estado === 'elegir' ? 'Mañana llegan los nuevos.' : '') + '</div>') + '</div></div>';
+  $('#ggrid').scrollTop = prev;
+  $('#gorden').onchange = e => { S.gf.orden = e.target.value; try { localStorage.setItem('gan_orden', S.gf.orden); } catch (x) {} $('#ggrid').scrollTop = 0; pintarGanadores(); };
+  $$('#main [data-ge]').forEach(b => b.onclick = () => { S.gf.estado = b.dataset.ge; S.gf.fmt = ''; pintarLista(); pintarGanadores(); });
+  $$('#main [data-pleg]').forEach(b => b.onclick = () => plegar(b.dataset.pleg));
+  $$('#main .gc').forEach(c => { const id = c.dataset.id, d = S.GAN.find(x => x.id === id);
+    c.querySelector('[data-ver]').onclick = () => abrirFicha(id);
+    const si = c.querySelector('[data-si]'), no = c.querySelector('[data-no]'), vo = c.querySelector('[data-volver]');
+    if (si) si.onclick = () => abrirFicha(id);
+    if (no) no.onclick = () => marcarGanador(id, {estado: 'descartada'}, 'Descartada');
+    if (vo) vo.onclick = () => marcarGanador(id, {estado: 'elegir'}, 'Volvió a «Para elegir»'); });
+}
+function marcarGanador(id, cambios, aviso){
+  const d = S.GAN.find(x => x.id === id); if (!d || !S.db || !S.db.ganadores) return;
+  Object.assign(d, cambios); $('#n-ganadores').textContent = S.GAN.filter(x => x.estado === 'elegir').length; pintarLista(); pintarGanadores();   // se ve al toque; la base confirma después
+  S.db.ganadores.guardar(id, Object.assign({marca: POOL(), por: S.me || ''}, cambios)).then(() => toast(aviso), () => toast('No se pudo guardar'));
+}
+function cerrarFicha(){ const f = $('#ficha'), v = f.querySelector('video'); if (v) v.pause(); f.hidden = true; f.innerHTML = ''; pintarGanadores(); }
+function abrirFicha(id){
+  const d = S.GAN.find(x => x.id === id); if (!d) return;
+  const r = d.ref || {}, marca = S.paquete && S.paquete.marca, ia = (d.ideas || {})[marca] || {}, todos = angulosMarca(), marcados = new Set((d.para && d.para.angulos) || (ia.angulos || []).filter(a => todos.includes(a)));
+  const f = $('#ficha');
+  f.innerHTML = '<div class="fx" role="dialog" aria-label="Ganador"><div class="fx-v"><video src="' + esc(d.video) + '" poster="' + esc(d.img || '') + '" controls playsinline autoplay></video></div><div class="fx-b">' +
+    '<div class="gc-h" style="padding:0"><span class="av">' + esc((r.m || '?').charAt(0).toUpperCase()) + '</span><div class="who"><b>' + esc(r.m || '') + '</b><small><i></i>' + (r.compras ? esc(r.compras) + ' ventas · ROAS ' + esc(String(r.roas).replace('.', ',')) + ' · ' : '') + esc(r.d) + ' días' + (r.compras ? '' : ' al aire') + (r.rubro ? ' · ' + esc(r.rubro) : '') + '</small></div>' + (r.link ? '<a class="ext" href="' + esc(r.link) + '" target="_blank" rel="noopener" title="Ver el anuncio original">↗</a>' : '') + '<button class="ext" id="fx-x" aria-label="Cerrar" style="border:0;background:none;cursor:pointer">✕</button></div>' +
+    '<div class="pills"><span class="pl a">' + ESTRELLAS(r.senal) + '</span>' + (r.dup > 1 ? '<span class="pl">' + esc(r.dup) + ' duplicados</span>' : '') + (r.n ? '<span class="pl">' + esc(r.n) + ' anuncios de la marca</span>' : '') + (r.perf ? '<span class="pl">' + esc(r.perf) + '</span>' : '') + '<span class="pl f">' + esc(d.fmtNombre || d.fmt) + '</span><span class="pl">' + esc(r.src || '') + '</span></div>' +
+    '<div><div class="lbl">Cómo abre</div><p><b>' + esc(d.hook || '') + '</b></p></div>' +
+    '<div><div class="lbl">Por qué funciona</div><p>' + esc(d.porque || '') + '</p></div>' +
+    (ia.idea ? '<div class="idea"><div class="lbl">Así quedaría en ' + esc(CFG.cliente) + '</div><p>' + esc(ia.idea) + '</p></div>' : '') +
+    ((d.guion || []).length ? '<details><summary>Lo que dice el anuncio (' + d.guion.length + ' frases)</summary><div>' + d.guion.map(x => '<span><span class="mono" style="color:var(--ink-4)">' + fmtT(x.t) + '</span> ' + esc(x.es) + '</span>').join('') + '</div></details>' : '') +
+    (d.estado === 'descartada' ? '' : '<div><div class="lbl">Ángulos (vienen marcados los que le van; sale un guion por cada ✓)</div><div class="angs">' + todos.map(a => '<button class="ang' + (marcados.has(a) ? ' on' : '') + '" data-ang="' + esc(a) + '" aria-pressed="' + marcados.has(a) + '">' + esc(a) + '</button>').join('') + '</div><div class="angn" id="fx-angn"></div></div>' +
+      '<div><div class="lbl">Tu pedido (opcional)</div><textarea id="fx-nota" placeholder="' + esc((S.paquete && S.paquete.pedido_ej) || 'Ej: con qué creadora, o qué detalle querés que tenga') + '">' + esc(d.nota || '') + '</textarea></div>') +
+    '<div class="gacc">' + (d.estado === 'descartada' ? '<button class="btn" id="fx-volver">Volver a verla</button>' : '<button class="btn no" id="fx-no">No</button><button class="btn si" id="fx-si">' + (d.estado === 'elegir' ? 'La quiero' : 'Guardar') + '</button>') + '</div></div></div>';
+  f.hidden = false;
+  f.onclick = e => { if (e.target === f) cerrarFicha(); };
+  $('#fx-x').onclick = cerrarFicha;
+  f.querySelectorAll('[data-ang]').forEach(b => b.onclick = () => { const on = !b.classList.contains('on'); b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); cuentaAng(); });
+  const cuentaAng = () => { const n = f.querySelectorAll('.ang.on').length, e = $('#fx-angn'); if (e) e.textContent = n ? 'Marcados con ✓: ' + n + (n === 1 ? ' guion' : ' guiones') + '. Tocá uno para sacarlo o sumarlo.' : 'Ninguno marcado: tocá los que quieras.'; }; cuentaAng();
+  const si = $('#fx-si'), no = $('#fx-no'), vo = $('#fx-volver');
+  if (si) si.onclick = () => { const ang = [...f.querySelectorAll('.ang.on')].map(b => b.dataset.ang); if (!ang.length) { toast('Marcá al menos un ángulo'); return; }
+    const c = {estado: d.estado === 'lista' ? 'lista' : 'elegida', para: {marca, angulos: ang}, nota: $('#fx-nota').value.trim(), elegidaEn: new Date().toISOString()}; cerrarFicha(); marcarGanador(id, c, 'Elegida: te la escribo para ' + CFG.cliente); };
+  if (no) no.onclick = () => { cerrarFicha(); marcarGanador(id, {estado: 'descartada'}, 'Descartada'); };
+  if (vo) vo.onclick = () => { cerrarFicha(); marcarGanador(id, {estado: 'elegir'}, 'Volvió a «Para elegir»'); };
+}
+
+/* ---------- eventos generales ---------- */
+window.addEventListener('hashchange', () => { const a = S.tab + S.fmt + S.gui; if (leerHash() && a !== S.tab + S.fmt + S.gui) { S.gan = null; S.rtab = 'principal'; render(); } });
+$('#t-ganadores').onclick = () => irGanadores();
+$('#t-formatos').onclick = () => ir('formatos', S.fmt);
+$('#t-guiones').onclick = () => { S.sub = 'solas'; const g = S.GU.find(x => x.codigo === S.gui); ir('guiones', g && !NOSOLA(g) ? S.gui : (S.GU.find(x => !NOSOLA(x)) || {}).codigo); };
+$('#t-prod').onclick = () => { S.sub = 'prod'; const g = S.GU.find(x => x.codigo === S.gui); ir('guiones', g && NOSOLA(g) ? S.gui : (S.GU.find(NOSOLA) || {}).codigo); };
+$('#q').oninput = e => { S.q = e.target.value; pintarLista(); if (S.tab === 'ganadores') pintarGanadores(); else pintarNav(); };
+$('#menu').onclick = () => $('#app').classList.toggle('nav-open');
+$('#veil').onclick = () => $('#app').classList.remove('nav-open');
+document.addEventListener('click', () => abrirNotas(false));
+document.addEventListener('keydown', e => {
+  const t = e.target, escribe = t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName);
+  if (e.key === 'Escape' && !$('#ficha').hidden) { cerrarFicha(); return; }
+  if (e.key === 'Escape') { abrirNotas(false); $('#app').classList.remove('nav-open'); if (escribe) t.blur(); return; }
+  if ((e.metaKey || e.ctrlKey) && e.key === 'Enter' && t.id === 'nota') { e.preventDefault(); guardarNota(); return; }
+  if (e.altKey && !e.metaKey && !e.ctrlKey && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) { e.preventDefault(); if (escribe) t.blur(); mover(e.key === 'ArrowDown' ? 1 : -1); }
+});
+/* ---------- clave de entrada ---------- */
+const sal = t => 'sala-cima:' + String(t || '').trim().toLowerCase();
+async function huella(t){   // la clave no va escrita en la página: se compara su huella
+  try { const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(sal(t))); return [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, '0')).join(''); }
+  catch (e) { return 'd' + hash(sal(t)); }
+}
+const quienEntra = h => { const c = CFG.claves.find(c => c[0] === h || c[1] === h); return c ? (c[2] || '') : null; };   // null = clave incorrecta
+const claveOk = h => quienEntra(h) !== null;
+function arrancar(quien){
+  S.solo = quien || ''; S.rol = (S.paquete && S.paquete.rol) || '';
+  $('#app').classList.toggle('cli', S.cli && !esRevisor());
+  const M = (S.paquete && S.paquete.marcas) || [];   // el equipo salta al panel de otra marca desde acá (la clave es la misma: entra directo)
+  if (S.rol === 'equipo' && M.length > 1) {
+    const sel = document.createElement('select'); sel.className = 'bsel'; sel.setAttribute('aria-label', 'Cambiar de marca');
+    sel.innerHTML = M.map(m => '<option value="' + esc(m.url) + '"' + (m.nombre === CFG.cliente ? ' selected' : '') + '>' + esc(m.nombre) + ' · Guiones</option>').join('');
+    sel.onchange = () => { if (sel.value) location.href = sel.value; };
+    const b = $('.bname'); b.textContent = ''; b.appendChild(sel);
+  }
+  if (S.cli && S.rol === 'creadora') {   // minitutorial la primera vez + aviso si la abre con el celu en vertical
+    document.body.classList.add('rol-cre');
+    let visto = ''; try { visto = localStorage.getItem('sala-tuto2') || ''; } catch (e) {}
+    if (/[#?&]tutorial\b/.test(location.href)) visto = '';   // …/guiones/#tutorial lo muestra siempre (para grabar el Loom)
+    if (!visto) {
+      const d = document.createElement('div'); d.className = 'tuto';
+      d.innerHTML = '<div class="tuto-c"><h2>Tu sala de guiones 🎬 · paso a paso</h2><ol>' +
+        '<li><b>Abrila en la computadora</b>: se ve mucho mejor. Si estás con el celu, acostalo (horizontal).</li>' +
+        '<li>Entrás siempre con <b>tu contraseña, la misma de la app</b> donde subís los videos.</li>' +
+        '<li>En la lista están <b>tus guiones aprobados</b>. Tocá uno y lo ves <b>lado a lado</b>: a la izquierda el VIDEO ORIGINAL del que sale, a la derecha tu guion con lo que decís, el texto en pantalla y qué se filma.</li>' +
+        '<li>🛑 <b>Lo más importante: mirá el video original ENTERO antes de grabar, y copialo</b>. La <b>energía</b>, el <b>lugar</b>, la <b>ropa</b>, el ritmo y la <b>edición</b>: todo igual al original. Tu guion está calcado de ese video, parte por parte: cuanto más parecido lo grabes, mejor funciona.</li>' +
+        '<li>📁 <b>Las fotos y capturas ya te las dejamos</b>: en cada guion tocá <b>«Tomas y capturas»</b> y vas a ver una carpeta con todo lo que aparece en pantalla (notas, reseñas, fotos del antes, objetos). Cada archivo tiene adelante el <b>minuto y segundo</b> donde va. Si te falta algo, buscalo en <b>Google o Pinterest</b>.</li>' +
+        '</ol><button class="btn pri" id="tuto-ok">Entendido</button></div>';
+      document.body.appendChild(d);
+      d.querySelector('#tuto-ok').onclick = () => { d.remove(); try { localStorage.setItem('sala-tuto2', '1'); } catch (e) {} };
+    }
+    let gx = ''; try { gx = sessionStorage.getItem('sala-gira') || ''; } catch (e) {}
+    if (!gx) {
+      const g = document.createElement('div'); g.className = 'gira';
+      g.innerHTML = '<span>📱 Girá el celu (horizontal) o usala en la compu: así ves tu guion al lado de la referencia.</span><button aria-label="Cerrar">✕</button>';
+      document.body.appendChild(g);
+      g.querySelector('button').onclick = () => { g.remove(); try { sessionStorage.setItem('sala-gira', '1'); } catch (e) {} };
+    }
+  }
+  if (S.solo) { $('.bname').textContent = CFG.cliente + ' · Guiones de ' + S.solo; let p = null; try { p = localStorage.getItem('sala-det'); } catch (e) {} if (p === null) S.det = true; }   // la creadora abre con todo lo que tiene que filmar
+  $('#gate').hidden = true; $('#app').hidden = false; cargar();
+}
+/* versión cifrada: la clave no se compara con nada escrito en la página; de ella salen el nombre del paquete y la llave que lo abre */
+const deB64 = t => Uint8Array.from(atob(t), c => c.charCodeAt(0)), aB64 = b => btoa(String.fromCharCode(...new Uint8Array(b)));
+const norma = t => String(t || '').trim().toLowerCase();
+async function sha(t){ const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(t)); return [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, '0')).join(''); }
+async function llaveDe(clave){
+  const enc = new TextEncoder(), base = await crypto.subtle.importKey('raw', enc.encode(norma(clave)), 'PBKDF2', false, ['deriveKey']);
+  const salt = (await crypto.subtle.digest('SHA-256', enc.encode('sala-cima:sal:' + norma(clave)))).slice(0, 16);
+  return crypto.subtle.deriveKey({name: 'PBKDF2', salt, iterations: 200000, hash: 'SHA-256'}, base, {name: 'AES-GCM', length: 256}, true, ['decrypt']);
+}
+async function abrirPaquete(id, llave){   // null si esa clave no tiene paquete o no lo abre
+  try { const r = await fetch('d/' + id + '.json', {cache: 'no-store'}); if (!r.ok) return null;
+    const p = await r.json(), claro = await crypto.subtle.decrypt({name: 'AES-GCM', iv: deB64(p.i)}, llave, deB64(p.c));
+    return JSON.parse(new TextDecoder().decode(claro)); } catch (e) { return null; }
+}
+async function entrarCifrado(clave){
+  const id = (await sha('sala-cima:id:' + norma(clave))).slice(0, 20), llave = await llaveDe(clave), p = await abrirPaquete(id, llave);
+  if (!p) return false;
+  try { localStorage.setItem('sala-llave', id + '.' + aB64(await crypto.subtle.exportKey('raw', llave))); } catch (e) {}
+  S.paquete = p; arrancar(p.quien); return true;
+}
+async function recordarCifrado(){   // en este dispositivo ya se entró: se abre con la llave guardada
+  let g = ''; try { g = localStorage.getItem('sala-llave') || ''; } catch (e) {}
+  const [id, k] = g.split('.'); if (!id || !k) return false;
+  try { const llave = await crypto.subtle.importKey('raw', deB64(k), {name: 'AES-GCM'}, true, ['decrypt']), p = await abrirPaquete(id, llave);
+    if (!p) return false; S.paquete = p; arrancar(p.quien); return true; } catch (e) { return false; }
+}
+function pedirClave(){
+  const g = $('#gate'), inp = $('#clave'); g.hidden = false;
+  if (CFG.cifrado) { g.onsubmit = async e => { e.preventDefault(); const b = g.querySelector('button'); b.disabled = true; const ok = await entrarCifrado(inp.value).catch(() => false); b.disabled = false; if (!ok) { $('#gate-e').hidden = false; inp.select(); } }; setTimeout(() => inp.focus(), 50); return; }
+  g.onsubmit = async e => { e.preventDefault(); const h = await huella(inp.value), h2 = 'd' + hash(sal(inp.value)), ok = claveOk(h) ? h : claveOk(h2) ? h2 : '';
+    if (ok) { try { localStorage.setItem('sala-clave', ok); } catch (err) {} arrancar(quienEntra(ok)); } else { $('#gate-e').hidden = false; inp.select(); } };
+  setTimeout(() => inp.focus(), 50);
+}
+(() => {
+  if (S.cli) { $('.bname').textContent = $('#gate-t').textContent = CFG.cliente + ' · Guiones'; $('#t-formatos').hidden = true; }
+  if (CFG.cifrado) { recordarCifrado().then(ok => { if (!ok) pedirClave(); }); return; }
+  let g = ''; try { g = localStorage.getItem('sala-clave') || ''; } catch (e) {}
+  if (!CFG.claves.length || (g && claveOk(g))) arrancar(quienEntra(g)); else pedirClave();
+})();
+</script>
+
+</body></html>
