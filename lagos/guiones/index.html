@@ -1347,6 +1347,7 @@ function arrancar(quien){
   if (S.cli && S.rol === 'creadora') {   // minitutorial la primera vez + aviso si la abre con el celu en vertical
     document.body.classList.add('rol-cre');
     let visto = ''; try { visto = localStorage.getItem('sala-tuto2') || ''; } catch (e) {}
+    if (/[#?&]tutorial\b/.test(location.href)) visto = '';   // …/guiones/#tutorial lo muestra siempre (para grabar el Loom)
     if (!visto) {
       const d = document.createElement('div'); d.className = 'tuto';
       d.innerHTML = '<div class="tuto-c"><h2>Tu sala de guiones 🎬 · paso a paso</h2><ol>' +
