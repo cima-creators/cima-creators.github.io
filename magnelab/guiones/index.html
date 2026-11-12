@@ -256,6 +256,7 @@ button.ref:hover{background:var(--sunken)}
   .fila > .ve{grid-column:2;padding-top:0;margin-top:-5px;display:flex;flex-wrap:wrap;gap:6px 10px;align-items:baseline}
   .fila > .ve .placa{margin-bottom:0}
   .fila > .ve .filma{flex:1 1 190px}
+  .fila > .ve .nt{flex:1 1 100%}
 }
 @container our (max-width:440px){
   .g-h{display:none}
@@ -271,6 +272,7 @@ button.ref:hover{background:var(--sunken)}
 .ed[contenteditable="true"]:focus{background:var(--surface);box-shadow:0 0 0 4px var(--surface),0 0 0 6px var(--accent)}
 .ed:empty::before{content:attr(data-ph);color:var(--ink-4)}
 .ed.mod,.ed.mod[contenteditable="true"]:hover{background:var(--hl);box-shadow:0 0 0 4px var(--hl);color:var(--ink)}
+.nt{font-size:13px;line-height:1.45;color:var(--ink-2);margin:2px 0}.nt b{font-weight:600;color:var(--ink)}.nt .ed{display:inline}
 .placa{display:inline-block;max-width:100%;background:var(--ink);color:var(--surface);font-weight:600;font-size:10.5px;letter-spacing:.04em;text-transform:uppercase;line-height:1.4;padding:4px 8px;border-radius:6px;margin-bottom:9px}
 .placa[contenteditable="true"]:hover{background:var(--ink-2);box-shadow:none}
 .placa[contenteditable="true"]:focus{background:var(--ink);box-shadow:0 0 0 2px var(--surface),0 0 0 4px var(--accent)}
@@ -841,10 +843,32 @@ function contexto(g){   // ángulo e idea del árbol de testeo de la marca
   return '<div class="ctx">' + (g.angulo ? '<span class="chip ang" style="background:' + colorBloque(g.angulo, angs) + '"><i>Ángulo</i><b>' + esc(g.angulo) + '</b></span>' : '') +
     (g.idea ? '<span class="chip"><i>Idea</i><b>' + esc(g.idea) + '</b>' + (sinNum(g.idea_dato) ? '<small>' + esc(g.idea_dato) + '</small>' : '') + '</span>' : '') + '</div>';
 }
-function notasGuion(g){   // lo que no es guion: va arriba de la tabla solo en «Con notas»
+// «Con notas», fila por fila (Nacho, 12/11: «me marea… poneles "Título: xxx" y todo más simple; van a ver la referencia, no hace falta
+// el "se filma"; poné si tienen que adjuntar una foto, de qué es»): solo el TÍTULO que va en pantalla, limpio de nuestras instrucciones
+// (subtítulos, «arriba 5 s», «una placa por vez»…), y la FOTO cuando hay que sumar una foto o captura. Cómo se graba = la referencia.
+function limpiaTitulo(t){
+  return String(t || '').split(/\s+·\s+/).filter(x => !/subt[íi]tulos/i.test(x)).join(' · ')
+    .replace(/^\s*(sticker del comentario arriba todo el video|fijo arriba todo el video(, como comentario)?|fijo arriba|arriba \d+ ?s(, sin palabras sexuales)?)\s*:\s*/i, '')
+    .replace(/\s*\((arriba|una|fijo|todo|cuando|mayúsculas|en cada)[^)]*\)/gi, '').replace(/[\s·.;,]+$/, '').trim();
+}
+function fotoDe(filma){   // la frase de «qué se filma» que dice de qué es la foto o la captura («Cambia la foto: el reloj…»)
+  const f = String(filma || '').split(/(?<=[.;])\s+/).find(x => /\b(fotos?|capturas?|screenshot|recortes?)\b\s*(del?|de la|de los|de las|:|con)\s+\S/i.test(x));
+  return f ? f.replace(/[\s;.]+$/, '') : '';
+}
+function notaFila(i, r, cel, m, ce){
+  const tit = limpiaTitulo(r.texto), fo = fotoDe(r.filma);
+  return (tit || ce === 'true' ? '<div class="nt"><b>Título:</b> ' + cel(i, 'texto', tit, 'tit' + m('texto'), '+ título') + '</div>' : '') +
+    (fo ? '<div class="nt"><b>Foto:</b> ' + esc(fo) + '</div>' : '');
+}
+// Arriba del guion, siempre (Nacho, 12/11): dónde se graba y la ropa SOLO si importa (bata, short, calza, dos outfits…); remera o buzo lisos no se aclaran
+const ROPA = /\b(remera|camisa|buzo|chomba|blusa|musculosa|calza|short|top|jean|pollera|bata|pijama|malla|bikini|outfits?|looks?|ropa|campera|delantal|anteojos|maquillaje|pelo atado|pelo suelto)\b/i;
+const ROPA_IMPORTA = /\b(short|calza|bata|pijama|malla|bikini|outfits?|looks?|delantal|campera|pollera|top|de trabajo|dormir|cuello tiene|sin maquillaje|anteojos)\b/i;
+function lugarYRopa(l){ const donde = [], ropa = []; String(l || '').split(/\s+·\s+/).forEach(x => { if (!x.trim()) return; if (!ROPA.test(x)) donde.push(x); else if (ROPA_IMPORTA.test(x)) ropa.push(x); }); return [donde.join(' · '), ropa.join(' · ')]; }
+function notasGuion(g, det){   // arriba de la tabla: dónde y ropa siempre; en «Con notas», además el porqué, el VOC y el código (equipo) o el número (creadora)
   const fila = (k, v, cls) => v ? '<div><dt>' + k + '</dt><dd' + (cls ? ' class="' + cls + '"' : '') + '>' + esc(v) + '</dd></div>' : '';
   const cre = S.cli && S.rol === 'creadora';   // a la creadora: sin VOC y solo el número, para buscarlo fácil en la app (Nacho, 11/11)
-  const d = fila('Por qué', g.fundamento) + (cre ? '' : fila('VOC', (g.voc || []).join(' · '))) + fila('Dónde', g.lugar) + fila('Número', cre ? g.num : '', 'mono') + (cre ? '' : fila('Código', g.codigo, 'mono'));
+  const [donde, ropa] = lugarYRopa(g.lugar);
+  const d = fila('Dónde grabar', donde) + fila('Ropa', ropa) + (det ? fila('Por qué', g.fundamento) + (cre ? '' : fila('VOC', (g.voc || []).join(' · '))) + fila('Número', cre ? g.num : '', 'mono') + (cre ? '' : fila('Código', g.codigo, 'mono')) : '');
   return d ? '<div class="mas-b suelto ng"><dl>' + d + '</dl></div>' : '';
 }
 function alOrigen(){ const g = guionAct(); if (!g) return; S.gan = g.ref; pintarRef(); pintarNuestro(true); }
@@ -1046,7 +1070,7 @@ function pintarNuestro(forzar){
       const nb = (esF || !S.db || !(esRevisor() || esMarca())) ? '' : '<button class="nb" data-nota="' + i + '"' + (PD[i] ? ' hidden' : '') + ' title="' + (esMarca() ? 'Dejar una nota sobre esta parte' : 'Dejar una nota para que Claude cambie esta parte') + '">+ Nota</button>';
       return '<div class="fila"' + (rf ? ' data-a="' + rf[0] + '" data-b="' + rf[1] + '"' : '') + '><div class="et"><b>' + esc(p[0]) + '</b>' + (p.length > 1 ? '<small>' + esc(p.slice(1).join(' · ')) + '</small>' : '') + chip + nb + '</div>' +
         '<div class="di">' + cel(i, 'dice', r.dice, 'dicho' + m('dice'), 'Sin texto') + antes + (HC[i] ? hechoHTML(HC[i]) : '') + (CL[i] ? '<div class="pd cl"><span>Nota de ' + esc(CFG.cliente) + '</span><p>' + esc(CL[i]) + '</p></div>' : '') + (PD[i] ? pedidoHTML(i, PD[i]) : '') + '</div>' +
-        '<div class="ve">' + (esF ? '' : cel(i, 'texto', r.texto, 'placa' + m('texto'), '+ texto en pantalla')) + cel(i, 'filma', r.filma, 'filma' + m('filma'), 'Sin indicación') + '</div></div>';
+        '<div class="ve">' + (esF ? cel(i, 'filma', r.filma, 'filma' + m('filma'), 'Sin indicación') : notaFila(i, r, cel, m, ce)) + '</div></div>';
     };
     if (uno) {   // una sola tabla: a la izquierda el tramo de la referencia, a la derecha la fila nuestra que lo calca
       const ref = S.G[g.ref] || {}, bl = ref.bloques || [], nombres = bl.map(b => b.bloque), B = bandas(ref, raw);
@@ -1073,7 +1097,7 @@ function pintarNuestro(forzar){
     if (!esF) { const pal = filas.reduce((n, r) => n + palabras(r.dice), 0);
       modo = '<span class="modo" role="group" aria-label="Cuánto mostrar"><button class="tg' + (S.det ? '' : ' on') + '" data-md="s" aria-pressed="' + !S.det + '" title="Solo lo que se dice, de cada lado">Solo guion</button>' +
         '<button class="tg' + (S.det ? ' on' : '') + '" data-md="n" aria-pressed="' + S.det + '" title="Suma el texto en pantalla, qué se filma, las citas del VOC y el porqué del guion">Con notas</button></span>';
-      if (S.det) cuerpo = notasGuion(g) + cuerpo;
+      cuerpo = notasGuion(g, S.det) + cuerpo;
       extra += '<span class="num">' + pal + ' palabras · ' + Math.round(pal / RIT) + ' s</span>' + (calc ? '<span class="tagc" title="Filas que calcan un tramo de la referencia">Calco ' + calc + '/' + raw.length + '</span>' : '<span class="tagc warn" title="Todavía no está calcado de su referencia">Sin calcar</span>'); }
     pie = ed ? '<span class="chg"><i></i>Tiene cambios tuyos, marcados en amarillo.</span><button class="linkbtn" id="volver">Volver al original</button>'
         : '<span>' + (viejo ? 'Este guion se reescribió después de tus cambios. Se muestra la versión nueva.' : S.db ? (esF ? 'Hacé clic en cualquier texto para cambiarlo. Se guarda solo.' : 'Clic en un texto para cambiarlo, o «+ Nota» para pedirme el cambio de esa parte. Se guarda solo.') : esc(S.dbMsg || 'Conectando…')) + '</span>';
