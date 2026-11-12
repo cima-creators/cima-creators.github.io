@@ -853,7 +853,7 @@ function limpiaTitulo(t){
     .replace(/\s*\((arriba|una|fijo|todo|cuando|mayúsculas|en cada)[^)]*\)/gi, '').replace(/[\s·.;,]+$/, '').trim();
 }
 function fotoDe(filma){   // la frase de «qué se filma» que dice de qué es la foto o la captura («Cambia la foto: el reloj…»)
-  const f = String(filma || '').split(/(?<=[.;])\s+/).find(x => /\b(fotos?|capturas?|screenshot|recortes?)\b\s*(del?|de la|de los|de las|:|con)\s+\S/i.test(x));
+  const f = String(filma || '').split(/(?<=[.;])\s+/).find(x => /\b(fotos?|capturas?|screenshot|recortes?)\b(\s+[^\s.;:]+){0,2}?\s*(:|\bdel?\b(?!\s+(arriba|abajo|costado|la esquina))|\bcon\b)/i.test(x));   // «la foto de arriba» o «sigue señalando la foto» no dicen de qué es
   return f ? f.replace(/[\s;.]+$/, '') : '';
 }
 function notaFila(i, r, cel, m, ce){
