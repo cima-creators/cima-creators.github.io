@@ -846,13 +846,18 @@ function contexto(g){   // ángulo e idea del árbol de testeo de la marca
 // «Con notas», fila por fila (Nacho, 12/11: «me marea… poneles "Título: xxx" y todo más simple; van a ver la referencia, no hace falta
 // el "se filma"; poné si tienen que adjuntar una foto, de qué es»): solo el TÍTULO que va en pantalla, limpio de nuestras instrucciones
 // (subtítulos, «arriba 5 s», «una placa por vez»…), y la FOTO cuando hay que sumar una foto o captura. Cómo se graba = la referencia.
-function pantalla(t){   // lo que se LEE en pantalla (corrección 38): el título y el comentario fijo «…»; fuera las instrucciones de edición
+const _pal = t => String(t || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').split(/[^a-zñ0-9]+/).filter(w => w.length >= 3);
+function esSubtitulo(x, dice){   // el cartel repite lo que ella dice en esa fila = subtítulo, lo arma el editor (Nacho, 12/11: «el título quedó mezclado con subtítulos»)
+  const w = _pal(x), d = new Set(_pal(dice)); if (w.length < 2 || !d.size) return false;
+  const r = w.filter(p => d.has(p)).length / w.length; return r >= (/\s\/\s/.test(x) ? 0.5 : 0.7);
+}
+function pantalla(t, dice){   // lo que se LEE en pantalla (corrección 38): el título y el comentario fijo «…»; fuera las instrucciones de edición
   const tit = [], com = [];
-  String(t || '').replace(/\s*\([^)]*\)/g, '').split(/\s+·\s+|\s+\+\s+(?=[A-ZÁÉÍÓÚÑ¡¿«])/).forEach(x => {
+  String(t || '').replace(/\s*\([^)]*\)/g, '').split(/\s+·\s+|\s+\+\s+(?=[A-ZÁÉÍÓÚÑ¡¿«])|(?<=[».!?])\s+(?=[A-ZÁÉÍÓÚÑ¡¿«])/).forEach(x => {   // también corta en «… ». Subtítulos…» (Lagos 299)
     x = x.trim().replace(/^(y una flecha|y debajo|y abajo|debajo|abajo|arriba[^:«]*|sticker[^:«]*|cartel[^:«]*|fijo[^:«]*|en la pizarra[^:«]*|en la hoja[^:«]*|la frase escrita[^:«+]*|escrito[^:«]*|texto[^:«]*)\s*[:+]\s*/i, '').trim();
     if (!x || /cada frase|cartel blanco|letra negra|subt[íi]tulos|palabra por palabra|^la frase escrita|una placa por|una por vez|cuando (la|lo|las|los) nombra/i.test(x)) return;
     if (/\s\/\s/.test(x) && /[a-záéíóúñ]{3}/.test(x) && x !== x.toUpperCase()) return;   // la frase hablada partida en carteles = subtítulo, la arma el editor
-    (/^«[\s\S]*»$/.test(x) ? com : tit).push(x);
+    x = x.replace(/[\s.;,]+$/, ''); if (/^«[\s\S]*»$/.test(x)) com.push(x); else if (!esSubtitulo(x, dice)) tit.push(x);
   });
   return {titulo: tit.join(' · ').replace(/[\s·.;,]+$/, ''), comentario: com.join(' · ')};
 }
@@ -860,11 +865,18 @@ function fotoDe(filma){   // la frase de «qué se filma» que dice de qué es l
   const f = String(filma || '').split(/(?<=[.;])\s+/).find(x => /\b(fotos?|capturas?|screenshot|recortes?)\b(\s+[^\s.;:]+){0,2}?\s*(:|\bdel?\b(?!\s+(arriba|abajo|costado|la esquina))|\bcon\b)/i.test(x));   // «la foto de arriba» o «sigue señalando la foto» no dicen de qué es
   return f ? f.replace(/[\s;.]+$/, '') : '';
 }
+function tomaDe(filma){   // la toma que no es la creadora hablando a cámara (escena, inserto, animación, imagen): Nacho, 12/11 «¿por qué no especificás qué tomas poner?»
+  return String(filma || '').split(/(?<=[.;])\s+/).filter(x => /^\s*(escena|inserto|toma\b|corte a\b|plano detalle|primer plano de|animaci[óo]n|gr[áa]fico|esquema|pantalla partida|b-?roll)/i.test(x) || /\binserto\b/i.test(x)).map(x => x.replace(/[\s;.]+$/, '')).join(' · ');
+}
+function pantRef(g){   // del video original, SOLO los títulos (titulos_ref.py: probado 10/10 contra los cuadros); el texto en pantalla viejo mezclaba subtítulos
+  return g.titulos ? g.titulos.map(t => ({inicio: t.inicio, texto: 'Título: ' + String(t.texto || '').replace(/\s*\n\s*/g, ' · ')})) : (g.texto_en_pantalla || []);
+}
 function notaFila(i, r, cel, m, ce){
-  const {titulo: tit, comentario: com} = pantalla(r.texto), fo = fotoDe(r.filma);
+  const {titulo: pt, comentario: com} = pantalla(r.texto, r.dice), tit = r.titulo_nuevo != null ? r.titulo_nuevo : pt, fo = r.foto || fotoDe(r.filma), tm = r.toma || tomaDe(r.filma);   // titulo_nuevo/foto/toma: los concreta notas-extra/<marca>.json (cliente.py)
   return (tit ? '<div class="nt"><b>Título:</b> ' + cel(i, 'texto', tit, 'tit' + m('texto'), '') + '</div>' : '') +   // sin título, nada (ni el «+ título» vacío: Nacho, 12/11)
     (com ? '<div class="nt"><b>Foto:</b> caja de comentario con ' + esc(com) + '</div>' : '') +   // el comentario fijo se inserta como captura de una caja de comentario (Nacho, 12/11)
-    (fo ? '<div class="nt"><b>Foto:</b> ' + esc(fo) + '</div>' : '');
+    (fo ? '<div class="nt"><b>Foto:</b> ' + esc(fo) + '</div>' : '') +
+    (tm ? '<div class="nt"><b>Toma:</b> ' + esc(tm) + '</div>' : '');
 }
 // Arriba del guion, siempre (Nacho, 12/11): dónde se graba y la ropa SOLO si importa (bata, short, calza, dos outfits…); remera o buzo lisos no se aclaran
 const ROPA = /\b(remera|camisa|buzo|chomba|blusa|musculosa|calza|short|top|jean|pollera|bata|pijama|malla|bikini|outfits?|looks?|ropa|campera|delantal|anteojos|maquillaje|pelo atado|pelo suelto)\b/i;
@@ -922,14 +934,14 @@ const verOrig = () => S.orig && S.tab !== 'guiones';   // en Guiones la referenc
 const enlazado = () => { const g = S.tab === 'guiones' ? guionAct() : null; return !!(g && g.ref === S.gan); };
 const unido = () => enlazado() && (guionAct().filas || []).some(r => r.ref);   // la referencia y el nuestro van en una sola tabla, tramo por tramo
 function segHTML(g, s, cls){
-  const ps = (g.texto_en_pantalla || []).filter(p => p.inicio >= s.inicio - 0.3 && p.inicio < s.fin).map(p => '<span>' + esc(p.es || p.texto) + '</span>').join('');
+  const ps = pantRef(g).filter(p => p.inicio >= s.inicio - 0.3 && p.inicio < s.fin).map(p => '<span>' + esc(p.es || p.texto) + '</span>').join('');
   const orig = (s.original && s.original !== s.es) ? '<div class="or">' + esc(s.original) + '</div>' : '';
   return '<div class="seg' + (cls || '') + '" data-t="' + s.inicio + '" data-fin="' + s.fin + '"><div class="t">' + fmtT(s.inicio) + '</div><div><div class="es">' + esc(s.es || s.original) + '</div>' + orig + (ps ? '<div class="ps">' + ps + '</div>' : '') + '</div></div>';
 }
 function botonesRef(g, largo){
-  const hayOrig = S.tab !== 'guiones' && (g.transcripcion || []).some(s => s.original && s.original !== s.es), hayPant = (g.texto_en_pantalla || []).length > 0;
+  const hayOrig = S.tab !== 'guiones' && (g.transcripcion || []).some(s => s.original && s.original !== s.es), hayPant = pantRef(g).length > 0;
   return (hayOrig ? '<button class="tg' + (S.orig ? ' on' : '') + '" id="tg-orig" aria-pressed="' + S.orig + '" title="La frase en el idioma del anuncio">' + (largo ? 'Idioma original' : 'Original') + '</button>' : '') +
-         (hayPant ? '<button class="tg' + (S.pant ? ' on' : '') + '" id="tg-pant" aria-pressed="' + S.pant + '" title="El texto que aparece escrito en el video">' + (largo ? 'Texto en pantalla' : 'Pantalla') + '</button>' : '');
+         (hayPant ? '<button class="tg' + (S.pant ? ' on' : '') + '" id="tg-pant" aria-pressed="' + S.pant + '" title="Los títulos del video (no los subtítulos)">' + (largo ? 'Títulos' : 'Títulos') + '</button>' : '');
 }
 function ligarBotonesRef(pintar){
   const to = $('#tg-orig'); if (to) to.onclick = () => { S.orig = !S.orig; setPref('orig', S.orig); pintar(); };
@@ -1085,7 +1097,7 @@ function pintarNuestro(forzar){
       B.forEach(x => { x.blq = x.propia ? null : blq(x.a); });
       B.forEach((x, i) => { if (!x.blq) { const a = B.slice(0, i).reverse().find(y => y.blq), d = B.slice(i + 1).find(y => y.blq); x.blq = (a || d || {}).blq || null; } });
       const nuestros = b => B.filter(x => x.blq === b).reduce((n, x) => n + x.filas.reduce((m, i) => m + palabras(filas[i].dice), 0), 0) / RIT;
-      const pant = (a, b) => (ref.texto_en_pantalla || []).filter(p => p.inicio >= a - 0.3 && p.inicio < b).map(p => '<span>' + esc(p.es || p.texto) + '</span>').join('');
+      const pant = (a, b) => pantRef(ref).filter(p => p.inicio >= a - 0.3 && p.inicio < b).map(p => '<span>' + esc(p.es || p.texto) + '</span>').join('');
       let ult = null;
       cuerpo = '<div class="cmp"><div class="c-h"><div>Referencia · <b>' + esc(ref.marca || '') + '</b></div><div>Nuestro guion · <b>' + esc(g.quien) + '</b></div></div>' + B.map(x => {
         let cab = '';
