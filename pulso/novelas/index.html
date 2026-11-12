@@ -141,8 +141,11 @@ summary{cursor:pointer;font-weight:600;font-size:13px}
 .par.solo-orig>.vid.final,.par.solo-pulso>.vid:not(.final){display:none}
 .par.solo-orig,.par.solo-pulso{grid-template-columns:1fr;justify-items:center;background:#1d1916}
 .par.solo-orig>.vid,.par.solo-pulso>.vid{width:50%}
-.vpar.solo-orig>.vv:last-child,.vpar.solo-pulso>.vv:first-child{display:none}
-.vpar.solo-orig,.vpar.solo-pulso{grid-template-columns:1fr}
+.vpar.solo-orig>.vv:last-child video,.vpar.solo-pulso>.vv:first-child video{opacity:0}
+.vpar.solo-orig>.vv:last-child::after,.vpar.solo-pulso>.vv:first-child::after{content:"apagado";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.35);font-size:13px;pointer-events:none}
+.vv .ojob{position:absolute;left:50%;bottom:10px;transform:translateX(-50%);z-index:3;border:0;border-radius:999px;padding:6px 14px;font:600 12px/1 inherit;background:rgba(255,255,255,.14);color:#fff;cursor:pointer;backdrop-filter:blur(6px)}
+.vv .ojob:hover{background:rgba(255,255,255,.24)}
+.vv .ojob.on{background:#E8A66B;color:#1d1916}
 .d-ver{display:none;border:1px solid var(--line);background:var(--acc-bg);color:var(--acc);border-radius:99px;padding:5px 11px;font-size:11.5px;font-weight:600;cursor:pointer;white-space:nowrap}
 .duo.con-solo .d-ver{display:inline-block}
 .vver{display:none}.vesc.con-solo .vver{display:inline-block}
@@ -483,10 +486,10 @@ function pintarVisor(){
   if (firma !== VS.firma){
     VS.firma = firma;
     $("#vbox").innerHTML = `<section class="vesc"><div class="vpar">
-        <div class="vv"><video id="vvO" src="${esc(d.origPrev || d.video)}" muted playsinline preload="auto"></video><span class="tag">Ryze · original</span><button class="ojo" data-ojo="pulso" title="Ocultar este y ver solo el de Pulso">👁</button></div>
-        <div class="vv"><video id="vvP" src="${esc(d.finalPrev || d.finalSubs || d.final)}" playsinline preload="auto"></video><span class="tag hecho">Pulso · ${esc(d.codigo || "")}</span><button class="ojo" data-ojo="orig" title="Ocultar este y ver solo el original">👁</button></div></div>
+        <div class="vv"><video id="vvO" src="${esc(d.origPrev || d.video)}" muted playsinline preload="auto"></video><span class="tag">Ryze · original</span><button class="ojob ${OJO === "orig" ? "on" : ""}" data-ojo="orig" title="Apaga el de Pulso y escuchás este">👁 ${OJO === "orig" ? "ver los dos" : "ver solo este"}</button></div>
+        <div class="vv"><video id="vvP" src="${esc(d.finalPrev || d.finalSubs || d.final)}" playsinline preload="auto"></video><span class="tag hecho">Pulso · ${esc(d.codigo || "")}</span><button class="ojob ${OJO === "pulso" ? "on" : ""}" data-ojo="pulso" title="Apaga el original y escuchás este">👁 ${OJO === "pulso" ? "ver los dos" : "ver solo este"}</button></div></div>
       <div class="vlt"><div class="pista" id="vPista"><div class="riel"></div><div class="hecho" id="vHecho"></div><div id="vSegs"></div><div id="vPacks"></div><div id="vMarcas"></div><div class="cz" id="vCz"></div></div>
-        <div class="vctr"><span class="tcv" id="vTc"><b>0:00,0</b> / 0:00</span><button class="bi" id="vAtras" title="Atrás 2 s (←)">−2 s</button><button class="bi" id="vPlay" style="min-width:76px">▶ Play</button><button class="bi" id="vAdel" title="Adelante 2 s (→)">+2 s</button><button class="bi" id="vVel" title="Velocidad">${VS.vel}×</button><button class="bi" id="vAud" title="Qué audio escuchás">🔊 Pulso</button><button class="bi vver" data-ojo="">👁 ver los dos</button></div>
+        <div class="vctr"><span class="tcv" id="vTc"><b>0:00,0</b> / 0:00</span><button class="bi" id="vAtras" title="Atrás 2 s (←)">−2 s</button><button class="bi" id="vPlay" style="min-width:76px">▶ Play</button><button class="bi" id="vAdel" title="Adelante 2 s (→)">+2 s</button><button class="bi" id="vVel" title="Velocidad">${VS.vel}×</button><button class="bi" id="vAud" title="Qué audio escuchás">🔊 Pulso</button></div>
         <div class="vley"><span><i style="background:#B4633A"></i>nota</span><span><i style="background:#E8A66B;border-radius:3px;height:5px;width:12px"></i>toma del pack</span><span>N: nota acá · espacio: play · ← → 2 s · ↑ ↓ otra novela</span></div></div></section>
       <aside class="vpan"><div class="vcab" id="vCabe"></div><div class="vsecs" id="vSecs2"></div><div id="vcuerpo"></div>
         <form class="vred" id="vForm" hidden><div class="d"><span id="vDondeL">Nota en</span><b id="vDonde">0:00,0</b><button type="button" class="btn ch" id="vGeneral">Nota general</button><span class="ay">⌘/Ctrl + Enter guarda</span></div>
@@ -559,8 +562,9 @@ function conectarVisor(id){
   $("#vAud").onclick = () => { VS.audio = VS.audio === "pulso" ? "ryze" : "pulso"; p.muted = VS.audio !== "pulso"; o.muted = VS.audio !== "ryze"; $("#vAud").textContent = VS.audio === "pulso" ? "🔊 Pulso" : "🔊 Ryze"; };
   $("#vbox").querySelectorAll("[data-ojo]").forEach(b => b.onclick = e => {
     e.stopPropagation();
-    ponerOjo(b.dataset.ojo);
+    ponerOjo(OJO === b.dataset.ojo ? "" : b.dataset.ojo);   // otro toque = ver los dos
     if ((OJO === "orig" && VS.audio !== "ryze") || (OJO === "pulso" && VS.audio !== "pulso")) $("#vAud").onclick();
+    $("#vbox").querySelectorAll(".ojob").forEach(x => { const on = OJO === x.dataset.ojo; x.classList.toggle("on", on); x.textContent = "👁 " + (on ? "ver los dos" : "ver solo este"); });
   });
   aplicarOjo($("#vbox"));
   const pista = $("#vPista"); let arr = false;
@@ -575,12 +579,15 @@ const irT = t => { const p = VV(), o = $("#vvO"); if (p){ p.currentTime = t; o.c
 function pintarVPista(){
   const d = VS.abierto && dd(VS.abierto), p = VV(); if (!d || !p || !$("#vMarcas")) return;
   const dur = p.duration || d.duracion || 1;
-  $("#vSegs").innerHTML = ((d.desarmado || {}).escenas || []).map(s => {
-    const a = parseFloat(s.t) || 0, b = parseFloat(String(s.t).split("-")[1]) || a + 1;
+  const escs = (d.desarmado || {}).escenas || [];
+  const finMax = Math.max(0, ...escs.map(s => parseFloat(String(s.t).split("-")[1]) || parseFloat(s.t) || 0));
+  const k = finMax > dur * 1.03 ? dur / finMax : 1;   // desarmado con tiempos inflados: se lleva al largo real
+  $("#vSegs").innerHTML = escs.map(s => {
+    const a = (parseFloat(s.t) || 0) * k, b = (parseFloat(String(s.t).split("-")[1]) || (parseFloat(s.t) || 0) + 1) * k;
     return `<button class="seg" data-st0="${a}" data-st1="${b}" style="left:${a / dur * 100}%;width:${Math.max(.6, (b - a) / dur * 100)}%" title="${esc(tcv(a, false) + " · " + (s.dice || ""))}"></button>`;
   }).join("");
   $("#vbox").querySelectorAll("[data-st0]").forEach(b => b.onclick = () => { VS.sec = "escenas"; irT(Number(b.dataset.st0) + .05); pintarVCuerpo(); });
-  $("#vPacks").innerHTML = packSpans(d.desarmado || {}, d).map(t => `<button class="pk" data-pk="${t}" style="left:${Math.min(99, t / dur * 100)}%;width:7px" title="toma del pack · ${Math.round(t)} s"></button>`).join("");
+  $("#vPacks").innerHTML = packSpans(d.desarmado || {}, d).map(t => t * k).map(t => `<button class="pk" data-pk="${t}" style="left:${Math.min(99, t / dur * 100)}%;width:7px" title="toma del pack · ${Math.round(t)} s"></button>`).join("");
   $("#vMarcas").innerHTML = notasT(d).filter(n => n.t != null).map(n => `<button class="mk ${n.estado !== "pend" ? "ok" : ""} ${n.id === VS.activa ? "act" : ""}" data-mk="${esc(n.id)}" style="left:${Math.min(100, n.t / dur * 100)}%" title="${esc(tcv(n.t) + " · " + n.texto)}"></button>`).join("");
   $("#vbox").querySelectorAll("[data-pk]").forEach(b => b.onclick = () => irT(Number(b.dataset.pk)));
   $("#vbox").querySelectorAll("[data-mk]").forEach(b => b.onclick = () => irNota(b.dataset.mk));
@@ -719,8 +726,8 @@ function tarjeta(d){
     <div class="chead"><div class="av">R</div>
       <div class="who"><b>RYZE · mini novela</b><small>${esc(d.estilo || "")}${(d.packs||[]).length ? ` · 📦 ${(d.packs||[]).length} toma${(d.packs||[]).length === 1 ? "" : "s"} del pack` : ""}${(d.subsQuemados||{}).tiene ? " · subs quemados" : ""}</small></div></div>
     ${prod ? `<div class="duo"><button class="btn sm dark revtag" data-acc="revisar" data-id="${esc(d.id)}">✍️ Revisar con notas</button><div class="par">
-      <div class="vid"><video class="v-orig" src="${esc(d.origPrev || d.video)}" poster="${esc(d.thumb)}" preload="metadata" muted playsinline></video><span class="tag">Ryze · original</span><button class="ojo" data-ojo="pulso" title="Ocultar este y ver solo el de Pulso">👁</button></div>
-      <div class="vid final"><video class="v-pulso" src="${esc(d.finalPrev || d.finalSubs || d.final)}" preload="metadata" playsinline></video><span class="tag hecho">Pulso · ${esc(d.codigo || "")}</span><button class="ojo" data-ojo="orig" title="Ocultar este y ver solo el original">👁</button></div></div>
+      <div class="vid"><video class="v-orig" src="${esc(d.origPrev || d.video)}" poster="${esc(d.thumb)}" preload="metadata" muted playsinline></video><span class="tag">Ryze · original</span><button class="ojob ${OJO === "orig" ? "on" : ""}" data-ojo="orig" title="Apaga el de Pulso y escuchás este">👁 ${OJO === "orig" ? "ver los dos" : "ver solo este"}</button></div>
+      <div class="vid final"><video class="v-pulso" src="${esc(d.finalPrev || d.finalSubs || d.final)}" preload="metadata" playsinline></video><span class="tag hecho">Pulso · ${esc(d.codigo || "")}</span><button class="ojob ${OJO === "pulso" ? "on" : ""}" data-ojo="pulso" title="Apaga el original y escuchás este">👁 ${OJO === "pulso" ? "ver los dos" : "ver solo este"}</button></div></div>
       <div class="duo-bar"><button class="d-play" title="Reproducir los dos juntos">▶</button><input class="d-seek" type="range" min="0" max="1000" value="0" aria-label="Posición"><span class="d-t">0:00</span><button class="d-ver" data-ojo="">👁 ver los dos</button><button class="d-aud" title="Qué audio escuchás">🔊 Pulso</button></div></div>` : `<div class="vid">
       <video src="${esc(d.video)}" poster="${esc(d.thumb)}" preload="none" controls playsinline></video>
       <span class="tag ${nueva ? "nueva" : ""}">${nueva ? "Nueva · " : ""}${esc(d.duracion || "?")} s</span>
