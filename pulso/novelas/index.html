@@ -236,7 +236,8 @@ summary{cursor:pointer;font-weight:600;font-size:13px}
 .jrow small{opacity:.55;margin-right:4px}.jrow em{display:block;font-style:normal;color:#ffb3a8;margin-top:3px}
 .jvotos{display:flex;gap:6px;margin-top:4px}.jvotos i{font-style:normal;font-size:11px;padding:1px 6px;border-radius:6px;background:rgba(255,255,255,.08)}
 .jvotos i.no{background:rgba(255,90,70,.25)}
-.nota .resp{display:block;margin-top:8px;padding:8px 10px;border-radius:10px;background:rgba(80,180,110,.12);color:#9fe0b1;font-size:13px;line-height:1.45;white-space:pre-wrap}
+.nota .info{display:inline-grid;place-items:center;width:15px;height:15px;border-radius:50%;border:1px solid var(--smut);font:italic 700 10px/1 Georgia,serif;color:var(--smut);cursor:pointer;position:relative;outline:0}
+.nota .info:hover::after,.nota .info:focus::after{content:attr(data-r);position:absolute;bottom:140%;right:-8px;width:250px;background:var(--scard);border:1px solid var(--sline);color:var(--stxt);font:400 11.5px/1.45 inherit;font-family:inherit;font-style:normal;padding:7px 9px;border-radius:9px;white-space:normal;z-index:30;box-shadow:0 6px 18px rgba(0,0,0,.35)}
 </style>
 </head>
 <body>
@@ -625,8 +626,8 @@ function pintarNotas(){
   const ns = [...notasT(d)].sort((a, b) => ((a.t ?? -1) - (b.t ?? -1)));
   const et = n => n.estado === "pend" ? "" : n.estado === "env" ? `<span class="et env">${(n.ver || 1) < verN(d) ? "pedida en v" + n.ver : "enviada"}</span>` : n.estado === "arreglando" ? `<span class="et env">arreglando…</span>` : `<span class="et">resuelta</span>`;
   c.innerHTML = ns.length ? ns.map(n => `<div class="nota ${n.estado !== "pend" ? "ok" : ""} ${n.id === VS.activa ? "act" : ""}">
-      <button class="tcb ${n.t == null ? "gen" : ""}" data-ir="${esc(n.id)}" type="button">${n.t == null ? "General" : tcv(n.t)}</button><span class="tx">${esc(n.texto)}</span>${n.respuesta ? `<span class="resp">✅ ${esc(n.respuesta)}</span>` : ""}
-      <span class="pie"><span>${esc(n.por || "")} · v${n.ver || 1}</span>${et(n)}${n.estado === "pend" ? `<button data-borrar="${esc(n.id)}" type="button">Borrar</button>` : ""}</span></div>`).join("")
+      <button class="tcb ${n.t == null ? "gen" : ""}" data-ir="${esc(n.id)}" type="button">${n.t == null ? "General" : tcv(n.t)}</button><span class="tx">${esc(n.texto)}</span>
+      <span class="pie"><span>${esc(n.por || "")} · v${n.ver || 1}</span>${et(n)}${n.respuesta ? `<span class="info" tabindex="0" data-r="${esc(n.respuesta)}">i</span>` : ""}${n.estado === "pend" ? `<button data-borrar="${esc(n.id)}" type="button">Borrar</button>` : ""}</span></div>`).join("")
     : `<p style="color:var(--mut);font-size:12.5px;padding:8px 2px">${ed ? "Pausá donde quieras cambiar algo y escribí abajo: la nota queda clavada en ese segundo, como Frame.io. Los puntitos 🟠 de la barra son las tomas del pack." : "Sin notas."}</p>`;
   c.querySelectorAll("[data-ir]").forEach(b => b.onclick = () => irNota(b.dataset.ir));
   c.querySelectorAll("[data-borrar]").forEach(b => b.onclick = async () => {
