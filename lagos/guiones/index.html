@@ -451,6 +451,10 @@ button.ref:hover{background:var(--sunken)}
 .pl.a{background:var(--accent-soft);color:var(--accent);letter-spacing:.04em}
 .pl.f{background:var(--b2);color:var(--ink)}
 .pl.ok{background:var(--ok-soft);color:var(--ok)}
+.pl.env,em.env{background:#fff1e0;color:#b45309;font-style:normal;font-weight:600}
+em.env{font-size:10.5px;padding:1px 6px;border-radius:99px;margin-left:4px;white-space:nowrap}
+:root[data-theme="dark"] .pl.env,:root[data-theme="dark"] em.env{background:#3a2a14;color:#fbbf6a}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .pl.env,:root:not([data-theme="light"]) em.env{background:#3a2a14;color:#fbbf6a}}
 .pl.hoy{background:var(--accent);color:var(--on)}
 /* color por grupo: verde = lo graba una creadora en su casa · ámbar = formato nuevo · violeta = animado con IA · gris = fundadora, detrás de escena */
 .dot{display:inline-block;width:8px;height:8px;border-radius:50%;flex:none;background:var(--ink-4)}
@@ -758,6 +762,7 @@ function pintarProgreso(){
 }
 
 /* ---------- lista ---------- */
+const verEnvio = () => !S.cli || S.rol === 'equipo';   // la marca «📨 Enviado por …» es para el equipo: dice qué aprobar primero
 function lista(){
   const q = S.q.trim().toLowerCase();
   if (S.tab === 'ganadores') return [];
@@ -765,7 +770,8 @@ function lista(){
   const fl = S.filtro;
   return GUsub().filter(g => (!fl.quien || g.quien === fl.quien) && (!fl.fmt || g.fmt === fl.fmt) && (!fl.angulo || g.angulo === fl.angulo) && (!fl.idea || g.idea === fl.idea) &&
     (!fl.estado || estadoVista('gui-' + g.codigo) === (fl.estado === 'sin' ? '' : fl.estado)) &&
-    (!q || (g.num + ' ' + g.titulo + ' ' + g.quien + ' ' + nombreFmt(g.fmt) + ' ' + (g.angulo || '') + ' ' + (g.idea || '')).toLowerCase().includes(q)));
+    (!q || (g.num + ' ' + g.titulo + ' ' + g.quien + ' ' + nombreFmt(g.fmt) + ' ' + (g.angulo || '') + ' ' + (g.idea || '') + ' ' + (g.envia || '')).toLowerCase().includes(q)))
+    .map((g, i) => [g, i]).sort((a, b) => (verEnvio() ? (b[0].envia ? 1 : 0) - (a[0].envia ? 1 : 0) : 0) || a[1] - b[1]).map(x => x[0]);
 }
 function render(){
   ['ganadores', 'formatos'].forEach(t => { const b = $('#t-' + t); b.classList.toggle('on', S.tab === t); b.setAttribute('aria-selected', S.tab === t); });
@@ -807,7 +813,7 @@ function pintarLista(){
     return cab + '<button class="it' + (f.id === S.fmt ? ' on' : '') + '" data-id="' + esc(f.id) + '"' + (f.id === S.fmt ? ' aria-current="true"' : '') + '><span class="cod">' + esc(f.id) + '</span><span class="nm">' + esc(f.nombre) + '</span><i class="st ' + st + '" title="' + EST[st] + '"></i></button>';
   }).join('');
   else h = items.map(g => { const st = estadoVista('gui-' + g.codigo);
-    return '<button class="it' + (g.codigo === S.gui ? ' on' : '') + '" data-id="' + esc(g.codigo) + '"' + (g.codigo === S.gui ? ' aria-current="true"' : '') + '><span class="cod">' + esc(g.num) + '</span><span class="nm">' + esc(g.titulo) + '<small>' + esc(g.quien) + ' · ' + esc(nombreFmt(g.fmt)) + (g.idea ? ' <b>· ' + esc(g.idea) + '</b>' : '') + '</small></span><i class="st ' + st + '" title="' + EST[st] + '"></i></button>';
+    return '<button class="it' + (g.codigo === S.gui ? ' on' : '') + '" data-id="' + esc(g.codigo) + '"' + (g.codigo === S.gui ? ' aria-current="true"' : '') + '><span class="cod">' + esc(g.num) + '</span><span class="nm">' + esc(g.titulo) + (g.envia && verEnvio() ? '<em class="env" title="Lo mandó ' + esc(g.envia) + ': aprobalo primero">📨 ' + esc(g.envia) + '</em>' : '') + '<small>' + esc(g.quien) + ' · ' + esc(nombreFmt(g.fmt)) + (g.idea ? ' <b>· ' + esc(g.idea) + '</b>' : '') + '</small></span><i class="st ' + st + '" title="' + EST[st] + '"></i></button>';
   }).join('');
   box.innerHTML = h || '<div class="nada">' + (S.q || S.filtro.quien || S.filtro.fmt || S.filtro.estado || S.filtro.angulo || S.filtro.idea ? 'Nada coincide con el filtro.' : S.tab === 'formatos' ? 'Todavía no hay formatos cargados.' : 'Los guiones aparecen acá cuando estén escritos.') + '</div>';
   box.querySelectorAll('[data-id]').forEach(b => b.onclick = () => ir(S.tab, b.dataset.id));
@@ -864,6 +870,7 @@ function pintarMain(){
   } else {
     cab = '<div class="h-row"><div class="h-id"><span class="code">' + esc(g.num) + '</span><h1>' + esc(g.titulo) + '</h1></div>' + acc + '</div>' +
       '<div class="meta"><span><b>' + esc(g.quien) + '</b></span><span>' + (S.cli ? esc(fmt.nombre || g.fmt) : '<button class="lnk" id="irfmt" title="Ver el formato">' + esc(fmt.nombre || g.fmt) + '</button>') + '</span>' + (S.G[g.ref] ? '<span>Sale de <button class="lnk" id="irref" title="Ver la referencia de la que se calcó">' + esc(S.G[g.ref].marca || g.ref) + '</button></span>' : '') +
+      (g.envia && verEnvio() ? '<span class="pl env" title="Lo mandó ' + esc(g.envia) + ': aprobalo primero para que lo graben">📨 Enviado por ' + esc(g.envia) + '</span>' : '') +
       (g.broll ? '<span><a class="lnk" href="' + esc(g.broll) + '" target="_blank" rel="noopener" title="Carpeta con las capturas y fotos que pide este guion">📁 Tomas y capturas</a></span>' : '') +
       '</div>' + contexto(g) + '<div class="tl" id="tl"></div>';
   }
@@ -1213,7 +1220,7 @@ const CRIT_GAN = {ventas: d => (d.ref || {}).compras || 0, dup: d => (d.ref || {
 function ganVisibles(){
   const q = S.q.trim().toLowerCase(), e = S.gf.estado;
   return S.GAN.filter(d => (e === 'elegida' ? ['elegida', 'lista'].includes(d.estado) : d.estado === e) && (!S.gf.fmt || seccionGan(d) === S.gf.fmt || (fmtPropio(d) && seccionGan(fmtPropio(d)) === S.gf.fmt)) && (!q || ((d.ref || {}).m || '').toLowerCase().includes(q)))
-    .sort((a, b) => (CRIT_GAN[S.gf.orden] ? CRIT_GAN[S.gf.orden](b) - CRIT_GAN[S.gf.orden](a) : 0) || ordenGan(a) - ordenGan(b) || String(seccionGan(a)).localeCompare(String(seccionGan(b))) || String(b.fecha || '').localeCompare(String(a.fecha || '')) || ((b.ref || {}).senal || 0) - ((a.ref || {}).senal || 0) || ((b.ref || {}).dup || 0) - ((a.ref || {}).dup || 0) || ((b.ref || {}).d || 0) - ((a.ref || {}).d || 0));   // por formato (los de creadoras arriba), cada marca junta, lo nuevo primero y después lo que tiene más señal
+    .sort((a, b) => ((b.envia ? 1 : 0) - (a.envia ? 1 : 0)) || (CRIT_GAN[S.gf.orden] ? CRIT_GAN[S.gf.orden](b) - CRIT_GAN[S.gf.orden](a) : 0) || ordenGan(a) - ordenGan(b) || String(seccionGan(a)).localeCompare(String(seccionGan(b))) || String(b.fecha || '').localeCompare(String(a.fecha || '')) || ((b.ref || {}).senal || 0) - ((a.ref || {}).senal || 0) || ((b.ref || {}).dup || 0) - ((a.ref || {}).dup || 0) || ((b.ref || {}).d || 0) - ((a.ref || {}).d || 0));   // por formato (los de creadoras arriba), cada marca junta, lo nuevo primero y después lo que tiene más señal
 }
 function pintarListaGanadores(){   // en esta pestaña la lista de la izquierda filtra por formato, en el orden de trabajo: primero lo que graban las creadoras
   const e = S.gf.estado, deEstado = S.GAN.filter(d => e === 'elegida' ? ['elegida', 'lista'].includes(d.estado) : d.estado === e), sec = {};
@@ -1239,7 +1246,7 @@ function tarjeta(d){
     '<button class="gc-img" data-ver aria-label="Ver el video">' + (d.img ? '<img loading="lazy" src="' + esc(d.img) + '" alt="">' : '') + (r.dur ? '<span class="dur">' + fmtT(r.dur) + '</span>' : '') + '</button>' +
     '<div class="gc-b"><div class="pills"><span class="pl a" title="Señal: días al aire, duplicados, tamaño de la marca y nivel">' + ESTRELLAS(r.senal) + '</span>' + (r.compras ? '<span class="pl ok" title="Compras en el reporte pro">' + esc(r.compras) + ' ventas</span><span class="pl">ROAS ' + esc(String(r.roas).replace('.', ',')) + '</span>' : '') + (r.d ? '<span class="pl" title="Días que lleva corriendo">' + esc(r.d) + ' días</span>' : '') + (r.dup > 1 ? '<span class="pl">' + esc(r.dup) + ' dup.</span>' : '') + (d.fecha === HOY_LOCAL && d.estado === 'elegir' ? '<span class="pl hoy">Hoy</span>' : '') + (esComp(d) ? '<span class="pl cmp">Competencia</span>' : '') + '<span class="pl f" title="' + esc(GRUPOS_GAN[grupoGan(d)][0]) + '"><i class="dot ' + grupoGan(d) + '"></i><span>' + esc(d.fmtNombre || d.fmt) + '</span></span></div>' +
     '<h3 class="clamp2">' + esc(d.hook || '') + '</h3><p class="clamp3">' + esc(idea) + '</p>' +
-    (d.estado === 'elegida' || d.estado === 'lista' ? '<div class="pills">' + (para.angulos || []).map(a => '<span class="pl ok">' + esc(a) + '</span>').join('') + (d.estado === 'lista' ? '<span class="pl ok">Guion hecho' + (d.guiones ? ': ' + esc(d.guiones) : '') + '</span>' : '<span class="pl">Falta escribirlo</span>') + '</div>' : '') +
+    (d.estado === 'elegida' || d.estado === 'lista' ? '<div class="pills">' + (d.envia ? '<span class="pl env">📨 Enviado por ' + esc(d.envia) + '</span>' : '') + (para.angulos || []).map(a => '<span class="pl ok">' + esc(a) + '</span>').join('') + (d.estado === 'lista' ? '<span class="pl ok">Guion hecho' + (d.guiones ? ': ' + esc(d.guiones) : '') + '</span>' : '<span class="pl">Falta escribirlo</span>') + '</div>' : '') +
     '<div class="gacc">' + pie + '</div></div></article>';
 }
 function pintarGanadores(){
