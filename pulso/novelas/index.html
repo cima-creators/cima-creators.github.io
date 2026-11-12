@@ -508,6 +508,7 @@ function pintarVCuerpo(){
   const pants = Array.isArray(d.pantallas) ? d.pantallas : [];
   const jur = d.jurado && Array.isArray(d.jurado.preguntas) ? d.jurado : null;
   const secs = [...(jur ? [["jurado", jur.ok ? "✅ Jurado" : "🧑‍⚖️ Jurado", `${jur.aprobadas}/20`]] : []),
+                ...(d.ladoALado ? [["lado", "Lado a lado", ""]] : []),
                 ["escenas", "Escenas", esc9.length], ...(pants.length ? [["subs", "Subtítulos", pants.length]] : []),
                 ["notas", "Notas", pendN(d).length || ""]];
   if (!secs.find(s => s[0] === VS.sec)) VS.sec = "notas";
@@ -515,6 +516,14 @@ function pintarVCuerpo(){
   $("#vSecs2").querySelectorAll("[data-sec]").forEach(b => b.onclick = () => { VS.sec = b.dataset.sec; pintarVCuerpo(); });
   if (VS.sec === "notas") { pintarNotas(); return; }
   const c = $("#vcuerpo");
+  if (VS.sec === "lado") {   // la prueba visual: ORIGINAL | NUESTRO en cada toma y en puntos sueltos
+    const integ = Array.isArray(d.integridad) ? d.integridad : [];
+    c.innerHTML = `<div class="jhead">${integ.length ? `🛑 Fuera de las tomas no es igual al original en ${integ.map(x => x[0] + " s").join(", ")}` : "🔒 Fuera de las tomas es idéntico al original"}</div>
+      <a href="${esc(d.ladoALado)}" target="_blank" rel="noopener"><img src="${esc(d.ladoALado)}" alt="Original y nuestro lado a lado" style="width:100%;border-radius:8px"></a>`;
+    $("#vForm").hidden = dd(VS.abierto)?.estado !== "producido";
+    pintarVPista();
+    return;
+  }
   if (VS.sec === "jurado") {   // las 20 preguntas con los 3 votos (Medidor · Ojo/Oído · Revisor): pasa solo si los 3 dicen que sí
     const ico = o => o === true ? "✔" : o === false ? "✘" : "–";
     const area = {voz: "Voz", sonido: "Sonido", subs: "Subtítulos", pack: "Pack / RYZE", tomas: "Tomas", guion: "Guion y marca"};
