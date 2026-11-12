@@ -813,7 +813,7 @@ function pintarLista(){
     return cab + '<button class="it' + (f.id === S.fmt ? ' on' : '') + '" data-id="' + esc(f.id) + '"' + (f.id === S.fmt ? ' aria-current="true"' : '') + '><span class="cod">' + esc(f.id) + '</span><span class="nm">' + esc(f.nombre) + '</span><i class="st ' + st + '" title="' + EST[st] + '"></i></button>';
   }).join('');
   else h = items.map(g => { const st = estadoVista('gui-' + g.codigo);
-    return '<button class="it' + (g.codigo === S.gui ? ' on' : '') + '" data-id="' + esc(g.codigo) + '"' + (g.codigo === S.gui ? ' aria-current="true"' : '') + '><span class="cod">' + esc(g.num) + '</span><span class="nm">' + esc(g.titulo) + (g.envia && verEnvio() ? '<em class="env" title="Lo mandó ' + esc(g.envia) + ': aprobalo primero">📨 ' + esc(g.envia) + '</em>' : '') + '<small>' + esc(g.quien) + ' · ' + esc(nombreFmt(g.fmt)) + (g.idea ? ' <b>· ' + esc(g.idea) + '</b>' : '') + '</small></span><i class="st ' + st + '" title="' + EST[st] + '"></i></button>';
+    return '<button class="it' + (g.codigo === S.gui ? ' on' : '') + '" data-id="' + esc(g.codigo) + '"' + (g.codigo === S.gui ? ' aria-current="true"' : '') + '><span class="cod">' + esc(g.num) + '</span><span class="nm">' + esc(g.titulo) + (g.envia && verEnvio() ? '<em class="env" title="Lo mandó ' + esc(g.envia) + ': aprobalo primero">📨 ' + esc(g.envia) + '</em>' : '') + (g.sello && verEnvio() ? '<em class="env" title="' + esc(g.sello) + '">🔁</em>' : '') + '<small>' + esc(g.quien) + ' · ' + esc(nombreFmt(g.fmt)) + (g.idea ? ' <b>· ' + esc(g.idea) + '</b>' : '') + '</small></span><i class="st ' + st + '" title="' + EST[st] + '"></i></button>';
   }).join('');
   box.innerHTML = h || '<div class="nada">' + (S.q || S.filtro.quien || S.filtro.fmt || S.filtro.estado || S.filtro.angulo || S.filtro.idea ? 'Nada coincide con el filtro.' : S.tab === 'formatos' ? 'Todavía no hay formatos cargados.' : 'Los guiones aparecen acá cuando estén escritos.') + '</div>';
   box.querySelectorAll('[data-id]').forEach(b => b.onclick = () => ir(S.tab, b.dataset.id));
@@ -871,6 +871,7 @@ function pintarMain(){
     cab = '<div class="h-row"><div class="h-id"><span class="code">' + esc(g.num) + '</span><h1>' + esc(g.titulo) + '</h1></div>' + acc + '</div>' +
       '<div class="meta"><span><b>' + esc(g.quien) + '</b></span><span>' + (S.cli ? esc(fmt.nombre || g.fmt) : '<button class="lnk" id="irfmt" title="Ver el formato">' + esc(fmt.nombre || g.fmt) + '</button>') + '</span>' + (S.G[g.ref] ? '<span>Sale de <button class="lnk" id="irref" title="Ver la referencia de la que se calcó">' + esc(S.G[g.ref].marca || g.ref) + '</button></span>' : '') +
       (g.envia && verEnvio() ? '<span class="pl env" title="Lo mandó ' + esc(g.envia) + ': aprobalo primero para que lo graben">📨 Enviado por ' + esc(g.envia) + '</span>' : '') +
+      (g.sello && verEnvio() ? '<span class="pl env" title="Rearmado con los dolores y las palabras del VOC, ya aprobado">' + esc(g.sello) + '</span>' : '') +
       (g.broll ? '<span><a class="lnk" href="' + esc(g.broll) + '" target="_blank" rel="noopener" title="Carpeta con las capturas y fotos que pide este guion">📁 Tomas y capturas</a></span>' : '') +
       '</div>' + contexto(g) + '<div class="tl" id="tl"></div>';
   }
