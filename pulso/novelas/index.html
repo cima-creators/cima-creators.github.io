@@ -227,6 +227,12 @@ summary{cursor:pointer;font-weight:600;font-size:13px}
 .vacc .sp{flex:1}.vacc .res{font-size:11.5px;color:var(--smut);flex-basis:100%}
 .vacc .btn.ok{background:var(--sok);color:#0B0908;border-color:var(--sok)}
 @media (max-width:900px){#vbox{width:100vw;height:100dvh;border-radius:0;border:0;display:block;overflow:auto}.vpan{height:auto}.vpar{min-height:46vh}#vcuerpo{max-height:none}}
+.jhead{font-weight:700;margin:4px 0 10px;font-size:14px}
+.jrow{display:flex;gap:10px;padding:8px 6px;border-bottom:1px solid rgba(255,255,255,.07);font-size:13px;line-height:1.35}
+.jrow>b{min-width:34px}.jrow.mal>b{color:#ff7a6b}.jrow.ok>b{color:#5fd38d}
+.jrow small{opacity:.55;margin-right:4px}.jrow em{display:block;font-style:normal;color:#ffb3a8;margin-top:3px}
+.jvotos{display:flex;gap:6px;margin-top:4px}.jvotos i{font-style:normal;font-size:11px;padding:1px 6px;border-radius:6px;background:rgba(255,255,255,.08)}
+.jvotos i.no{background:rgba(255,90,70,.25)}
 </style>
 </head>
 <body>
@@ -497,13 +503,24 @@ function pintarVCuerpo(){
   const d = dd(VS.abierto); if (!d) return;
   const esc9 = (d.desarmado || {}).escenas || [];
   const pants = Array.isArray(d.pantallas) ? d.pantallas : [];
-  const secs = [["escenas", "Escenas", esc9.length], ...(pants.length ? [["subs", "Subtítulos", pants.length]] : []),
+  const jur = d.jurado && Array.isArray(d.jurado.preguntas) ? d.jurado : null;
+  const secs = [...(jur ? [["jurado", jur.ok ? "✅ Jurado" : "🧑‍⚖️ Jurado", `${jur.aprobadas}/20`]] : []),
+                ["escenas", "Escenas", esc9.length], ...(pants.length ? [["subs", "Subtítulos", pants.length]] : []),
                 ["notas", "Notas", pendN(d).length || ""]];
   if (!secs.find(s => s[0] === VS.sec)) VS.sec = "notas";
   $("#vSecs2").innerHTML = secs.map(([k, t, n]) => `<button class="vsec ${k === VS.sec ? "on" : ""}" data-sec="${k}">${t}${n !== "" ? `<b>${n}</b>` : ""}</button>`).join("");
   $("#vSecs2").querySelectorAll("[data-sec]").forEach(b => b.onclick = () => { VS.sec = b.dataset.sec; pintarVCuerpo(); });
   if (VS.sec === "notas") { pintarNotas(); return; }
   const c = $("#vcuerpo");
+  if (VS.sec === "jurado") {   // las 20 preguntas con los 3 votos (Medidor · Ojo/Oído · Revisor): pasa solo si los 3 dicen que sí
+    const ico = o => o === true ? "✔" : o === false ? "✘" : "–";
+    const area = {voz: "Voz", sonido: "Sonido", subs: "Subtítulos", pack: "Pack / RYZE", tomas: "Tomas", guion: "Guion y marca"};
+    c.innerHTML = `<div class="jhead">${jur.ok ? "✅ Aprobado: los 3 jueces de cada área dijeron que sí" : `🛑 ${20 - jur.aprobadas} ${20 - jur.aprobadas === 1 ? "pregunta no pasó" : "preguntas no pasaron"}`}${jur.ronda === 2 ? " · ya tuvo su arreglo automático" : ""}</div>` +
+      jur.preguntas.map(q => `<div class="jrow ${q.ok ? "ok" : "mal"}"><b>${q.ok ? "✔" : "✘"} ${q.n}</b><div><small>${esc(area[q.area] || q.area || "")}</small> ${esc(q.texto || "")}${q.ok ? "" : `<em>${esc(q.motivo || "")}</em>`}<span class="jvotos">${(q.votos || []).map(v => `<i class="${v.ok === false ? "no" : ""}" title="${esc(v.motivo || "")}">${esc((v.juez || "").slice(0, 1).toUpperCase())} ${ico(v.ok)}</i>`).join("")}</span></div></div>`).join("");
+    $("#vForm").hidden = dd(VS.abierto)?.estado !== "producido";
+    pintarVPista();
+    return;
+  }
   if (VS.sec === "escenas")
     c.innerHTML = esc9.map(s => { const t0 = parseFloat(s.t) || 0; return `<div class="trow" data-t0="${t0}" data-t1="${parseFloat(String(s.t).split("-")[1]) || t0 + 2}"><button class="tchip" data-ir-t="${t0}"><b>${tcv(t0, false)}</b><small>${esc(s.dice || s.ve || "")}</small>${s.pack ? "<em>📦 PACK</em>" : ""}</button></div>`; }).join("");
   else
