@@ -135,6 +135,17 @@ summary{cursor:pointer;font-weight:600;font-size:13px}
 .duo{border-bottom:1px solid var(--line);position:relative}
 .duo .revtag{position:absolute;top:10px;left:50%;transform:translateX(-50%);z-index:2;box-shadow:0 4px 14px rgba(38,33,30,.35)}
 .duo .par{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line)}
+/* ojito: apagar uno de los dos videos (Nacho 12/11) — el que queda conserva su tamaño en la tarjeta */
+.ojo{position:absolute;top:8px;right:8px;z-index:3;width:30px;height:30px;border-radius:50%;border:0;background:rgba(38,33,30,.72);color:#fff;cursor:pointer;font-size:14px;line-height:30px;padding:0}
+.ojo:hover{background:rgba(38,33,30,.92)}
+.par.solo-orig>.vid.final,.par.solo-pulso>.vid:not(.final){display:none}
+.par.solo-orig,.par.solo-pulso{grid-template-columns:1fr;justify-items:center;background:#1d1916}
+.par.solo-orig>.vid,.par.solo-pulso>.vid{width:50%}
+.vpar.solo-orig>.vv:last-child,.vpar.solo-pulso>.vv:first-child{display:none}
+.vpar.solo-orig,.vpar.solo-pulso{grid-template-columns:1fr}
+.d-ver{display:none;border:1px solid var(--line);background:var(--acc-bg);color:var(--acc);border-radius:99px;padding:5px 11px;font-size:11.5px;font-weight:600;cursor:pointer;white-space:nowrap}
+.duo.con-solo .d-ver{display:inline-block}
+.vver{display:none}.vesc.con-solo .vver{display:inline-block}
 .duo .vid{aspect-ratio:9/14;border-bottom:0;cursor:pointer}
 .duo-bar{display:flex;gap:9px;align-items:center;padding:8px 12px;background:var(--card)}
 .d-play{width:34px;height:34px;min-width:34px;border-radius:50%;border:1px solid var(--line);background:var(--soft);cursor:pointer;font-size:13px}
@@ -383,6 +394,17 @@ function pintar(){
   if (VS.abierto) { if (!dd(VS.abierto)) cerrarVisor(); else pintarVisor(); }
 }
 
+// ojito (Nacho 12/11): apagar uno de los dos videos; se recuerda y vale para todas las tarjetas y el popup
+let OJO = ""; try { OJO = localStorage.getItem("pu_nov_ojo") || ""; } catch (e) {}
+function aplicarOjo(root){
+  const r = root || document;
+  const pares = [...r.querySelectorAll(".par,.vpar")]; if (r.matches && r.matches(".par,.vpar")) pares.push(r);
+  pares.forEach(p => { p.classList.toggle("solo-orig", OJO === "orig"); p.classList.toggle("solo-pulso", OJO === "pulso"); });
+  const cajas = [...r.querySelectorAll(".duo,.vesc")]; if (r.matches && r.matches(".duo,.vesc")) cajas.push(r);
+  cajas.forEach(x => x.classList.toggle("con-solo", !!OJO));
+}
+function ponerOjo(m){ OJO = m || ""; try { localStorage.setItem("pu_nov_ojo", OJO); } catch (e) {} aplicarOjo(document); }
+
 // comparador lado a lado: el original de Ryze y el nuestro corren JUNTOS (un play, una barra), como la Sala de guiones
 function armarDuo(duo){
   const o = duo.querySelector(".v-orig"), p = duo.querySelector(".v-pulso");
@@ -411,6 +433,12 @@ function armarDuo(duo){
     p.muted = audio !== "pulso"; o.muted = audio !== "ryze";
     aud.textContent = audio === "pulso" ? "🔊 Pulso" : "🔊 Ryze";
   };
+  duo.querySelectorAll("[data-ojo]").forEach(b => b.onclick = e => {
+    e.stopPropagation();
+    ponerOjo(b.dataset.ojo);
+    if ((OJO === "orig" && audio !== "ryze") || (OJO === "pulso" && audio !== "pulso")) aud.onclick();
+  });
+  aplicarOjo(duo);
   duo.closest(".item").querySelectorAll("[data-t]").forEach(el => el.onclick = () => {
     irA(parseFloat(el.dataset.t) || 0);
     if (p.paused) { p.play(); o.play().catch(() => {}); }
@@ -449,10 +477,10 @@ function pintarVisor(){
   if (firma !== VS.firma){
     VS.firma = firma;
     $("#vbox").innerHTML = `<section class="vesc"><div class="vpar">
-        <div class="vv"><video id="vvO" src="${esc(d.origPrev || d.video)}" muted playsinline preload="auto"></video><span class="tag">Ryze · original</span></div>
-        <div class="vv"><video id="vvP" src="${esc(d.finalPrev || d.finalSubs || d.final)}" playsinline preload="auto"></video><span class="tag hecho">Pulso · ${esc(d.codigo || "")}</span></div></div>
+        <div class="vv"><video id="vvO" src="${esc(d.origPrev || d.video)}" muted playsinline preload="auto"></video><span class="tag">Ryze · original</span><button class="ojo" data-ojo="pulso" title="Ocultar este y ver solo el de Pulso">👁</button></div>
+        <div class="vv"><video id="vvP" src="${esc(d.finalPrev || d.finalSubs || d.final)}" playsinline preload="auto"></video><span class="tag hecho">Pulso · ${esc(d.codigo || "")}</span><button class="ojo" data-ojo="orig" title="Ocultar este y ver solo el original">👁</button></div></div>
       <div class="vlt"><div class="pista" id="vPista"><div class="riel"></div><div class="hecho" id="vHecho"></div><div id="vSegs"></div><div id="vPacks"></div><div id="vMarcas"></div><div class="cz" id="vCz"></div></div>
-        <div class="vctr"><span class="tcv" id="vTc"><b>0:00,0</b> / 0:00</span><button class="bi" id="vAtras" title="Atrás 2 s (←)">−2 s</button><button class="bi" id="vPlay" style="min-width:76px">▶ Play</button><button class="bi" id="vAdel" title="Adelante 2 s (→)">+2 s</button><button class="bi" id="vVel" title="Velocidad">${VS.vel}×</button><button class="bi" id="vAud" title="Qué audio escuchás">🔊 Pulso</button></div>
+        <div class="vctr"><span class="tcv" id="vTc"><b>0:00,0</b> / 0:00</span><button class="bi" id="vAtras" title="Atrás 2 s (←)">−2 s</button><button class="bi" id="vPlay" style="min-width:76px">▶ Play</button><button class="bi" id="vAdel" title="Adelante 2 s (→)">+2 s</button><button class="bi" id="vVel" title="Velocidad">${VS.vel}×</button><button class="bi" id="vAud" title="Qué audio escuchás">🔊 Pulso</button><button class="bi vver" data-ojo="">👁 ver los dos</button></div>
         <div class="vley"><span><i style="background:#B4633A"></i>nota</span><span><i style="background:#E8A66B;border-radius:3px;height:5px;width:12px"></i>toma del pack</span><span>N: nota acá · espacio: play · ← → 2 s · ↑ ↓ otra novela</span></div></div></section>
       <aside class="vpan"><div class="vcab" id="vCabe"></div><div class="vsecs" id="vSecs2"></div><div id="vcuerpo"></div>
         <form class="vred" id="vForm" hidden><div class="d"><span id="vDondeL">Nota en</span><b id="vDonde">0:00,0</b><button type="button" class="btn ch" id="vGeneral">Nota general</button><span class="ay">⌘/Ctrl + Enter guarda</span></div>
@@ -512,6 +540,12 @@ function conectarVisor(id){
   $("#vAdel").onclick = () => { p.currentTime = Math.min(dur(), p.currentTime + 2); };
   $("#vVel").onclick = () => { VS.vel = VELS[(VELS.indexOf(VS.vel) + 1) % VELS.length]; p.playbackRate = o.playbackRate = VS.vel; $("#vVel").textContent = VS.vel + "×"; };
   $("#vAud").onclick = () => { VS.audio = VS.audio === "pulso" ? "ryze" : "pulso"; p.muted = VS.audio !== "pulso"; o.muted = VS.audio !== "ryze"; $("#vAud").textContent = VS.audio === "pulso" ? "🔊 Pulso" : "🔊 Ryze"; };
+  $("#vbox").querySelectorAll("[data-ojo]").forEach(b => b.onclick = e => {
+    e.stopPropagation();
+    ponerOjo(b.dataset.ojo);
+    if ((OJO === "orig" && VS.audio !== "ryze") || (OJO === "pulso" && VS.audio !== "pulso")) $("#vAud").onclick();
+  });
+  aplicarOjo($("#vbox"));
   const pista = $("#vPista"); let arr = false;
   const irX = e => { const r = pista.getBoundingClientRect(); if (dur()){ const t = Math.min(1, Math.max(0, (e.clientX - r.left) / r.width)) * dur(); p.currentTime = t; o.currentTime = t; } };
   pista.addEventListener("pointerdown", e => { if (e.target.closest(".mk,.pk")) return; arr = true; pista.setPointerCapture(e.pointerId); irX(e); });
@@ -668,9 +702,9 @@ function tarjeta(d){
     <div class="chead"><div class="av">R</div>
       <div class="who"><b>RYZE · mini novela</b><small>${esc(d.estilo || "")}${(d.packs||[]).length ? ` · 📦 ${(d.packs||[]).length} toma${(d.packs||[]).length === 1 ? "" : "s"} del pack` : ""}${(d.subsQuemados||{}).tiene ? " · subs quemados" : ""}</small></div></div>
     ${prod ? `<div class="duo"><button class="btn sm dark revtag" data-acc="revisar" data-id="${esc(d.id)}">✍️ Revisar con notas</button><div class="par">
-      <div class="vid"><video class="v-orig" src="${esc(d.origPrev || d.video)}" poster="${esc(d.thumb)}" preload="metadata" muted playsinline></video><span class="tag">Ryze · original</span></div>
-      <div class="vid final"><video class="v-pulso" src="${esc(d.finalPrev || d.finalSubs || d.final)}" preload="metadata" playsinline></video><span class="tag hecho">Pulso · ${esc(d.codigo || "")}</span></div></div>
-      <div class="duo-bar"><button class="d-play" title="Reproducir los dos juntos">▶</button><input class="d-seek" type="range" min="0" max="1000" value="0" aria-label="Posición"><span class="d-t">0:00</span><button class="d-aud" title="Qué audio escuchás">🔊 Pulso</button></div></div>` : `<div class="vid">
+      <div class="vid"><video class="v-orig" src="${esc(d.origPrev || d.video)}" poster="${esc(d.thumb)}" preload="metadata" muted playsinline></video><span class="tag">Ryze · original</span><button class="ojo" data-ojo="pulso" title="Ocultar este y ver solo el de Pulso">👁</button></div>
+      <div class="vid final"><video class="v-pulso" src="${esc(d.finalPrev || d.finalSubs || d.final)}" preload="metadata" playsinline></video><span class="tag hecho">Pulso · ${esc(d.codigo || "")}</span><button class="ojo" data-ojo="orig" title="Ocultar este y ver solo el original">👁</button></div></div>
+      <div class="duo-bar"><button class="d-play" title="Reproducir los dos juntos">▶</button><input class="d-seek" type="range" min="0" max="1000" value="0" aria-label="Posición"><span class="d-t">0:00</span><button class="d-ver" data-ojo="">👁 ver los dos</button><button class="d-aud" title="Qué audio escuchás">🔊 Pulso</button></div></div>` : `<div class="vid">
       <video src="${esc(d.video)}" poster="${esc(d.thumb)}" preload="none" controls playsinline></video>
       <span class="tag ${nueva ? "nueva" : ""}">${nueva ? "Nueva · " : ""}${esc(d.duracion || "?")} s</span>
       <span class="tag r">${esc(d.cantada === "cantada" ? "Cantada" : "Hablada")}</span></div>`}
