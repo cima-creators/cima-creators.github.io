@@ -864,11 +864,12 @@ function notaFila(i, r, cel, m, ce){
 const ROPA = /\b(remera|camisa|buzo|chomba|blusa|musculosa|calza|short|top|jean|pollera|bata|pijama|malla|bikini|outfits?|looks?|ropa|campera|delantal|anteojos|maquillaje|pelo atado|pelo suelto)\b/i;
 const ROPA_IMPORTA = /\b(short|calza|bata|pijama|malla|bikini|outfits?|looks?|delantal|campera|pollera|top|de trabajo|dormir|cuello tiene|sin maquillaje|anteojos)\b/i;
 function lugarYRopa(l){ const donde = [], ropa = []; String(l || '').split(/\s+·\s+/).forEach(x => { if (!x.trim()) return; if (!ROPA.test(x)) donde.push(x); else if (ROPA_IMPORTA.test(x)) ropa.push(x); }); return [donde.join(' · '), ropa.join(' · ')]; }
-function notasGuion(g, det){   // arriba de la tabla: dónde y ropa siempre; en «Con notas», además el porqué, el VOC y el código (equipo) o el número (creadora)
+function notasGuion(g, det){   // arriba de la tabla: dónde y ropa siempre; en «Con notas», además el VOC y el código (equipo) o el número (creadora)
   const fila = (k, v, cls) => v ? '<div><dt>' + k + '</dt><dd' + (cls ? ' class="' + cls + '"' : '') + '>' + esc(v) + '</dd></div>' : '';
   const cre = S.cli && S.rol === 'creadora';   // a la creadora: sin VOC y solo el número, para buscarlo fácil en la app (Nacho, 11/11)
-  const [donde, ropa] = lugarYRopa(g.lugar);
-  const d = fila('Dónde grabar', donde) + fila('Ropa', ropa) + (det ? fila('Por qué', g.fundamento) + (cre ? '' : fila('VOC', (g.voc || []).join(' · '))) + fila('Número', cre ? g.num : '', 'mono') + (cre ? '' : fila('Código', g.codigo, 'mono')) : '');
+  let [donde, ropa] = lugarYRopa(g.lugar);
+  if (g.fmt === 'F05') ropa = 'Dos outfits distintos, uno por personaje' + (ropa ? ': ' + ropa.replace(/^dos (outfits|looks)( distintos)?\s*:?\s*/i, '') : '');   // actuación: la misma persona hace de dos (Nacho, 12/11)
+  const d = fila('Dónde grabar', donde) + fila('Ropa', ropa) + (det ? (cre ? '' : fila('VOC', (g.voc || []).join(' · '))) + fila('Número', cre ? g.num : '', 'mono') + (cre ? '' : fila('Código', g.codigo, 'mono')) : '');   // sin «Por qué»: largo al pedo (Nacho, 12/11)
   return d ? '<div class="mas-b suelto ng"><dl>' + d + '</dl></div>' : '';
 }
 function alOrigen(){ const g = guionAct(); if (!g) return; S.gan = g.ref; pintarRef(); pintarNuestro(true); }
@@ -1096,7 +1097,7 @@ function pintarNuestro(forzar){
     } else cuerpo = '<div class="g"><div class="g-h"><div>' + (esF ? 'Fila' : 'Momento') + '</div><div>' + (esF ? 'Qué se dice' : 'Lo que dice') + '</div><div class="h3">' + (esF ? 'Qué se ve' : 'Pantalla y toma') + '</div></div>' + filas.map(filaHTML).join('') + '</div>';
     if (!esF) { const pal = filas.reduce((n, r) => n + palabras(r.dice), 0);
       modo = '<span class="modo" role="group" aria-label="Cuánto mostrar"><button class="tg' + (S.det ? '' : ' on') + '" data-md="s" aria-pressed="' + !S.det + '" title="Solo lo que se dice, de cada lado">Solo guion</button>' +
-        '<button class="tg' + (S.det ? ' on' : '') + '" data-md="n" aria-pressed="' + S.det + '" title="Suma el texto en pantalla, qué se filma, las citas del VOC y el porqué del guion">Con notas</button></span>';
+        '<button class="tg' + (S.det ? ' on' : '') + '" data-md="n" aria-pressed="' + S.det + '" title="Suma el título en pantalla y las fotos de cada parte">Con notas</button></span>';
       cuerpo = notasGuion(g, S.det) + cuerpo;
       extra += '<span class="num">' + pal + ' palabras · ' + Math.round(pal / RIT) + ' s</span>' + (calc ? '<span class="tagc" title="Filas que calcan un tramo de la referencia">Calco ' + calc + '/' + raw.length + '</span>' : '<span class="tagc warn" title="Todavía no está calcado de su referencia">Sin calcar</span>'); }
     pie = ed ? '<span class="chg"><i></i>Tiene cambios tuyos, marcados en amarillo.</span><button class="linkbtn" id="volver">Volver al original</button>'
