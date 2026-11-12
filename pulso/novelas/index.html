@@ -626,7 +626,7 @@ function pintarVAcc(){
   const ps = pendN(d), n = ps.length;
   if (d.estado === "producido"){
     const puede = (d.cambios || 0) < MAX_CAMBIOS;
-    el.innerHTML = `<span class="res">${n ? `${n} ${n === 1 ? "nota" : "notas"} sin mandar · al mandarlas se re-dobla con esas correcciones` : "Sin notas. Si está bien, aprobala: pasa a Drive."}${puede ? "" : ` · ya no quedan cambios (máx ${MAX_CAMBIOS})`}</span>
+    el.innerHTML = `<span class="res">${n ? `${n} ${n === 1 ? "nota" : "notas"} · se mandan SOLAS a los 4 min de la última (o mandalas ya con el botón)` : "Sin notas. Si está bien, aprobala: pasa a Drive."}${puede ? "" : ` · ya no quedan cambios (máx ${MAX_CAMBIOS})`}</span>
       <span class="sp"></span><button class="btn dark" id="vMandar" ${n && puede ? "" : "disabled"}>Mandar correcciones${n ? ` (${n})` : ""}</button><button class="btn ok" id="vAprobar">${n ? "Aprobar igual" : "Aprobar"}</button>`;
     $("#vAprobar").onclick = async () => {
       if (n && !confirm(`Tiene ${n} nota${n === 1 ? "" : "s"} sin mandar: no se van a corregir. ¿Aprobar igual?`)) return;
