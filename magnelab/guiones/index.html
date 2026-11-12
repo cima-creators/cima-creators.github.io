@@ -272,7 +272,6 @@ button.ref:hover{background:var(--sunken)}
 .ed[contenteditable="true"]:focus{background:var(--surface);box-shadow:0 0 0 4px var(--surface),0 0 0 6px var(--accent)}
 .ed:empty::before{content:attr(data-ph);color:var(--ink-4)}
 .ed.mod,.ed.mod[contenteditable="true"]:hover{background:var(--hl);box-shadow:0 0 0 4px var(--hl);color:var(--ink)}
-.fila:not(:hover) .nt.vacio{display:none}
 .nt{font-size:13px;line-height:1.45;color:var(--ink-2);margin:2px 0}.nt b{font-weight:600;color:var(--ink)}.nt .ed{display:inline}
 .placa{display:inline-block;max-width:100%;background:var(--ink);color:var(--surface);font-weight:600;font-size:10.5px;letter-spacing:.04em;text-transform:uppercase;line-height:1.4;padding:4px 8px;border-radius:6px;margin-bottom:9px}
 .placa[contenteditable="true"]:hover{background:var(--ink-2);box-shadow:none}
@@ -847,18 +846,24 @@ function contexto(g){   // ángulo e idea del árbol de testeo de la marca
 // «Con notas», fila por fila (Nacho, 12/11: «me marea… poneles "Título: xxx" y todo más simple; van a ver la referencia, no hace falta
 // el "se filma"; poné si tienen que adjuntar una foto, de qué es»): solo el TÍTULO que va en pantalla, limpio de nuestras instrucciones
 // (subtítulos, «arriba 5 s», «una placa por vez»…), y la FOTO cuando hay que sumar una foto o captura. Cómo se graba = la referencia.
-function limpiaTitulo(t){
-  return String(t || '').split(/\s+·\s+/).filter(x => !/subt[íi]tulos/i.test(x)).join(' · ')
-    .replace(/^\s*(sticker del comentario arriba todo el video|fijo arriba todo el video(, como comentario)?|fijo arriba|arriba \d+ ?s(, sin palabras sexuales)?)\s*:\s*/i, '')
-    .replace(/\s*\((arriba|una|fijo|todo|cuando|mayúsculas|en cada)[^)]*\)/gi, '').replace(/[\s·.;,]+$/, '').trim();
+function pantalla(t){   // lo que se LEE en pantalla (corrección 38): el título y el comentario fijo «…»; fuera las instrucciones de edición
+  const tit = [], com = [];
+  String(t || '').replace(/\s*\([^)]*\)/g, '').split(/\s+·\s+|\s+\+\s+(?=[A-ZÁÉÍÓÚÑ¡¿«])/).forEach(x => {
+    x = x.trim().replace(/^(y una flecha|y debajo|y abajo|debajo|abajo|arriba[^:«]*|sticker[^:«]*|cartel[^:«]*|fijo[^:«]*|en la pizarra[^:«]*|en la hoja[^:«]*|la frase escrita[^:«+]*|escrito[^:«]*|texto[^:«]*)\s*[:+]\s*/i, '').trim();
+    if (!x || /cada frase|cartel blanco|letra negra|subt[íi]tulos|palabra por palabra|^la frase escrita|una placa por|una por vez|cuando (la|lo|las|los) nombra/i.test(x)) return;
+    if (/\s\/\s/.test(x) && /[a-záéíóúñ]{3}/.test(x) && x !== x.toUpperCase()) return;   // la frase hablada partida en carteles = subtítulo, la arma el editor
+    (/^«[\s\S]*»$/.test(x) ? com : tit).push(x);
+  });
+  return {titulo: tit.join(' · ').replace(/[\s·.;,]+$/, ''), comentario: com.join(' · ')};
 }
 function fotoDe(filma){   // la frase de «qué se filma» que dice de qué es la foto o la captura («Cambia la foto: el reloj…»)
   const f = String(filma || '').split(/(?<=[.;])\s+/).find(x => /\b(fotos?|capturas?|screenshot|recortes?)\b(\s+[^\s.;:]+){0,2}?\s*(:|\bdel?\b(?!\s+(arriba|abajo|costado|la esquina))|\bcon\b)/i.test(x));   // «la foto de arriba» o «sigue señalando la foto» no dicen de qué es
   return f ? f.replace(/[\s;.]+$/, '') : '';
 }
 function notaFila(i, r, cel, m, ce){
-  const tit = limpiaTitulo(r.texto), fo = fotoDe(r.filma);
-  return (tit || ce === 'true' ? '<div class="nt' + (tit ? '' : ' vacio') + '"><b>Título:</b> ' + cel(i, 'texto', tit, 'tit' + m('texto'), '+ título') + '</div>' : '') +
+  const {titulo: tit, comentario: com} = pantalla(r.texto), fo = fotoDe(r.filma);
+  return (tit ? '<div class="nt"><b>Título:</b> ' + cel(i, 'texto', tit, 'tit' + m('texto'), '') + '</div>' : '') +   // sin título, nada (ni el «+ título» vacío: Nacho, 12/11)
+    (com ? '<div class="nt"><b>Foto:</b> caja de comentario con ' + esc(com) + '</div>' : '') +   // el comentario fijo se inserta como captura de una caja de comentario (Nacho, 12/11)
     (fo ? '<div class="nt"><b>Foto:</b> ' + esc(fo) + '</div>' : '');
 }
 // Arriba del guion, siempre (Nacho, 12/11): dónde se graba y la ropa SOLO si importa (bata, short, calza, dos outfits…); remera o buzo lisos no se aclaran
