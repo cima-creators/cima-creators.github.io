@@ -272,6 +272,7 @@ button.ref:hover{background:var(--sunken)}
 .ed[contenteditable="true"]:focus{background:var(--surface);box-shadow:0 0 0 4px var(--surface),0 0 0 6px var(--accent)}
 .ed:empty::before{content:attr(data-ph);color:var(--ink-4)}
 .ed.mod,.ed.mod[contenteditable="true"]:hover{background:var(--hl);box-shadow:0 0 0 4px var(--hl);color:var(--ink)}
+.fila:not(:hover) .nt.vacio{display:none}
 .nt{font-size:13px;line-height:1.45;color:var(--ink-2);margin:2px 0}.nt b{font-weight:600;color:var(--ink)}.nt .ed{display:inline}
 .placa{display:inline-block;max-width:100%;background:var(--ink);color:var(--surface);font-weight:600;font-size:10.5px;letter-spacing:.04em;text-transform:uppercase;line-height:1.4;padding:4px 8px;border-radius:6px;margin-bottom:9px}
 .placa[contenteditable="true"]:hover{background:var(--ink-2);box-shadow:none}
@@ -857,7 +858,7 @@ function fotoDe(filma){   // la frase de «qué se filma» que dice de qué es l
 }
 function notaFila(i, r, cel, m, ce){
   const tit = limpiaTitulo(r.texto), fo = fotoDe(r.filma);
-  return (tit || ce === 'true' ? '<div class="nt"><b>Título:</b> ' + cel(i, 'texto', tit, 'tit' + m('texto'), '+ título') + '</div>' : '') +
+  return (tit || ce === 'true' ? '<div class="nt' + (tit ? '' : ' vacio') + '"><b>Título:</b> ' + cel(i, 'texto', tit, 'tit' + m('texto'), '+ título') + '</div>' : '') +
     (fo ? '<div class="nt"><b>Foto:</b> ' + esc(fo) + '</div>' : '');
 }
 // Arriba del guion, siempre (Nacho, 12/11): dónde se graba y la ropa SOLO si importa (bata, short, calza, dos outfits…); remera o buzo lisos no se aclaran
