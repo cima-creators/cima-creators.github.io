@@ -852,8 +852,9 @@ function esSubtitulo(x, dice){   // el cartel repite lo que ella dice en esa fil
   const r = w.filter(p => d.has(p)).length / w.length; return r >= (/\s\/\s/.test(x) ? 0.5 : 0.7);
 }
 function pantalla(t, dice){   // lo que se LEE en pantalla (corrección 38): el título y el comentario fijo «…»; fuera las instrucciones de edición
-  const tit = [], com = [];
-  String(t || '').replace(/\s*\([^)]*\)/g, '').split(/\s+·\s+|\s+\+\s+(?=[A-ZÁÉÍÓÚÑ¡¿«])|(?<=[».!?])\s+(?=[A-ZÁÉÍÓÚÑ¡¿«])/).forEach(x => {   // también corta en «… ». Subtítulos…» (Lagos 299)
+  const tit = [], com = [], gu = [];   // gu: los comentarios «…» se guardan aparte para no partirlos si tienen puntos adentro (13/11)
+  String(t || '').replace(/\s*\([^)]*\)/g, '').replace(/«[^»]*»/g, m => '\u0000' + (gu.push(m) - 1) + '\u0000').split(/\s+·\s+|\s+\+\s+(?=[A-ZÁÉÍÓÚÑ¡¿«\u0000])|(?<=[».!?\u0000])\s+(?=[A-ZÁÉÍÓÚÑ¡¿«\u0000])/).forEach(x => {   // también corta en «… ». Subtítulos…» (Lagos 299)
+    x = x.replace(/\u0000(\d+)\u0000/g, (_, i) => gu[+i]);
     x = x.trim().replace(/^(y una flecha|y debajo|y abajo|debajo|abajo|arriba[^:«]*|sticker[^:«]*|cartel[^:«]*|fijo[^:«]*|en la pizarra[^:«]*|en la hoja[^:«]*|la frase escrita[^:«+]*|escrito[^:«]*|texto[^:«]*)\s*[:+]\s*/i, '').trim();
     if (!x || /cada frase|cartel blanco|letra negra|subt[íi]tulos|palabra por palabra|^la frase escrita|una placa por|una por vez|cuando (la|lo|las|los) nombra/i.test(x)) return;
     if (/\s\/\s/.test(x) && /[a-záéíóúñ]{3}/.test(x) && x !== x.toUpperCase()) return;   // la frase hablada partida en carteles = subtítulo, la arma el editor
