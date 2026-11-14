@@ -603,6 +603,8 @@ em.env{font-size:10.5px;padding:1px 6px;border-radius:99px;margin-left:4px;white
 }
 @media (min-width:1100px) and (min-height:640px) and (max-height:780px){.desc{-webkit-line-clamp:1}}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+.it.hecho{opacity:.6}.it.hecho .nm{text-decoration:none}
+.env.ok,.pl.ok{background:rgba(22,163,74,.12);border-color:rgba(22,163,74,.45);color:#15803d}
 </style>
 </head><body>
 
@@ -773,7 +775,7 @@ function lista(){
   return GUsub().filter(g => (!fl.quien || g.quien === fl.quien) && (!fl.fmt || g.fmt === fl.fmt) && (!fl.angulo || g.angulo === fl.angulo) && (!fl.idea || g.idea === fl.idea) &&
     (!fl.estado || estadoVista('gui-' + g.codigo) === (fl.estado === 'sin' ? '' : fl.estado)) &&
     (!q || (g.num + ' ' + g.titulo + ' ' + g.quien + ' ' + nombreFmt(g.fmt) + ' ' + (g.angulo || '') + ' ' + (g.idea || '') + ' ' + (g.envia || '')).toLowerCase().includes(q)))
-    .map((g, i) => [g, i]).sort((a, b) => (verEnvio() ? (b[0].envia ? 1 : 0) - (a[0].envia ? 1 : 0) : 0) || a[1] - b[1]).map(x => x[0]);
+    .map((g, i) => [g, i]).sort((a, b) => ((a[0].sub ? 1 : 0) - (b[0].sub ? 1 : 0)) || (verEnvio() ? (b[0].envia ? 1 : 0) - (a[0].envia ? 1 : 0) : 0) || a[1] - b[1]).map(x => x[0]);   // lo ya subido a la app, al fondo (Nacho, 14/11)
 }
 function render(){
   ['ganadores', 'formatos'].forEach(t => { const b = $('#t-' + t); b.classList.toggle('on', S.tab === t); b.setAttribute('aria-selected', S.tab === t); });
@@ -814,9 +816,11 @@ function pintarLista(){
     const cab = (f.grupo || 'Formatos') !== grupo ? '<div class="grp">' + esc(grupo = f.grupo || 'Formatos') + '</div>' : '', st = estadoVista('fmt-' + f.id);
     return cab + '<button class="it' + (f.id === S.fmt ? ' on' : '') + '" data-id="' + esc(f.id) + '"' + (f.id === S.fmt ? ' aria-current="true"' : '') + '><span class="cod">' + esc(f.id) + '</span><span class="nm">' + esc(f.nombre) + '</span><i class="st ' + st + '" title="' + EST[st] + '"></i></button>';
   }).join('');
-  else h = items.map(g => { const st = estadoVista('gui-' + g.codigo);
-    return '<button class="it' + (g.codigo === S.gui ? ' on' : '') + '" data-id="' + esc(g.codigo) + '"' + (g.codigo === S.gui ? ' aria-current="true"' : '') + '><span class="cod">' + esc(g.num) + '</span><span class="nm">' + esc(g.titulo) + (g.envia && verEnvio() ? '<em class="env" title="Lo mandó ' + esc(g.envia) + ': aprobalo primero">📨 ' + esc(g.envia) + '</em>' : '') + (g.sello && verEnvio() ? '<em class="env" title="' + esc(g.sello) + '">🔁</em>' : '') + '<small>' + esc(g.quien) + ' · ' + esc(nombreFmt(g.fmt)) + (g.idea ? ' <b>· ' + esc(g.idea) + '</b>' : '') + '</small></span><i class="st ' + st + '" title="' + EST[st] + '"></i></button>';
-  }).join('');
+  else { let corte = false;   // los que ya se subieron a la app van abajo de todo, separados: no se graban de nuevo (Nacho, 14/11)
+    h = items.map(g => { const st = estadoVista('gui-' + g.codigo);
+    const sep = (g.sub && !corte) ? ((corte = true), '<div class="grp">\u2705 Ya los subiste</div>') : '';
+    return sep + '<button class="it' + (g.codigo === S.gui ? ' on' : '') + (g.sub ? ' hecho' : '') + '" data-id="' + esc(g.codigo) + '"' + (g.codigo === S.gui ? ' aria-current="true"' : '') + '><span class="cod">' + esc(g.num) + '</span><span class="nm">' + esc(g.titulo) + (g.sub ? '<em class="env ok" title="Ya lo subiste a la app el ' + esc(g.sub) + '">\u2705 ' + esc(g.sub) + '</em>' : '') + (g.envia && verEnvio() ? '<em class="env" title="Lo mandó ' + esc(g.envia) + ': aprobalo primero">📨 ' + esc(g.envia) + '</em>' : '') + (g.sello && verEnvio() ? '<em class="env" title="' + esc(g.sello) + '">🔁</em>' : '') + '<small>' + esc(g.quien) + ' · ' + esc(nombreFmt(g.fmt)) + (g.idea ? ' <b>· ' + esc(g.idea) + '</b>' : '') + '</small></span><i class="st ' + st + '" title="' + EST[st] + '"></i></button>';
+  }).join(''); }
   box.innerHTML = h || '<div class="nada">' + (S.q || S.filtro.quien || S.filtro.fmt || S.filtro.estado || S.filtro.angulo || S.filtro.idea ? 'Nada coincide con el filtro.' : S.tab === 'formatos' ? 'Todavía no hay formatos cargados.' : 'Los guiones aparecen acá cuando estén escritos.') + '</div>';
   box.querySelectorAll('[data-id]').forEach(b => b.onclick = () => ir(S.tab, b.dataset.id));
 }
@@ -914,6 +918,7 @@ function pintarMain(){
   } else {
     cab = '<div class="h-row"><div class="h-id"><span class="code">' + esc(g.num) + '</span><h1>' + esc(g.titulo) + '</h1></div>' + acc + '</div>' +
       '<div class="meta"><span><b>' + esc(g.quien) + '</b></span><span>' + (S.cli ? esc(fmt.nombre || g.fmt) : '<button class="lnk" id="irfmt" title="Ver el formato">' + esc(fmt.nombre || g.fmt) + '</button>') + '</span>' + (S.G[g.ref] ? '<span>Sale de <button class="lnk" id="irref" title="Ver la referencia de la que se calcó">' + esc(S.G[g.ref].marca || g.ref) + '</button></span>' : '') +
+      (g.sub ? '<span class="pl ok" title="Ya hay un video de este guion subido a la app: no hace falta grabarlo de nuevo">\u2705 Ya subido \u00b7 ' + esc(g.sub) + '</span>' : '') +
       (g.envia && verEnvio() ? '<span class="pl env" title="Lo mandó ' + esc(g.envia) + ': aprobalo primero para que lo graben">📨 Enviado por ' + esc(g.envia) + '</span>' : '') +
       (g.sello && verEnvio() ? '<span class="pl env" title="Rearmado con los dolores y las palabras del VOC, ya aprobado">' + esc(g.sello) + '</span>' : '') +
       (g.broll ? '<span><a class="lnk" href="' + esc(g.broll) + '" target="_blank" rel="noopener" title="Carpeta con las capturas y fotos que pide este guion">📁 Tomas y capturas</a></span>' : '') +
