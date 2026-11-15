@@ -107,6 +107,12 @@ summary{cursor:pointer;font-weight:600;font-size:13px}
 .esc td:first-child{white-space:nowrap;color:var(--mut2);font-variant-numeric:tabular-nums}
 .esc i{font-style:normal;color:var(--mut)}
 .vacio{text-align:center;color:var(--mut);padding:60px 20px;background:var(--card);border:1px dashed var(--line2);border-radius:var(--r);grid-column:1/-1}
+/* Producidas en secciones (Nacho 15/11: «separame los aprobados de los por revisar») */
+.gsec{grid-column:1/-1;font-size:15px;font-weight:700;letter-spacing:-.01em;margin-top:12px}
+.gsec:first-child{margin-top:0}
+.gsec-ap{grid-column:1/-1;margin-top:12px}
+.gsec-ap>summary{font-size:15px;font-weight:700;letter-spacing:-.01em}
+.gsec-ap>.grid{margin-top:12px}
 #login{max-width:360px;margin:14vh auto;background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:28px}
 #login h1{font-size:23px}
 #login input{width:100%;margin:16px 0 10px;padding:12px 14px;border:1px solid var(--line);border-radius:14px;font-size:15px;background:var(--soft);color:var(--txt)}
@@ -388,7 +394,7 @@ function pintar(){
   $("#heroT").textContent = nuevas.length ? `${nuevas.length} novelas para elegir` : (docs.length ? "Todo revisado" : "Todavía no hay novelas");
   $("#heroP").textContent = curso.length ? `${curso.length} re-doblándose y ${hechos.length} listas. Cada una tarda un rato largo (voz + pack + subtítulos).`
     : "Cada tarjeta muestra la historia, los personajes, si es cantada o hablada y dónde aparece el pack de Ryze.";
-  let lista = vista === "hoy" ? nuevas : vista === "elegidas" ? curso : vista === "hechos" ? hechos : descartadas;
+  let lista = vista === "hoy" ? nuevas : vista === "elegidas" ? curso : vista === "hechos" ? docs.filter(d => grupoProd(d)) : descartadas;
   if (filtro === "cantada") lista = lista.filter(d => d.cantada === "cantada");
   else if (filtro === "hablada") lista = lista.filter(d => d.cantada !== "cantada");
   else if (filtro === "activa") lista = lista.filter(d => d.activo);
@@ -399,10 +405,41 @@ function pintar(){
     if (VS.abierto) { if (!dd(VS.abierto)) cerrarVisor(); else pintarVisor(); }
     return;
   }
-  $("#grid").innerHTML = lista.map(tarjeta).join("");
+  $("#grid").innerHTML = vista === "hechos" ? htmlProducidas(lista) : lista.map(tarjeta).join("");
+  const ap = $("#grid").querySelector("details.gsec-ap");
+  if (ap) ap.ontoggle = () => { APROB_ABIERTAS = ap.open; };
   $("#grid").querySelectorAll("[data-acc]").forEach(b => b.onclick = () => accion(b.dataset.id, b.dataset.acc));
   $("#grid").querySelectorAll(".duo").forEach(armarDuo);
   if (VS.abierto) { if (!dd(VS.abierto)) cerrarVisor(); else pintarVisor(); }
+}
+
+// ---- Producidas en tres secciones (Nacho 15/11: «separame los aprobados de los por revisar»):
+// arriba lo que tiene que mirar, después lo que se está arreglando y al final las aprobadas, plegadas ----
+let APROB_ABIERTAS = false;   // plegadas por defecto; si las abre, siguen abiertas cuando llega un cambio de Firestore
+const yaProducida = d => !!(d.final || d.finalSubs || d.producidoEn);
+const conNotas = d => !!d.cambioNota || (Array.isArray(d.notasT) && d.notasT.length > 0);
+// igual que es_aprobada() de producir.py: «aprobada» o con aprobadoEn (salvo que el CEO la reabra)
+const esAprobada = d => d.estado === "aprobado" || (!!d.aprobadoEn && !d.reabrir);
+function grupoProd(d){
+  if (esAprobada(d)) return "aprob";
+  if (d.estado === "producido") return "revisar";
+  if (d.estado === "cambiar") return "arreglo";
+  // «generando» (o «error») de una que ya salió y vuelve con notas o con motivo; la primera producción sigue en Re-doblando
+  if ((d.estado === "produciendo" || d.estado === "fallo") && yaProducida(d) && (d.falloMotivo || conNotas(d))) return "arreglo";
+  return "";
+}
+const motivoArreglo = d => d.falloMotivo || d.cambioNota || "se rehace con tus notas";
+const ddmm = s => { const f = new Date(s); return isNaN(f) ? `${String(s).slice(8, 10)}/${String(s).slice(5, 7)}` : f.toLocaleDateString("es-AR", {day: "2-digit", month: "2-digit"}); };
+function htmlProducidas(lista){
+  const g = {revisar: [], arreglo: [], aprob: []};
+  lista.forEach(d => g[grupoProd(d)].push(d));
+  g.aprob.sort((a, b) => (b.aprobadoEn || "").localeCompare(a.aprobadoEn || ""));
+  const cards = arr => arr.map(d => tarjeta(d)).join("");
+  let h = `<h2 class="gsec">Por revisar · ${g.revisar.length}</h2>` +
+    (g.revisar.length ? cards(g.revisar) : `<div class="vacio" style="padding:22px 20px">Nada para revisar ahora.</div>`);
+  if (g.arreglo.length) h += `<h2 class="gsec">En arreglo · ${g.arreglo.length}</h2>${cards(g.arreglo)}`;
+  if (g.aprob.length) h += `<details class="gsec-ap"${APROB_ABIERTAS ? " open" : ""}><summary>Aprobadas · ${g.aprob.length}</summary><div class="grid">${cards(g.aprob)}</div></details>`;
+  return h;
 }
 
 // ojito (Nacho 12/11): apagar uno de los dos videos; se recuerda y vale para todas las tarjetas y el popup
@@ -710,11 +747,13 @@ function packSpans(des, d){
 }
 
 function estadoProd(d){
+  if (grupoProd(d) === "arreglo")   // el motivo en una línea (entero al pasar el mouse)
+    return `<div class="aviso ${d.estado === "fallo" ? "mal" : "w"}" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${esc(motivoArreglo(d))}">${d.estado === "fallo" ? "No salió" : "En arreglo"}: ${esc(motivoArreglo(d))}</div>`;
+  if (esAprobada(d)) return `<div class="aviso ok">✓ Aprobada${d.aprobadoEn ? " el " + esc(ddmm(d.aprobadoEn)) : ""}${d.enDrive ? " · En Drive · " + esc(d.enDrive) : " · pasando a Drive…"}</div>`;
   if (d.estado === "elegida") return `<div class="aviso w">Desarmando la novela (guion, escenas, packs)…</div>`;
   if (d.estado === "lista") return `<div class="aviso w">${d.turno === "mañana" ? "En fila: se dobla mañana (tope de " + TOPE + " por día)" : "En fila para doblar"}</div>`;
   if (d.estado === "produciendo") return `<div class="aviso w">Re-doblando: voz, música, pack de Pulso y subtítulos…</div>`;
   if (d.estado === "cambiar") return `<div class="aviso w">Haciendo el cambio: ${esc(d.cambioNota || "")}</div>`;
-  if (d.estado === "aprobado") return `<div class="aviso ok">${d.enDrive ? "✓ En Drive · " + esc(d.enDrive) : "✓ Aprobada · pasando a Drive…"}</div>`;
   if (d.estado === "fallo") return `<div class="aviso mal">No salió: ${esc(d.falloMotivo || "")}${(d.reintentos || 0) < 1 ? " · se reintenta una vez" : " · ya se reintentó"}</div>`;
   return "";
 }
