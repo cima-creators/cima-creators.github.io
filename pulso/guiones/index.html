@@ -603,6 +603,8 @@ em.env{font-size:10.5px;padding:1px 6px;border-radius:99px;margin-left:4px;white
 }
 @media (min-width:1100px) and (min-height:640px) and (max-height:780px){.desc{-webkit-line-clamp:1}}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+.it.hecho{opacity:.6}.it.hecho .nm{text-decoration:none}
+.env.ok,.pl.ok{background:rgba(22,163,74,.12);border-color:rgba(22,163,74,.45);color:#15803d}
 </style>
 </head><body>
 
@@ -737,6 +739,7 @@ async function conectarFirebase(){   // la revisión vive en Firebase, documento
   const [A, F, U] = await Promise.all([import(V + 'app.js'), import(V + 'firestore.js'), import(V + 'auth.js')]);
   const app = A.initializeApp(FB); await U.signInAnonymously(U.getAuth(app));
   const fs = F.getFirestore(app), prueba = new URLSearchParams(location.search).has('prueba');   // ?prueba usa la marca de pruebas (smoketest)
+  if (!prueba) escucharSubidos(F, fs, S.paquete.videos_col || S.paquete.marca + '_videos');
   const ref = F.doc(fs, prueba ? 'smoketest' : S.paquete.marca, 'sala');
   const vacio = () => ({revision: {}, notas: []}), leer = d => { try { return Object.assign(vacio(), d.exists() ? JSON.parse(d.data().data) : {}); } catch (e) { return vacio(); } };
   let est = vacio(), cache = true, listo = false; const subs = {revision: [], notas: []}, errs = [];
@@ -751,6 +754,25 @@ async function conectarFirebase(){   // la revisión vive en Firebase, documento
   const ganadores = { onSnapshot: (cb, err) => F.onSnapshot(qG, x => cb(x.docs.map(d => Object.assign({id: d.id}, d.data()))), err || (() => {})),
                       guardar: (id, c) => F.setDoc(F.doc(fs, 'estaticos', id), Object.assign({}, c, {actualizado: new Date().toISOString()}), {merge: true}) };
   return { ganadores, collection: col, doc(p){ const [c, id] = p.split('/'); return col(c).doc(id); } };
+}
+function escucharSubidos(F, fs, col){   // «✅ Ya los subiste» EN VIVO desde la app de la marca (<marca>_videos). 16/11: una creadora de Lagos subió 7 y la Sala le mostraba 2,
+  // porque grabados.json era una foto del 14/11 que nadie volvía a armar. Ahora cada video subido aparece al toque; la foto horneada queda solo de respaldo
+  // si la base no conecta. Un video rechazado NO cuenta: ese guion hay que volver a grabarlo (misma regla que quien_app.grabados).
+  const cods = [...new Set(S.GUT.map(g => g.codigo))], llego = {}, por = {};
+  const corta = f => (f = String(f || '')).length > 9 ? f.slice(8, 10) + '/' + f.slice(5, 7) : 'ya';
+  const aplicar = () => {
+    const m = {}; Object.values(por).forEach(o => Object.entries(o).forEach(([c, f]) => { if (!(c in m) || f > m[c]) m[c] = f; }));
+    let cambio = false;
+    S.GUT.forEach(g => { if (!llego[g.codigo]) return; const v = g.codigo in m ? corta(m[g.codigo]) : ''; if ((g.sub || '') !== v) { g.sub = v; cambio = true; } });
+    if (cambio && S.cargado && S.tab === 'guiones') { pintarLista(); if (typeof pintarNav === 'function') pintarNav(); }
+  };
+  for (let i = 0; i < cods.length; i += 30) {   // Firestore: «in» admite hasta 30 valores por consulta
+    const tanda = cods.slice(i, i + 30);
+    F.onSnapshot(F.query(F.collection(fs, col), F.where('guion', 'in', tanda)), snap => {
+      const o = {}; snap.docs.forEach(d => { const x = d.data(); if (!x.guion || x.status === 'rejected') return; const f = String(x.date || '0'); if (!(x.guion in o) || f > o[x.guion]) o[x.guion] = f; });
+      por[i] = o; tanda.forEach(c => { llego[c] = true; }); aplicar();
+    }, () => {});   // sin permiso o sin red: queda lo horneado en el paquete
+  }
 }
 function pintarSync(){
   let cls = 'busy', txt = 'Conectando…';
@@ -773,7 +795,7 @@ function lista(){
   return GUsub().filter(g => (!fl.quien || g.quien === fl.quien) && (!fl.fmt || g.fmt === fl.fmt) && (!fl.angulo || g.angulo === fl.angulo) && (!fl.idea || g.idea === fl.idea) &&
     (!fl.estado || estadoVista('gui-' + g.codigo) === (fl.estado === 'sin' ? '' : fl.estado)) &&
     (!q || (g.num + ' ' + g.titulo + ' ' + g.quien + ' ' + nombreFmt(g.fmt) + ' ' + (g.angulo || '') + ' ' + (g.idea || '') + ' ' + (g.envia || '')).toLowerCase().includes(q)))
-    .map((g, i) => [g, i]).sort((a, b) => (verEnvio() ? (b[0].envia ? 1 : 0) - (a[0].envia ? 1 : 0) : 0) || a[1] - b[1]).map(x => x[0]);
+    .map((g, i) => [g, i]).sort((a, b) => ((a[0].sub ? 1 : 0) - (b[0].sub ? 1 : 0)) || (verEnvio() ? (b[0].envia ? 1 : 0) - (a[0].envia ? 1 : 0) : 0) || a[1] - b[1]).map(x => x[0]);   // lo ya subido a la app, al fondo (Nacho, 14/11)
 }
 function render(){
   ['ganadores', 'formatos'].forEach(t => { const b = $('#t-' + t); b.classList.toggle('on', S.tab === t); b.setAttribute('aria-selected', S.tab === t); });
@@ -814,9 +836,11 @@ function pintarLista(){
     const cab = (f.grupo || 'Formatos') !== grupo ? '<div class="grp">' + esc(grupo = f.grupo || 'Formatos') + '</div>' : '', st = estadoVista('fmt-' + f.id);
     return cab + '<button class="it' + (f.id === S.fmt ? ' on' : '') + '" data-id="' + esc(f.id) + '"' + (f.id === S.fmt ? ' aria-current="true"' : '') + '><span class="cod">' + esc(f.id) + '</span><span class="nm">' + esc(f.nombre) + '</span><i class="st ' + st + '" title="' + EST[st] + '"></i></button>';
   }).join('');
-  else h = items.map(g => { const st = estadoVista('gui-' + g.codigo);
-    return '<button class="it' + (g.codigo === S.gui ? ' on' : '') + '" data-id="' + esc(g.codigo) + '"' + (g.codigo === S.gui ? ' aria-current="true"' : '') + '><span class="cod">' + esc(g.num) + '</span><span class="nm">' + esc(g.titulo) + (g.envia && verEnvio() ? '<em class="env" title="Lo mandó ' + esc(g.envia) + ': aprobalo primero">📨 ' + esc(g.envia) + '</em>' : '') + (g.sello && verEnvio() ? '<em class="env" title="' + esc(g.sello) + '">🔁</em>' : '') + '<small>' + esc(g.quien) + ' · ' + esc(nombreFmt(g.fmt)) + (g.idea ? ' <b>· ' + esc(g.idea) + '</b>' : '') + '</small></span><i class="st ' + st + '" title="' + EST[st] + '"></i></button>';
-  }).join('');
+  else { let corte = false;   // los que ya se subieron a la app van abajo de todo, separados: no se graban de nuevo (Nacho, 14/11)
+    h = items.map(g => { const st = estadoVista('gui-' + g.codigo);
+    const sep = (g.sub && !corte) ? ((corte = true), '<div class="grp">\u2705 Ya los subiste</div>') : '';
+    return sep + '<button class="it' + (g.codigo === S.gui ? ' on' : '') + (g.sub ? ' hecho' : '') + '" data-id="' + esc(g.codigo) + '"' + (g.codigo === S.gui ? ' aria-current="true"' : '') + '><span class="cod">' + esc(g.num) + '</span><span class="nm">' + esc(g.titulo) + (g.sub ? '<em class="env ok" title="Ya lo subiste a la app el ' + esc(g.sub) + '">\u2705 ' + esc(g.sub) + '</em>' : '') + (g.envia && verEnvio() ? '<em class="env" title="Lo mandó ' + esc(g.envia) + ': aprobalo primero">📨 ' + esc(g.envia) + '</em>' : '') + (g.sello && verEnvio() ? '<em class="env" title="' + esc(g.sello) + '">🔁</em>' : '') + '<small>' + esc(g.quien) + ' · ' + esc(nombreFmt(g.fmt)) + (g.idea ? ' <b>· ' + esc(g.idea) + '</b>' : '') + '</small></span><i class="st ' + st + '" title="' + EST[st] + '"></i></button>';
+  }).join(''); }
   box.innerHTML = h || '<div class="nada">' + (S.q || S.filtro.quien || S.filtro.fmt || S.filtro.estado || S.filtro.angulo || S.filtro.idea ? 'Nada coincide con el filtro.' : S.tab === 'formatos' ? 'Todavía no hay formatos cargados.' : 'Los guiones aparecen acá cuando estén escritos.') + '</div>';
   box.querySelectorAll('[data-id]').forEach(b => b.onclick = () => ir(S.tab, b.dataset.id));
 }
@@ -914,6 +938,7 @@ function pintarMain(){
   } else {
     cab = '<div class="h-row"><div class="h-id"><span class="code">' + esc(g.num) + '</span><h1>' + esc(g.titulo) + '</h1></div>' + acc + '</div>' +
       '<div class="meta"><span><b>' + esc(g.quien) + '</b></span><span>' + (S.cli ? esc(fmt.nombre || g.fmt) : '<button class="lnk" id="irfmt" title="Ver el formato">' + esc(fmt.nombre || g.fmt) + '</button>') + '</span>' + (S.G[g.ref] ? '<span>Sale de <button class="lnk" id="irref" title="Ver la referencia de la que se calcó">' + esc(S.G[g.ref].marca || g.ref) + '</button></span>' : '') +
+      (g.sub ? '<span class="pl ok" title="Ya hay un video de este guion subido a la app: no hace falta grabarlo de nuevo">\u2705 Ya subido \u00b7 ' + esc(g.sub) + '</span>' : '') +
       (g.envia && verEnvio() ? '<span class="pl env" title="Lo mandó ' + esc(g.envia) + ': aprobalo primero para que lo graben">📨 Enviado por ' + esc(g.envia) + '</span>' : '') +
       (g.sello && verEnvio() ? '<span class="pl env" title="Rearmado con los dolores y las palabras del VOC, ya aprobado">' + esc(g.sello) + '</span>' : '') +
       (g.broll ? '<span><a class="lnk" href="' + esc(g.broll) + '" target="_blank" rel="noopener" title="Carpeta con las capturas y fotos que pide este guion">📁 Tomas y capturas</a></span>' : '') +

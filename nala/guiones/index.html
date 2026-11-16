@@ -739,6 +739,7 @@ async function conectarFirebase(){   // la revisión vive en Firebase, documento
   const [A, F, U] = await Promise.all([import(V + 'app.js'), import(V + 'firestore.js'), import(V + 'auth.js')]);
   const app = A.initializeApp(FB); await U.signInAnonymously(U.getAuth(app));
   const fs = F.getFirestore(app), prueba = new URLSearchParams(location.search).has('prueba');   // ?prueba usa la marca de pruebas (smoketest)
+  if (!prueba) escucharSubidos(F, fs, S.paquete.videos_col || S.paquete.marca + '_videos');
   const ref = F.doc(fs, prueba ? 'smoketest' : S.paquete.marca, 'sala');
   const vacio = () => ({revision: {}, notas: []}), leer = d => { try { return Object.assign(vacio(), d.exists() ? JSON.parse(d.data().data) : {}); } catch (e) { return vacio(); } };
   let est = vacio(), cache = true, listo = false; const subs = {revision: [], notas: []}, errs = [];
@@ -753,6 +754,25 @@ async function conectarFirebase(){   // la revisión vive en Firebase, documento
   const ganadores = { onSnapshot: (cb, err) => F.onSnapshot(qG, x => cb(x.docs.map(d => Object.assign({id: d.id}, d.data()))), err || (() => {})),
                       guardar: (id, c) => F.setDoc(F.doc(fs, 'estaticos', id), Object.assign({}, c, {actualizado: new Date().toISOString()}), {merge: true}) };
   return { ganadores, collection: col, doc(p){ const [c, id] = p.split('/'); return col(c).doc(id); } };
+}
+function escucharSubidos(F, fs, col){   // «✅ Ya los subiste» EN VIVO desde la app de la marca (<marca>_videos). 16/11: una creadora de Lagos subió 7 y la Sala le mostraba 2,
+  // porque grabados.json era una foto del 14/11 que nadie volvía a armar. Ahora cada video subido aparece al toque; la foto horneada queda solo de respaldo
+  // si la base no conecta. Un video rechazado NO cuenta: ese guion hay que volver a grabarlo (misma regla que quien_app.grabados).
+  const cods = [...new Set(S.GUT.map(g => g.codigo))], llego = {}, por = {};
+  const corta = f => (f = String(f || '')).length > 9 ? f.slice(8, 10) + '/' + f.slice(5, 7) : 'ya';
+  const aplicar = () => {
+    const m = {}; Object.values(por).forEach(o => Object.entries(o).forEach(([c, f]) => { if (!(c in m) || f > m[c]) m[c] = f; }));
+    let cambio = false;
+    S.GUT.forEach(g => { if (!llego[g.codigo]) return; const v = g.codigo in m ? corta(m[g.codigo]) : ''; if ((g.sub || '') !== v) { g.sub = v; cambio = true; } });
+    if (cambio && S.cargado && S.tab === 'guiones') { pintarLista(); if (typeof pintarNav === 'function') pintarNav(); }
+  };
+  for (let i = 0; i < cods.length; i += 30) {   // Firestore: «in» admite hasta 30 valores por consulta
+    const tanda = cods.slice(i, i + 30);
+    F.onSnapshot(F.query(F.collection(fs, col), F.where('guion', 'in', tanda)), snap => {
+      const o = {}; snap.docs.forEach(d => { const x = d.data(); if (!x.guion || x.status === 'rejected') return; const f = String(x.date || '0'); if (!(x.guion in o) || f > o[x.guion]) o[x.guion] = f; });
+      por[i] = o; tanda.forEach(c => { llego[c] = true; }); aplicar();
+    }, () => {});   // sin permiso o sin red: queda lo horneado en el paquete
+  }
 }
 function pintarSync(){
   let cls = 'busy', txt = 'Conectando…';
