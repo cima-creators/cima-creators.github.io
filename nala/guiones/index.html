@@ -546,7 +546,13 @@ em.env{font-size:10.5px;padding:1px 6px;border-radius:99px;margin-left:4px;white
 @media (max-width:719.98px){
   .top{flex-wrap:nowrap;gap:10px;min-height:52px}
   .bname{display:none}
-  .tabs{min-width:0}
+  .tabs{min-width:0;flex:0 1 auto;overflow-x:auto;scrollbar-width:none}   /* 16/11: en el celu las pestañas no entraban («Del equipo» quedaba cortada): se deslizan */
+  .tabs::-webkit-scrollbar{display:none}
+  .tabs .tab{flex:none}
+  .top:has(.bsel){flex-wrap:wrap;row-gap:6px}   /* el equipo cambia de marca también desde el celu (Abril, 16/11): selector arriba, pestañas en su propia fila */
+  .top:has(.bsel) .bname{display:block;min-width:0}
+  .top:has(.bsel) .bsel{max-width:46vw;font-size:14px}
+  .top:has(.bsel) .tabs{order:5;flex:1 0 100%}
   .main{gap:10px}
   .h-row{flex-wrap:nowrap;align-items:center}
   .h-id{flex:1 1 auto}
@@ -728,8 +734,10 @@ async function conectar(){
     if (visibles()) { if (!S.GU.some(g => g.codigo === S.gui)) S.gui = (S.GU[0] || {}).codigo || null; render(); return; }   // cambió lo que esta persona puede ver
     pintarFiltros(); pintarLista(); pintarProgreso(); pintarSync(); actualizarRevision(); pintarNuestro(false);
   }, e => { S.dbMsg = 'La base no responde (' + (e.code || 'error') + ')'; clearTimeout(t); pintarSync(); actualizarRevision(); });
-  if (db.ganadores && esRevisor()) db.ganadores.onSnapshot(docs => { S.GAN = docs; $('#t-ganadores').hidden = false; $('#n-ganadores').textContent = docs.filter(d => d.estado === 'elegir').length;
-    if (S.tab === 'ganadores') { pintarLista(); if ($('#ficha').hidden) pintarGanadores(); } else if (!S.ganVisto && !location.hash && docs.some(d => d.estado === 'elegir')) { S.ganVisto = true; irGanadores(); } });
+  if (db.ganadores && esRevisor()) { $('#t-ganadores').hidden = false; $('#n-ganadores').textContent = '…'; }   // 16/11 (Abril, Lagos en el celu): la pestaña se ve desde el arranque; antes aparecía recién al terminar de bajar el pool (488 en Lagos) y si fallaba no aparecía nunca
+  if (db.ganadores && esRevisor()) db.ganadores.onSnapshot(docs => { S.GAN = docs; S.ganOk = true; S.ganErr = ''; $('#t-ganadores').hidden = false; $('#n-ganadores').textContent = docs.filter(d => d.estado === 'elegir').length;
+    if (S.tab === 'ganadores') { pintarLista(); if ($('#ficha').hidden) pintarGanadores(); } else if (!S.ganVisto && !location.hash && docs.some(d => d.estado === 'elegir')) { S.ganVisto = true; irGanadores(); } },
+    e => { S.ganErr = 'No cargaron los ganadores (' + ((e && e.code) || 'sin conexión') + '). Recargá la página.'; $('#n-ganadores').textContent = '!'; if (S.tab === 'ganadores' && $('#ficha').hidden) pintarGanadores(); });
   db.collection('notas').orderBy('fecha', 'asc').onSnapshot(snap => {
     S.notas = snap.docs.map(d => Object.assign({id: d.id}, d.data())); actualizarRevision();
   }, () => {});
@@ -1334,7 +1342,7 @@ function pintarGanadores(){
   main.innerHTML = '<div class="gan"><div class="gan-h"><div><h1>' + esc((S.paquete && S.paquete.pool_titulo) || 'Ganadores del día') + '</h1><p>' + esc((S.paquete && S.paquete.pool_txt) || 'Anuncios que llevan 60 días o más al aire. Arriba, los nuestros con 40 ventas o más; después, los formatos que graba una creadora en su casa; al fondo, los animados y los de fundadora.') + ' Con «La quiero» elegís los ángulos y te lo escribo calcado para ' + esc(CFG.cliente) + '.</p></div>' +
     '<div class="gtabs">' + tab('elegir', 'Para elegir') + tab('elegida', 'Elegidas') + tab('descartada', 'Descartadas') + '</div>' +
     '<select id="gorden" aria-label="Ordenar por" style="flex:none;font:inherit;font-size:13px;padding:7px 10px;border-radius:10px;border:1px solid var(--line);background:var(--sunken);color:inherit">' + [['', 'Ordenar: por formato'], ['ventas', 'Más ventas'], ['dup', 'Más duplicados'], ['dias', 'Más días corriendo'], ['senal', 'Más estrellas']].map(o => '<option value="' + o[0] + '"' + ((S.gf.orden || '') === o[0] ? ' selected' : '') + '>' + o[1] + '</option>').join('') + '</select></div>' +
-    '<div class="ggrid scroll" id="ggrid">' + (grilla || '<div class="vacio" style="grid-column:1/-1"><b>' + (S.GAN.length ? 'Nada por acá' : 'Todavía no hay ganadores cargados') + '</b>' + (S.gf.estado === 'elegir' ? 'Mañana llegan los nuevos.' : '') + '</div>') + '</div></div>';
+    '<div class="ggrid scroll" id="ggrid">' + (grilla || '<div class="vacio" style="grid-column:1/-1"><b>' + (S.ganErr ? esc(S.ganErr) : !S.ganOk ? 'Cargando los ganadores…' : S.GAN.length ? 'Nada por acá' : 'Todavía no hay ganadores cargados') + '</b>' + (S.ganOk && S.gf.estado === 'elegir' ? 'Mañana llegan los nuevos.' : '') + '</div>') + '</div></div>';
   $('#ggrid').scrollTop = prev;
   $('#gorden').onchange = e => { S.gf.orden = e.target.value; try { localStorage.setItem('gan_orden', S.gf.orden); } catch (x) {} $('#ggrid').scrollTop = 0; pintarGanadores(); };
   $$('#main [data-ge]').forEach(b => b.onclick = () => { S.gf.estado = b.dataset.ge; S.gf.fmt = ''; pintarLista(); pintarGanadores(); });
