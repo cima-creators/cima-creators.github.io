@@ -394,6 +394,7 @@ document.addEventListener("click", e => { if(S.pop && !e.target.closest(".pop, #
 const MOTIVOS = {trabado:["Trabados","El control los frenó: hay que mirarlos","bad"], revisar:["Esperan a Abril","Ya están editados","am"], curso:["Editándose","Se están editando o corrigiendo ahora","mut"],
   sinEntrar:["Sin entrar al editor","Falta el b-roll de la creadora o el bot todavía no pasó","bad"], sinLink:["Sin link de Drive","La creadora no cargó el crudo","bad"],
   rechazado:["Rechazados","Toma de b-roll o crudo para regrabar","mut"], subiendo:["Subiéndose","Aprobados: están yendo a la app","ok"]};
+const YA_EDITAN = {lagos: "2026-11-15", drenova: "2026-11-14"};   // 16/11 Nacho: desde esa fecha la marca sube todo editado, no se edita ni se cuenta
 function sinEditar(){
   const desde = new Date(Date.now() - 14 * 864e5).toISOString(), g = {}; let sub = 0, total = 0;
   const nom = m => (Object.values(items).find(it => it.marca === m) || {}).marcaNombre || m;
@@ -403,7 +404,7 @@ function sinEditar(){
     if(marcaF !== "todas" && marca !== marcaF) continue;
     for(const d of docs){
       if((d.fecha || "") < desde || d.status === "rejected") continue;
-      if(d.suyo) continue;   // 16/11 Nacho: lo que la creadora sube ya editado (entrega «editado», guiones de la Sala) no se edita ni cuenta
+      if(d.suyo || (YA_EDITAN[marca] && (d.fecha || "") >= YA_EDITAN[marca])) continue;   // 16/11 Nacho: lo que la creadora sube ya editado (entrega «editado», guiones de la Sala) no se edita ni cuenta
       const it = items[marca + "__" + d.id];
       if(it && it.estado === "rechazado" && (it.fuera || /ya no trabaja/i.test(it.nota || ""))) continue;   // sacados a mano: no cuentan
       sub++; if(d.editado) continue;
