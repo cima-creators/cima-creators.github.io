@@ -403,6 +403,7 @@ function sinEditar(){
     if(marcaF !== "todas" && marca !== marcaF) continue;
     for(const d of docs){
       if((d.fecha || "") < desde || d.status === "rejected") continue;
+      if(d.suyo) continue;   // 16/11 Nacho: lo que la creadora sube ya editado (entrega «editado», guiones de la Sala) no se edita ni cuenta
       const it = items[marca + "__" + d.id];
       if(it && it.estado === "rechazado" && (it.fuera || /ya no trabaja/i.test(it.nota || ""))) continue;   // sacados a mano: no cuentan
       sub++; if(d.editado) continue;
@@ -426,7 +427,7 @@ async function leerApp(){
     const snap = await fb.getDocs(fb.collection(fb.db, col));
     const nombres = {}; Object.values(items).forEach(it => { if(it.marca === marca && it.videoId) nombres[it.videoId.split("_")[0]] = it.creadora; });
     app[marca] = snap.docs.map(d => { const v = d.data(), link = v.driveLink || (/drive\.google/.test(v.link||"") ? v.link : "");
-      return {id: d.id, fecha: v.date || "", status: v.status, editado: !!v.editado, link: !!link, guion: v.guion || "", creadora: nombres[v.creator] || v.creator || ""}; })
+      return {id: d.id, fecha: v.date || "", status: v.status, editado: !!v.editado, suyo: v.entrega === "editado" && v.crudo !== true, link: !!link, guion: v.guion || "", creadora: nombres[v.creator] || v.creator || ""}; })
       .filter(v => !/b-?roll/i.test(v.guion));
   } catch(e){ app[marca] = []; } }));
   S.app = app; S.leyendo = false; if(S.vista === "inicio") pintar();
