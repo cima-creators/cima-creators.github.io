@@ -630,6 +630,7 @@ em.env{font-size:10.5px;padding:1px 6px;border-radius:99px;margin-left:4px;white
       <button class="tab on" id="t-formatos" role="tab" aria-selected="true">Formatos <b id="n-formatos">0</b></button>
       <button class="tab" id="t-guiones" role="tab" aria-selected="false">Guiones <b id="n-guiones">0</b></button>
       <button class="tab" id="t-prod" role="tab" aria-selected="false" hidden>Del equipo <b id="n-prod">0</b></button>
+      <button class="tab" id="t-founder" role="tab" aria-selected="false" hidden>Founder <b id="n-founder">0</b></button>
     </div>
     <div class="top-r">
       <div class="prog" id="prog"></div>
@@ -678,8 +679,10 @@ const colorBloque = (nombre, lista) => { const i = lista.indexOf(nombre); return
 // Roles de la versión de la marca (vienen en el paquete que abre cada clave): equipo = CIMA, revisa igual que en la Sala · marca = ve lo aprobado y deja notas · creadora = ve lo aprobado
 const esRevisor = () => !S.cli || S.rol === 'equipo';
 // «Del equipo»: guiones que una creadora NO puede grabar y editar sola (mezcla de creadoras, IA, fundadora) van en su propia pestaña (Nacho, 11/11)
-const NOSOLA = g => /^(IA \(|Fundadora|Las |.+ y .+)/.test((g && g.quien) || '');
-const GUsub = () => S.GU.filter(g => NOSOLA(g) === (S.sub === 'prod'));
+const FOUNDER = g => !!g && (/^Fundador/i.test(g.quien || '') || ((S.paquete && S.paquete.founder) || []).includes(g.quien));   // 18/11 Nacho: «separame los de founder… no quiero verlos ahí a menos que yo los clickee»
+const NOSOLA = g => !FOUNDER(g) && /^(IA \(|Las |.+ y .+)/.test((g && g.quien) || '');
+const subDe = g => FOUNDER(g) ? 'founder' : NOSOLA(g) ? 'prod' : 'solas';   // las tres pestañas de guiones: de creadoras · del equipo · founder
+const GUsub = () => S.GU.filter(g => subDe(g) === (S.sub || 'solas'));
 const esMarca = () => S.cli && S.rol === 'marca';
 const soloAprobados = () => S.cli && S.rol !== 'equipo';
 const horneado = id => S.cli && id.startsWith('gui-') ? ((S.GUT.find(g => 'gui-' + g.codigo === id) || {}).estado || '') : '';   // estado con el que se publicó, por si la base no conecta
@@ -708,14 +711,14 @@ async function cargar(){
   if (S.cli) S.tab = 'guiones';
   leerHash();
   if (!S.fmt && S.F.length) S.fmt = S.F[0].id;
-  if (!S.gui && S.GU.length) S.gui = S.GU[0].codigo;
+  if (!S.gui && S.GU.length) S.gui = (S.GU.find(g => subDe(g) === 'solas') || S.GU[0]).codigo;   // arranca en un guion de la pestaña Guiones, no en uno de founder
   if (S.cli) $('#app').classList.toggle('conest', soloAprobados());
   render(); if (!S.cli || CFG.cifrado) conectar();
 }
 function leerHash(){
   const h = (location.hash || '').slice(1);
   if (h === 'ganadores' && S.cli && S.rol === 'equipo') { S.tab = 'ganadores'; return true; }
-  if (h.startsWith('g-') && S.GU.some(g => g.codigo === h.slice(2))) { S.tab = 'guiones'; S.gui = h.slice(2); S.sub = NOSOLA(S.GU.find(g => g.codigo === S.gui)) ? 'prod' : 'solas'; return true; }
+  if (h.startsWith('g-') && S.GU.some(g => g.codigo === h.slice(2))) { S.tab = 'guiones'; S.gui = h.slice(2); S.sub = subDe(S.GU.find(g => g.codigo === S.gui)); return true; }
   if (!S.cli && h && S.F.some(f => f.id === h)) { S.tab = 'formatos'; S.fmt = h; return true; }
   return false;
 }
@@ -808,11 +811,11 @@ function lista(){
 function render(){
   ['ganadores', 'formatos'].forEach(t => { const b = $('#t-' + t); b.classList.toggle('on', S.tab === t); b.setAttribute('aria-selected', S.tab === t); });
   const enG = S.tab === 'guiones';
-  $('#t-guiones').classList.toggle('on', enG && S.sub !== 'prod'); $('#t-guiones').setAttribute('aria-selected', enG && S.sub !== 'prod');
-  const prod = S.GU.filter(NOSOLA), tp = $('#t-prod');
-  tp.hidden = !prod.length; tp.classList.toggle('on', enG && S.sub === 'prod'); tp.setAttribute('aria-selected', enG && S.sub === 'prod');
-  $('#n-prod').textContent = prod.length;
-  $('#n-formatos').textContent = S.F.length; $('#n-guiones').textContent = S.GU.length - prod.length;
+  const solas = (S.sub || 'solas') === 'solas';
+  $('#t-guiones').classList.toggle('on', enG && solas); $('#t-guiones').setAttribute('aria-selected', enG && solas);
+  ['prod', 'founder'].forEach(k => { const n = S.GU.filter(g => subDe(g) === k).length, b = $('#t-' + k);
+    b.hidden = !n; b.classList.toggle('on', enG && S.sub === k); b.setAttribute('aria-selected', enG && S.sub === k); $('#n-' + k).textContent = n; });
+  $('#n-formatos').textContent = S.F.length; $('#n-guiones').textContent = S.GU.filter(g => subDe(g) === 'solas').length;
   $('#q').placeholder = S.tab === 'formatos' ? 'Buscar formato' : S.tab === 'ganadores' ? 'Buscar marca' : 'Buscar guion';
   pintarFiltros(); pintarLista(); pintarProgreso(); pintarSync(); pintarMain();
 }
@@ -847,7 +850,7 @@ function pintarLista(){
   else { let corte = false;   // los que ya se subieron a la app van abajo de todo, separados: no se graban de nuevo (Nacho, 14/11)
     h = items.map(g => { const st = estadoVista('gui-' + g.codigo);
     const sep = (g.sub && !corte) ? ((corte = true), '<div class="grp">\u2705 Ya los subiste</div>') : '';
-    return sep + '<button class="it' + (g.codigo === S.gui ? ' on' : '') + (g.sub ? ' hecho' : '') + '" data-id="' + esc(g.codigo) + '"' + (g.codigo === S.gui ? ' aria-current="true"' : '') + '><span class="cod">' + esc(g.num) + '</span><span class="nm">' + esc(g.titulo) + (g.sub ? '<em class="env ok" title="Ya lo subiste a la app el ' + esc(g.sub) + '">\u2705 ' + esc(g.sub) + '</em>' : '') + (g.envia && verEnvio() ? '<em class="env" title="Lo mandó ' + esc(g.envia) + ': aprobalo primero">📨 ' + esc(g.envia) + '</em>' : '') + (g.sello && verEnvio() ? '<em class="env" title="' + esc(g.sello) + '">🔁</em>' : '') + '<small>' + esc(g.quien) + ' · ' + esc(nombreFmt(g.fmt)) + (g.idea ? ' <b>· ' + esc(g.idea) + '</b>' : '') + '</small></span><i class="st ' + st + '" title="' + EST[st] + '"></i></button>';
+    return sep + '<button class="it' + (g.codigo === S.gui ? ' on' : '') + (g.sub ? ' hecho' : '') + '" data-id="' + esc(g.codigo) + '"' + (g.codigo === S.gui ? ' aria-current="true"' : '') + '><span class="cod">' + esc(g.num) + '</span><span class="nm">' + esc(g.titulo) + (g.sub ? '<em class="env ok" title="Ya lo subiste a la app el ' + esc(g.sub) + '">\u2705 ' + esc(g.sub) + '</em>' : '') + (g.envia && verEnvio() ? '<em class="env" title="Lo mandó ' + esc(g.envia) + ': aprobalo primero">📨 ' + esc(g.envia) + '</em>' : '') + (g.sello && verEnvio() ? '<em class="env" title="' + esc(g.sello) + '">🔁</em>' : '') + (g.prioridad ? '<em class="env" title="Variante de un video ganador: grabalo primero">⭐</em>' : '') + '<small>' + esc(g.quien) + ' · ' + esc(nombreFmt(g.fmt)) + (g.idea ? ' <b>· ' + esc(g.idea) + '</b>' : '') + '</small></span><i class="st ' + st + '" title="' + EST[st] + '"></i></button>';
   }).join(''); }
   box.innerHTML = h || '<div class="nada">' + (S.q || S.filtro.quien || S.filtro.fmt || S.filtro.estado || S.filtro.angulo || S.filtro.idea ? 'Nada coincide con el filtro.' : S.tab === 'formatos' ? 'Todavía no hay formatos cargados.' : 'Los guiones aparecen acá cuando estén escritos.') + '</div>';
   box.querySelectorAll('[data-id]').forEach(b => b.onclick = () => ir(S.tab, b.dataset.id));
@@ -949,6 +952,7 @@ function pintarMain(){
       (g.sub ? '<span class="pl ok" title="Ya hay un video de este guion subido a la app: no hace falta grabarlo de nuevo">\u2705 Ya subido \u00b7 ' + esc(g.sub) + '</span>' : '') +
       (g.envia && verEnvio() ? '<span class="pl env" title="Lo mandó ' + esc(g.envia) + ': aprobalo primero para que lo graben">📨 Enviado por ' + esc(g.envia) + '</span>' : '') +
       (g.sello && verEnvio() ? '<span class="pl env" title="Rearmado con los dolores y las palabras del VOC, ya aprobado">' + esc(g.sello) + '</span>' : '') +
+      (g.prioridad ? '<span class="pl pri" style="background:#f59e0b22;border:1px solid #f59e0b;color:#b45309;font-weight:700" title="Variante de un video ganador: grabalo antes que el resto">⭐ PRIORIDAD · WINNER</span>' : '') +
       (g.broll ? '<span><a class="lnk" href="' + esc(g.broll) + '" target="_blank" rel="noopener" title="Carpeta con las capturas y fotos que pide este guion">📁 Tomas y capturas</a></span>' : '') +
       '</div>' + contexto(g) + '<div class="tl" id="tl"></div>';
   }
@@ -1390,8 +1394,10 @@ function abrirFicha(id){
 window.addEventListener('hashchange', () => { const a = S.tab + S.fmt + S.gui; if (leerHash() && a !== S.tab + S.fmt + S.gui) { S.gan = null; S.rtab = 'principal'; render(); } });
 $('#t-ganadores').onclick = () => irGanadores();
 $('#t-formatos').onclick = () => ir('formatos', S.fmt);
-$('#t-guiones').onclick = () => { S.sub = 'solas'; const g = S.GU.find(x => x.codigo === S.gui); ir('guiones', g && !NOSOLA(g) ? S.gui : (S.GU.find(x => !NOSOLA(x)) || {}).codigo); };
-$('#t-prod').onclick = () => { S.sub = 'prod'; const g = S.GU.find(x => x.codigo === S.gui); ir('guiones', g && NOSOLA(g) ? S.gui : (S.GU.find(NOSOLA) || {}).codigo); };
+const irSub = k => { S.sub = k; const g = S.GU.find(x => x.codigo === S.gui); ir('guiones', g && subDe(g) === k ? S.gui : (S.GU.find(x => subDe(x) === k) || {}).codigo); };
+$('#t-guiones').onclick = () => irSub('solas');
+$('#t-prod').onclick = () => irSub('prod');
+$('#t-founder').onclick = () => irSub('founder');
 $('#q').oninput = e => { S.q = e.target.value; pintarLista(); if (S.tab === 'ganadores') pintarGanadores(); else pintarNav(); };
 $('#menu').onclick = () => $('#app').classList.toggle('nav-open');
 $('#veil').onclick = () => $('#app').classList.remove('nav-open');
