@@ -836,6 +836,7 @@ function pintarProgreso(){
 
 /* ---------- lista ---------- */
 const verEnvio = () => !S.cli || S.rol === 'equipo';   // la marca «📨 Enviado por …» es para el equipo: dice qué aprobar primero
+const esPrio = g => (g.prioridad || /^(🏆 WINNER|⭐ WINNER|⚡|🛍 BF)/.test(g.titulo || '')) ? 1 : 0;   // winners, réplicas, iteraciones, Black Friday y lo marcado con ⭐
 function lista(){
   const q = S.q.trim().toLowerCase();
   if (S.tab === 'ganadores') return [];
@@ -844,7 +845,7 @@ function lista(){
   return GUsub().filter(g => (!fl.quien || g.quien === fl.quien) && (!fl.fmt || g.fmt === fl.fmt) && (!fl.subido || (fl.subido === 'si' ? !!g.sub : !g.sub)) && (!fl.angulo || g.angulo === fl.angulo) && (!fl.idea || g.idea === fl.idea) &&
     (!fl.estado || estadoVista('gui-' + g.codigo) === (fl.estado === 'sin' ? '' : fl.estado)) &&
     (!q || (g.num + ' ' + g.titulo + ' ' + g.quien + ' ' + nombreFmt(g.fmt) + ' ' + (g.angulo || '') + ' ' + (g.idea || '') + ' ' + (g.envia || '')).toLowerCase().includes(q)))
-    .map((g, i) => [g, i]).sort((a, b) => ((a[0].sub ? 1 : 0) - (b[0].sub ? 1 : 0)) || (verEnvio() ? (b[0].envia ? 1 : 0) - (a[0].envia ? 1 : 0) : 0) || a[1] - b[1]).map(x => x[0]);   // lo ya subido a la app, al fondo (Nacho, 14/11)
+    .map((g, i) => [g, i]).sort((a, b) => ((a[0].sub ? 1 : 0) - (b[0].sub ? 1 : 0)) || (esPrio(b[0]) - esPrio(a[0])) || (verEnvio() ? (b[0].envia ? 1 : 0) - (a[0].envia ? 1 : 0) : 0) || a[1] - b[1]).map(x => x[0]);   // lo ya subido a la app, al fondo (Nacho, 14/11) · 26/11: winners, BF y ⭐ arriba de todo («veo varios abajo»)
 }
 function render(){
   ['ganadores', 'formatos'].forEach(t => { const b = $('#t-' + t); b.classList.toggle('on', S.tab === t); b.setAttribute('aria-selected', S.tab === t); });
@@ -890,7 +891,7 @@ function pintarLista(){
   else { let corte = false;   // los que ya se subieron a la app van abajo de todo, separados: no se graban de nuevo (Nacho, 14/11)
     h = items.map(g => { const st = estadoVista('gui-' + g.codigo);
     const sep = (g.sub && !corte) ? ((corte = true), '<div class="grp">\u2705 Ya los subiste</div>') : '';
-    return sep + '<button class="it' + (g.codigo === S.gui ? ' on' : '') + (g.sub ? ' hecho' : '') + '" data-id="' + esc(g.codigo) + '"' + (g.codigo === S.gui ? ' aria-current="true"' : '') + '><span class="cod">' + esc(g.num) + '</span><span class="nm">' + esc(g.titulo) + (g.sub ? '<em class="env ok" title="Ya lo subiste a la app el ' + esc(g.sub) + '">\u2705 ' + esc(g.sub) + '</em>' : '') + (g.envia && verEnvio() ? '<em class="env" title="Lo mandó ' + esc(g.envia) + ': aprobalo primero">📨 ' + esc(g.envia) + '</em>' : '') + (g.sello && verEnvio() ? '<em class="env" title="' + esc(g.sello) + '">🔁</em>' : '') + (g.prioridad ? '<em class="env" title="Variante de un video ganador: grabalo primero">⭐</em>' : '') + '<small>' + esc(g.quien) + ' · ' + esc(nombreFmt(g.fmt)) + (g.idea ? ' <b>· ' + esc(g.idea) + '</b>' : '') + '</small></span><i class="st ' + st + '" title="' + EST[st] + '"></i></button>';
+    return sep + '<button class="it' + (g.codigo === S.gui ? ' on' : '') + (g.sub ? ' hecho' : '') + '" data-id="' + esc(g.codigo) + '"' + (g.codigo === S.gui ? ' aria-current="true"' : '') + '><span class="cod">' + esc(g.num) + '</span><span class="nm">' + esc(g.titulo) + (g.sub ? '<em class="env ok" title="Ya lo subiste a la app el ' + esc(g.sub) + '">\u2705 ' + esc(g.sub) + '</em>' : '') + (g.envia && verEnvio() ? '<em class="env" title="Lo mandó ' + esc(g.envia) + ': aprobalo primero">📨 ' + esc(g.envia) + '</em>' : '') + (g.sello && verEnvio() ? '<em class="env" title="' + esc(g.sello) + '">🔁</em>' : '') + (g.prioridad ? '<em class="env" title="Variante de un video ganador: grabalo primero">⭐</em>' : '') + ((g.vale || 1) > 1 ? '<em class="env" title="Vale ' + g.vale + ' videos" style="color:#15803d">💰x' + g.vale + '</em>' : '') + '<small>' + esc(g.quien) + ' · ' + esc(nombreFmt(g.fmt)) + (g.idea ? ' <b>· ' + esc(g.idea) + '</b>' : '') + '</small></span><i class="st ' + st + '" title="' + EST[st] + '"></i></button>';
   }).join(''); }
   box.innerHTML = h || '<div class="nada">' + (S.q || S.filtro.quien || S.filtro.fmt || S.filtro.estado || S.filtro.angulo || S.filtro.idea || S.filtro.subido ? 'Nada coincide con el filtro.' : S.tab === 'formatos' ? 'Todavía no hay formatos cargados.' : 'Los guiones aparecen acá cuando estén escritos.') + '</div>';
   box.querySelectorAll('[data-id]').forEach(b => b.onclick = () => ir(S.tab, b.dataset.id));
@@ -993,6 +994,9 @@ function pintarMain(){
       (g.envia && verEnvio() ? '<span class="pl env" title="Lo mandó ' + esc(g.envia) + ': aprobalo primero para que lo graben">📨 Enviado por ' + esc(g.envia) + '</span>' : '') +
       (g.sello && verEnvio() ? '<span class="pl env" title="Rearmado con los dolores y las palabras del VOC, ya aprobado">' + esc(g.sello) + '</span>' : '') +
       (g.prioridad ? '<span class="pl pri" style="background:#f59e0b22;border:1px solid #f59e0b;color:#b45309;font-weight:700" title="Variante de un video ganador: grabalo antes que el resto">⭐ PRIORIDAD · WINNER</span>' : '') +
+      ((g.vale || 1) > 1 ? '<span class="pl" style="background:#16a34a1f;border:1px solid #16a34a;color:#15803d;font-weight:700" title="Este video cuenta doble">💰 VALE ' + g.vale + ' VIDEOS</span>' : '') +   // 26/11 Nacho: «emoji plata y aclará con color que vale 2 videos»
+      (g.libre ? '<span class="pl" style="background:#3b82f61f;border:1px solid #3b82f6;color:#1d4ed8;font-weight:700" title="Lo puede grabar cualquier creadora">🆓 LIBRE · lo graba la que quiera</span>' : '') +
+      (String(g.ref || '').startsWith('TT__') && !S.solo ? '<span class="pl" style="background:#ec48991f;border:1px solid #ec4899;color:#be185d;font-weight:700" title="Calcado de un TikTok que mandó Nacho el 26/11: revisarlo">🎯 TIKTOK DE NACHO · revisar</span>' : '') +
       (puedeMover() ? '<span><button class="lnk" id="prio" type="button" title="' + (g.prioridad ? 'Sacarle la prioridad' : 'Que lo graben antes que el resto: va primero en la app') + '">' + (g.prioridad ? 'quitar prioridad' : '☆ Marcar prioridad') + '</button></span>' : '') +
       (g.broll ? '<span><a class="lnk" href="' + esc(g.broll) + '" target="_blank" rel="noopener" title="Carpeta con las capturas y fotos que pide este guion">📁 Tomas y capturas</a></span>' : '') +
       (g.anuncio ? '<span class="anun" title="Con este nombre se guarda el archivo del video y se sube el anuncio a Meta (naming de CIMA)">Nombre del anuncio <code id="anun">' + esc(g.anuncio) + '</code> <button class="lnk" id="copanun" type="button">copiar</button>' + (estadoDe('gui-' + g.codigo) === 'aprobado' ? '' : ' <em>provisorio hasta aprobarlo</em>') + '</span>' : '') +
