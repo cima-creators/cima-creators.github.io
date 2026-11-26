@@ -152,6 +152,9 @@ h1{font-size:21px;font-weight:600;letter-spacing:-.022em;line-height:1.2;margin:
 .meta{display:flex;flex-wrap:wrap;gap:3px 0;font-size:12.5px;color:var(--ink-3);align-items:center}
 .meta > * + *::before{content:"·";margin:0 8px;color:var(--ink-4)}
 .meta b{color:var(--ink);font-weight:500}
+.meta .mover{display:inline-flex;align-items:center;gap:4px}
+.meta .mover select{font:inherit;color:var(--ink);font-weight:500;background:transparent;border:1px solid var(--line-2);border-radius:6px;padding:1px 4px;cursor:pointer}
+.meta .movido{font-size:11.5px;color:var(--ink-4)}
 .meta .mono{font-size:11.5px}
 .meta .anun code{font:500 11px var(--mono);color:var(--ink);background:var(--accent-soft);border-radius:5px;padding:2px 6px;overflow-wrap:anywhere;user-select:all}
 .meta .anun em{font-style:normal;color:var(--ink-4);font-size:11.5px}
@@ -691,7 +694,11 @@ const horneado = id => S.cli && id.startsWith('gui-') ? ((S.GUT.find(g => 'gui-'
 const estadoDe = id => (S.rev[id] && S.rev[id].estado) || (S.dbOk ? '' : horneado(id));
 function visibles(){   // la marca y las creadoras ven solo lo aprobado, y lo que Nacho aprueba aparece solo
   const antes = S.GU.map(g => g.codigo).join();
-  S.GU = soloAprobados() ? S.GUT.filter(g => estadoDe('gui-' + g.codigo) === 'aprobado') : S.GUT;
+  S.GUT.forEach(g => { const rv = (S.rev || {})['gui-' + g.codigo] || {};
+    if (g.quien0 === undefined) { g.quien0 = g.quien; g.prio0 = !!g.prioridad; }
+    g.quien = rv.quien || g.quien0;   // 26/11 Nacho: «pasarlo de una a otra»
+    g.prioridad = typeof rv.prioridad === 'boolean' ? rv.prioridad : g.prio0; });   // 26/11 Nacho: «dejame marcar los que quiero como prioridad»
+  S.GU = (soloAprobados() ? S.GUT.filter(g => estadoDe('gui-' + g.codigo) === 'aprobado') : S.GUT).filter(g => !S.solo || g.quien === S.solo);
   return antes !== S.GU.map(g => g.codigo).join();
 }
 const HB = {};   // hash de la versión publicada de cada guion o plantilla
@@ -699,6 +706,35 @@ function hashItem(id){ if (!HB[id]) { const x = id.startsWith('fmt-') ? S.F.find
 const hechosDe = id => { const rv = S.rev[id] || {}; return rv.hechos && rv.hsobre === hashItem(id) ? rv.hechos : {}; };   // cambios que hizo Claude sobre esta versión
 const estadoVista = id => estadoDe(id) || (Object.keys(hechosDe(id)).length ? 'hecho' : '');
 const sinNum = t => S.solo && /ventas|compras|roas/i.test(t || '') ? '' : (t || '');   // la creadora no ve los números de la marca
+/* pasar un guion de una creadora a otra (26/11/2026, Nacho: «me podés poner para cambiarle el guion a la creadora, tipo pasarlo de una a otra»).
+   Lo hace el equipo; queda en la revisión (<marca>/sala → quien) y el bot de la app (app_guiones.py, cada 15 min) lo pasa a la app
+   y vuelve a publicar el panel de cada creadora. */
+const creadorasMarca = () => (S.paquete && S.paquete.creadoras) || [];
+const puedeMover = () => S.cli && S.rol === 'equipo' && creadorasMarca().length > 0;   // la base se chequea al guardar (el encabezado se dibuja antes de conectar)
+function selectorQuien(g){
+  const qs = creadorasMarca().slice(); if (g.quien && !qs.includes(g.quien)) qs.unshift(g.quien);
+  return '<label class="mover" title="Pasar este guion a otra creadora">👤 <select id="mover" aria-label="Creadora de este guion">' +
+    qs.map(q => '<option' + (q === g.quien ? ' selected' : '') + '>' + esc(q) + '</option>').join('') + '</select></label>' +
+    (g.quien0 && g.quien !== g.quien0 ? ' <em class="movido" title="Antes era de ' + esc(g.quien0) + '">antes ' + esc(g.quien0) + '</em>' : '');
+}
+async function moverGuion(nueva){
+  const g = guionAct(); if (!g || !nueva || nueva === g.quien) return;
+  if (!S.db) { toast('Sin conexión con la base: no se guardó'); render(); return; }
+  const id = 'gui-' + g.codigo, d = {quien: nueva, quien_antes: g.quien, quien_por: S.me || '', quien_fecha: new Date().toISOString()};
+  S.rev = Object.assign({}, S.rev, {[id]: Object.assign({}, S.rev[id] || {}, d)}); visibles(); render();
+  try { const ref = S.db.doc('revision/' + id); if (ref.merge) await ref.merge(d); else await ref.set(S.rev[id]);
+    toast('Pasado a ' + nueva + ': le llega a la app y a su panel en unos minutos'); }
+  catch (err) { S.dbMsg = 'No se guardó (' + (err.code || 'error') + ')'; toast('No se pudo guardar'); }
+}
+async function marcarPrioridad(){   // ⭐ a mano (26/11): el bot de la app lo pone primero en la cola de la creadora
+  const g = guionAct(); if (!g) return;
+  if (!S.db) { toast('Sin conexión con la base: no se guardó'); return; }
+  const id = 'gui-' + g.codigo, d = {prioridad: !g.prioridad, prio_por: S.me || '', prio_fecha: new Date().toISOString()};
+  S.rev = Object.assign({}, S.rev, {[id]: Object.assign({}, S.rev[id] || {}, d)}); visibles(); render();
+  try { const ref = S.db.doc('revision/' + id); if (ref.merge) await ref.merge(d); else await ref.set(S.rev[id]);
+    toast(d.prioridad ? '⭐ Prioridad: va primero en la app' : 'Sin prioridad'); }
+  catch (err) { S.dbMsg = 'No se guardó (' + (err.code || 'error') + ')'; toast('No se pudo guardar'); }
+}
 const itemId = () => S.tab === 'formatos' ? 'fmt-' + S.fmt : 'gui-' + S.gui;
 const nombreFmt = id => (S.F.find(f => f.id === id) || {}).nombre || id;
 const guionAct = () => S.GU.find(x => x.codigo === S.gui);
@@ -950,11 +986,12 @@ function pintarMain(){
       (est.length ? '<div class="tl una"><div class="tl-row"><div class="tl-bar">' + est.map(e => '<span style="flex-grow:' + (e.pct || 10) + ';background:' + colorBloque(e.bloque, nombres) + '" title="' + esc(e.bloque + (e.cuanto ? ' · ' + e.cuanto : '')) + '">' + esc(e.bloque) + '</span>').join('') + '</div></div></div>' : '');
   } else {
     cab = '<div class="h-row"><div class="h-id"><span class="code">' + esc(g.num) + '</span><h1>' + esc(g.titulo) + '</h1></div>' + acc + '</div>' +
-      '<div class="meta"><span><b>' + esc(g.quien) + '</b></span><span>' + (S.cli ? esc(fmt.nombre || g.fmt) : '<button class="lnk" id="irfmt" title="Ver el formato">' + esc(fmt.nombre || g.fmt) + '</button>') + '</span>' + (S.G[g.ref] ? '<span>Sale de <button class="lnk" id="irref" title="Ver la referencia de la que se calcó">' + esc(S.G[g.ref].marca || g.ref) + '</button></span>' : '') +
+      '<div class="meta"><span>' + (puedeMover() ? selectorQuien(g) : '<b>' + esc(g.quien) + '</b>') + '</span><span>' + (S.cli ? esc(fmt.nombre || g.fmt) : '<button class="lnk" id="irfmt" title="Ver el formato">' + esc(fmt.nombre || g.fmt) + '</button>') + '</span>' + (S.G[g.ref] ? '<span>Sale de <button class="lnk" id="irref" title="Ver la referencia de la que se calcó">' + esc(S.G[g.ref].marca || g.ref) + '</button></span>' : '') +
       (g.sub ? '<span class="pl ok" title="Ya hay un video de este guion subido a la app: no hace falta grabarlo de nuevo">\u2705 Ya subido \u00b7 ' + esc(g.sub) + '</span>' : '') +
       (g.envia && verEnvio() ? '<span class="pl env" title="Lo mandó ' + esc(g.envia) + ': aprobalo primero para que lo graben">📨 Enviado por ' + esc(g.envia) + '</span>' : '') +
       (g.sello && verEnvio() ? '<span class="pl env" title="Rearmado con los dolores y las palabras del VOC, ya aprobado">' + esc(g.sello) + '</span>' : '') +
       (g.prioridad ? '<span class="pl pri" style="background:#f59e0b22;border:1px solid #f59e0b;color:#b45309;font-weight:700" title="Variante de un video ganador: grabalo antes que el resto">⭐ PRIORIDAD · WINNER</span>' : '') +
+      (puedeMover() ? '<span><button class="lnk" id="prio" type="button" title="' + (g.prioridad ? 'Sacarle la prioridad' : 'Que lo graben antes que el resto: va primero en la app') + '">' + (g.prioridad ? 'quitar prioridad' : '☆ Marcar prioridad') + '</button></span>' : '') +
       (g.broll ? '<span><a class="lnk" href="' + esc(g.broll) + '" target="_blank" rel="noopener" title="Carpeta con las capturas y fotos que pide este guion">📁 Tomas y capturas</a></span>' : '') +
       (g.anuncio ? '<span class="anun" title="Con este nombre se guarda el archivo del video y se sube el anuncio a Meta (naming de CIMA)">Nombre del anuncio <code id="anun">' + esc(g.anuncio) + '</code> <button class="lnk" id="copanun" type="button">copiar</button>' + (estadoDe('gui-' + g.codigo) === 'aprobado' ? '' : ' <em>provisorio hasta aprobarlo</em>') + '</span>' : '') +
       '</div>' + contexto(g) + '<div class="tl" id="tl"></div>';
@@ -967,6 +1004,8 @@ function pintarMain(){
   const d = $('#desc'); if (d) d.onclick = () => d.classList.toggle('open');
   const irf = $('#irfmt'); if (irf) irf.onclick = () => ir('formatos', g.fmt);
   const irr = $('#irref'); if (irr) irr.onclick = () => alOrigen();
+  const mv = $('#mover'); if (mv) mv.onchange = e => moverGuion(e.target.value);
+  const pr = $('#prio'); if (pr) pr.onclick = () => marcarPrioridad();
   const cpa = $('#copanun'); if (cpa) cpa.onclick = () => {   // nombre del anuncio (naming): se copia para el archivo del video y para Meta
     const t = $('#anun').textContent, marcar = () => { const r = document.createRange(); r.selectNodeContents($('#anun')); const s = getSelection(); s.removeAllRanges(); s.addRange(r); toast('Quedó marcado: copialo'); };
     try { navigator.clipboard.writeText(t).then(() => toast('Nombre copiado'), marcar); } catch (e) { marcar(); }
