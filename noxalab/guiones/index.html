@@ -676,7 +676,7 @@ const setPref = (k, v) => { try { localStorage.setItem('sala-' + k, v ? '1' : '0
 const CFG = {cliente: "NoxaLab", cifrado: true, claves: []};
 const MUDANZA = CFG.cliente ? '' : 'https://cima-creators.github.io/lagos/guiones/';   // desde el 10/11 los guiones de Lagos se revisan ahí (guarda en Firebase)
 const FB = {apiKey: 'AIzaSyCTv4DiRCpbCpGYP6E86TPHlkPvaAZTN3g', authDomain: 'cleargy-creators.firebaseapp.com', projectId: 'cleargy-creators', storageBucket: 'cleargy-creators.firebasestorage.app', messagingSenderId: '313543582398', appId: '1:313543582398:web:99fe78991adeea2e7cb4ef'};   // el proyecto de las apps de CIMA
-const S = { cli: !!CFG.cliente, solo: '', rol: '', GUT: [], GAN: [], gf: {estado: 'elegir', fmt: '', orden: (() => { try { return localStorage.getItem('gan_orden') || ''; } catch (x) { return ''; } })()}, pleg: (() => { try { return JSON.parse(localStorage.getItem('gan_pleg') || '{}'); } catch (x) { return {}; } })(), tab: 'formatos', sub: 'solas', fmt: null, gan: null, gui: null, gids: [], q: '', filtro: {quien: '', fmt: '', estado: '', angulo: '', idea: ''}, rtab: 'principal',
+const S = { cli: !!CFG.cliente, solo: '', rol: '', GUT: [], GAN: [], gf: {estado: 'elegir', fmt: '', orden: (() => { try { return localStorage.getItem('gan_orden') || ''; } catch (x) { return ''; } })()}, pleg: (() => { try { return JSON.parse(localStorage.getItem('gan_pleg') || '{}'); } catch (x) { return {}; } })(), tab: 'formatos', sub: 'solas', fmt: null, gan: null, gui: null, gids: [], q: '', filtro: {quien: '', fmt: '', estado: '', angulo: '', idea: '', subido: ''}, rtab: 'principal',
             orig: pref('orig', true), pant: pref('pant', true), det: pref('det', false), mas: false,
             F: [], G: {}, GU: [], rev: {}, notas: [], db: null, me: null, dbOk: false, dbMsg: '', saving: 0, cargado: false };
 
@@ -841,7 +841,7 @@ function lista(){
   if (S.tab === 'ganadores') return [];
   if (S.tab === 'formatos') return S.F.filter(f => !q || (f.id + ' ' + f.nombre + ' ' + (f.grupo || '')).toLowerCase().includes(q));
   const fl = S.filtro;
-  return GUsub().filter(g => (!fl.quien || g.quien === fl.quien) && (!fl.fmt || g.fmt === fl.fmt) && (!fl.angulo || g.angulo === fl.angulo) && (!fl.idea || g.idea === fl.idea) &&
+  return GUsub().filter(g => (!fl.quien || g.quien === fl.quien) && (!fl.fmt || g.fmt === fl.fmt) && (!fl.subido || (fl.subido === 'si' ? !!g.sub : !g.sub)) && (!fl.angulo || g.angulo === fl.angulo) && (!fl.idea || g.idea === fl.idea) &&
     (!fl.estado || estadoVista('gui-' + g.codigo) === (fl.estado === 'sin' ? '' : fl.estado)) &&
     (!q || (g.num + ' ' + g.titulo + ' ' + g.quien + ' ' + nombreFmt(g.fmt) + ' ' + (g.angulo || '') + ' ' + (g.idea || '') + ' ' + (g.envia || '')).toLowerCase().includes(q)))
     .map((g, i) => [g, i]).sort((a, b) => ((a[0].sub ? 1 : 0) - (b[0].sub ? 1 : 0)) || (verEnvio() ? (b[0].envia ? 1 : 0) - (a[0].envia ? 1 : 0) : 0) || a[1] - b[1]).map(x => x[0]);   // lo ya subido a la app, al fondo (Nacho, 14/11)
@@ -870,9 +870,11 @@ function pintarFiltros(){
     '<select id="ff" aria-label="Formato"><option value="">Todos los formatos</option>' + fs.map(f => '<option value="' + esc(f) + '"' + (f === fl.fmt ? ' selected' : '') + '>' + esc(nombreFmt(f)) + '</option>').join('') + '</select></div>' +
     (as.length ? '<div class="fil"><select id="fa" aria-label="Ángulo"><option value="">Ángulo: todos</option>' + as.map(a => '<option' + (a === fl.angulo ? ' selected' : '') + '>' + esc(a) + '</option>').join('') + '</select>' +
       '<select id="fi" aria-label="Idea"><option value="">Idea: todas</option>' + is.map(a => '<option' + (a === fl.idea ? ' selected' : '') + '>' + esc(a) + '</option>').join('') + '</select></div>' : '') +
+    '<div class="fil"><select id="fsu" style="grid-column:1/-1" aria-label="Subidos a la app">' + [['', 'Subidos y sin subir'], ['no', 'Sin subir a la app (' + GS.filter(g => !g.sub).length + ')'], ['si', 'Ya subidos (' + GS.filter(g => g.sub).length + ')']].map(o => '<option value="' + o[0] + '"' + (o[0] === (fl.subido || '') ? ' selected' : '') + '>' + o[1] + '</option>').join('') + '</select></div>' +   // 26/11 Nacho: «un filtro para separar entre ya subidos y no subidos»
     '<div class="fest" role="group" aria-label="Estado">' + fe('', null, 'Todos', 'Todos') + (n('hecho') || fl.estado === 'hecho' ? fe('hecho', 'hecho', 'Con cambios hechos, para que los mires', n('hecho')) : '') + fe('sin', '', 'Sin revisar', n('')) + fe('aprobado', 'aprobado', 'Aprobados', n('aprobado')) + fe('cambios', 'cambios', 'Con cambios', n('cambios')) + fe('rechazado', 'rechazado', 'Rechazados', n('rechazado')) + '</div>';
   $('#fq').onchange = e => { S.filtro.quien = e.target.value; pintarLista(); pintarNav(); };
   $('#ff').onchange = e => { S.filtro.fmt = e.target.value; pintarLista(); pintarNav(); };
+  $('#fsu').onchange = e => { S.filtro.subido = e.target.value; pintarLista(); pintarNav(); };
   const fa = $('#fa'), fi = $('#fi');
   if (fa) fa.onchange = e => { S.filtro.angulo = e.target.value; if (S.filtro.idea && !S.GU.some(g => g.idea === S.filtro.idea && (!S.filtro.angulo || g.angulo === S.filtro.angulo))) S.filtro.idea = ''; e.target.blur(); pintarFiltros(); pintarLista(); pintarNav(); };
   if (fi) fi.onchange = e => { S.filtro.idea = e.target.value; pintarLista(); pintarNav(); };
@@ -890,7 +892,7 @@ function pintarLista(){
     const sep = (g.sub && !corte) ? ((corte = true), '<div class="grp">\u2705 Ya los subiste</div>') : '';
     return sep + '<button class="it' + (g.codigo === S.gui ? ' on' : '') + (g.sub ? ' hecho' : '') + '" data-id="' + esc(g.codigo) + '"' + (g.codigo === S.gui ? ' aria-current="true"' : '') + '><span class="cod">' + esc(g.num) + '</span><span class="nm">' + esc(g.titulo) + (g.sub ? '<em class="env ok" title="Ya lo subiste a la app el ' + esc(g.sub) + '">\u2705 ' + esc(g.sub) + '</em>' : '') + (g.envia && verEnvio() ? '<em class="env" title="Lo mandó ' + esc(g.envia) + ': aprobalo primero">📨 ' + esc(g.envia) + '</em>' : '') + (g.sello && verEnvio() ? '<em class="env" title="' + esc(g.sello) + '">🔁</em>' : '') + (g.prioridad ? '<em class="env" title="Variante de un video ganador: grabalo primero">⭐</em>' : '') + '<small>' + esc(g.quien) + ' · ' + esc(nombreFmt(g.fmt)) + (g.idea ? ' <b>· ' + esc(g.idea) + '</b>' : '') + '</small></span><i class="st ' + st + '" title="' + EST[st] + '"></i></button>';
   }).join(''); }
-  box.innerHTML = h || '<div class="nada">' + (S.q || S.filtro.quien || S.filtro.fmt || S.filtro.estado || S.filtro.angulo || S.filtro.idea ? 'Nada coincide con el filtro.' : S.tab === 'formatos' ? 'Todavía no hay formatos cargados.' : 'Los guiones aparecen acá cuando estén escritos.') + '</div>';
+  box.innerHTML = h || '<div class="nada">' + (S.q || S.filtro.quien || S.filtro.fmt || S.filtro.estado || S.filtro.angulo || S.filtro.idea || S.filtro.subido ? 'Nada coincide con el filtro.' : S.tab === 'formatos' ? 'Todavía no hay formatos cargados.' : 'Los guiones aparecen acá cuando estén escritos.') + '</div>';
   box.querySelectorAll('[data-id]').forEach(b => b.onclick = () => ir(S.tab, b.dataset.id));
 }
 function ir(tab, id){
